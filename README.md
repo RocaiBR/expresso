@@ -1,5 +1,5 @@
 
-# (Placeholder) — Plataforma de Gestão de Tarefas e Fluxos de Trabalho
+# (Expresso) — Plataforma de Gestão de Tarefas e Fluxos de Trabalho
 
 Projeto desenvolvido como Projeto Integrador (PI) em parceria com a **Pinhalense**, com o objetivo de criar uma plataforma web de gestão de tarefas e fluxos de trabalho colaborativos.
 
