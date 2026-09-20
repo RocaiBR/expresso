@@ -149,7 +149,7 @@ Abra o arquivo `frontend/login/index.html` diretamente no navegador (ou sirva a 
 
 > O frontend consome a API a partir de `http://localhost:3000`, então o backend precisa estar em execução.
 
-## 🔌 Endpoints da API
+##  Endpoints da API
 
 ### Status
 
