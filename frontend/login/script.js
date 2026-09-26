@@ -58,7 +58,7 @@ formulario.addEventListener("submit", async function (event) {
         }
         sessionStorage.setItem("usuarioLogado", JSON.stringify(dados.usuario));
         setTimeout(function () {
-            window.location.href = "../views/usuarios.html";
+            window.location.href = "../views/home.html";;
         }, 1200);
     } catch (erro) {
         loading.style.display = "none";

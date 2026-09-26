@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatórios — Expresso</title>
+    <title>Atividades — Expresso</title>
     <link rel="stylesheet" href="../assets/css/global.css">
     <link rel="stylesheet" href="../assets/css/dashboard.css">
 </head>
@@ -51,16 +51,34 @@
         </aside>
 
         <main class="conteudo-dashboard">
+
             <div class="linha-topo-conteudo">
-                <h2 class="saudacao">Relatórios</h2>
+                <h2 class="saudacao">Minhas atividades</h2>
+                <div class="campo-busca">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.3-4.3" stroke-linecap="round"/></svg>
+                    <input type="text" id="campo-pesquisa" placeholder="Pesquisar">
+                </div>
             </div>
+
             <section class="cartao-atividades">
-                <p class="vazio">Em construção.</p>
+                <div class="abas-atividades" id="abas-atividades">
+                    <button class="aba ativa" data-status="">Todas</button>
+                    <button class="aba" data-status="pendente">Pendentes</button>
+                    <button class="aba" data-status="em andamento">Em andamento</button>
+                    <button class="aba" data-status="concluido">Concluídas</button>
+                </div>
+
+                <table class="tabela-atividades">
+                    <tbody id="corpo-tabela-atividades"></tbody>
+                </table>
+                <p class="vazio" id="mensagem-vazio" style="display:none;">Nenhuma atividade encontrada.</p>
             </section>
+
         </main>
     </div>
 
     <script src="../assets/js/sidebar.js"></script>
+    <script src="../assets/js/atividades.js"></script>
 </body>
 
 </html>

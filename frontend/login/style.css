@@ -174,18 +174,15 @@ button:hover {
 .cup-area{
     position: relative;
     width: 145px;
-    height: 190px;
     display: flex;
-    align-items: flex-end;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
 }
 
 .steam{
-    position: absolute;
-    top: -8px;
-    left: 50%;
+    position: relative;
     width: 78px;
-    transform: translateX(-50%);
+    margin-bottom: -18px;
     overflow: visible;
     z-index: 1;
 }

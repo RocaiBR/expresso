@@ -87,7 +87,7 @@ if (camposParaAtualizar.length == 0){
 valores.push(id);
 
 const [resultado] = await pool.query(
-    `UPDATE usuarios SET ${camposParaAtualizar.json(',')} WHERE id = ?`,
+    `UPDATE usuarios SET ${camposParaAtualizar.join(',')} WHERE id = ?`,
     valores
 );
    if (resultado.affectedRows == 0){
@@ -95,7 +95,7 @@ const [resultado] = await pool.query(
    }
    
    const [linhas] = await pool.query(
-    'SELECT id, nome, email, criado_em FROM ususarios WHERE id = ?',
+    'SELECT id, nome, email, criado_em FROM usuarios WHERE id = ?',
     [id]
    );
 

@@ -9,20 +9,22 @@ async function login(req, res, next) {
         }
 
         const [linhas] = await pool.query(
-            'SELECT id, nome, email, senha FROM ususarios WHERE email = ? OR nome = ? LIMIT 1',
+            'SELECT id, nome, email, senha FROM usuarios WHERE email = ? OR nome = ? LIMIT 1',
             [usuario.trim(), usuario.trim()]
         );
 
-        if (linhas.length === 0){
+        if (linhas.length === 0 || linhas[0].senha !== senha){
             return res.status(401).json({erro: 'Usuário ou senha incorretos.'});
         }
+
+        const encontrado = linhas[0];
 
         res.status(200).json({
             mensagem: 'Login realizado com sucesso.',
             usuario: {
-                id: encotrado.id,
-                nome: encotrado.nome,
-                email: encotrado.email,
+                id: encontrado.id,
+                nome: encontrado.nome,
+                email: encontrado.email,
             },
         });
     } catch (error){

@@ -1,0 +1,50 @@
+/* ===== CALENDÁRIO REAL ===== */
+
+.calendario-navegacao button {
+    color: var(--vinho);
+    font-weight: 700;
+}
+
+.calendario-grade div {
+    cursor: default;
+    color: var(--cinza-texto);
+}
+
+.calendario-grade div.fora-do-mes {
+    color: #ccc;
+}
+
+.calendario-grade div.dia-atual {
+    background-color: var(--vinho);
+    color: #fff;
+    font-weight: 700;
+}
+
+/* ===== SELO DE PRIORIDADE ===== */
+
+.badge-prioridade {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+}
+
+.badge-prioridade i {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.prioridade-alto i,
+.prioridade-urgente i {
+    background-color: var(--vinho);
+}
+
+.prioridade-medio i {
+    background-color: #777;
+}
+
+.prioridade-baixo i {
+    background-color: #ccc;
+}
