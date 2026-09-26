@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Home - Pinhalense</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="w-full h-screen overflow-hidden bg-[#f2f2f4] font-sans antialiased">
+
+    <!-- =====================================================
+         NAVBAR
+    ====================================================== -->
+
+    <header class="w-full h-[56px] bg-[#6F0049] flex items-center justify-between px-6">
+
+        <!-- LOGO -->
+        <div class="logo-area">
+
+            <img
+                id="logoPinhalense"
+                src="../assets/img/logobranca.png"
+                alt="Pinhalense"
+                class="h-[28px] w-auto block"
+                onerror="
+                    if (this.dataset.tentativa === '1') {
+                        this.src = '../../assets/img/logobranca.png';
+                        this.dataset.tentativa = '2';
+                    } else if (this.dataset.tentativa === '2') {
+                        this.src = '/assets/img/logobranca.png';
+                        this.dataset.tentativa = '3';
+                    }
+                "
+            >
+
+        </div>
+
+
+        <!-- PARTE DIREITA DA NAVBAR -->
+        <div class="flex items-center gap-[18px] text-white">
+
+            <!-- NOTIFICAÇÕES -->
+            <button
+                class="bg-transparent border-0 text-white cursor-pointer flex items-center hover:opacity-80 transition-opacity"
+                type="button"
+                aria-label="Notificações">
+
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    fill="currentColor"
+                    viewBox="0 0 16 16">
+
+                    <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6">
+                    </path>
+
+                </svg>
+
+            </button>
+
+
+            <!-- USUÁRIO -->
+            <button
+                class="bg-transparent border-0 text-white cursor-pointer flex items-center gap-2 hover:opacity-80 transition-opacity"
+                type="button"
+                aria-label="Usuário">
+
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    fill="currentColor"
+                    viewBox="0 0 16 16">
+
+                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0">
+                    </path>
+
+                    <path
+                        fill-rule="evenodd"
+                        d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1">
+                    </path>
+
+                </svg>
+
+                <span class="text-sm">
+                    Usuário
+                </span>
+
+                <span class="text-xs">
+                   ⌄
+                </span>
+
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         ESTRUTURA PRINCIPAL
+    ====================================================== -->
+
+    <div class="w-full h-[calc(100vh-56px)] flex">
+
+
+        <!-- =================================================
+             SIDEBAR
+        ================================================== -->
+
+        <aside class="w-[200px] h-full bg-white border-r border-[#e2e2e7] p-3 py-5 shrink-0">
+
+            <nav class="flex flex-col gap-[6px]">
+
+
+                <!-- HOME -->
+                <a
+                    href="home.html"
+                    class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] bg-[#e8d0e0] text-[#1c1c1e] text-sm font-semibold no-underline hover:bg-[#e1c4d7] transition-colors">
+
+                    <span class="flex items-center justify-center">
+
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            viewBox="0 0 16 16">
+
+                            <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4z">
+                            </path>
+
+                        </svg>
+
+                    </span>
+
+                    <span>Home</span>
+
+                </a>
+
+
+                <!-- ATIVIDADES -->
+                <a
+                    href="atividades.html"
+                    class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#3a3a3c] text-sm font-medium no-underline hover:bg-[#f4e8f0] transition-colors">
+
+                    <span class="flex items-center justify-center">
+
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            viewBox="0 0 16 16">
+
+                            <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5">
+                            </path>
+
+                            <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z">
+                            </path>
+
+                        </svg>
+
+                    </span>
+
+                    <span>Atividades</span>
+
+                </a>
+
+
+                <!-- RELATÓRIOS -->
+                <a
+                    href="relatorios.html"
+                    class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#3a3a3c] text-sm font-medium no-underline hover:bg-[#f4e8f0] transition-colors">
+
+                    <span class="flex items-center justify-center">
+
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            viewBox="0 0 16 16">
+
+                            <path d="M1 11a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1z">
+                            </path>
+
+                        </svg>
+
+                    </span>
+
+                    <span>Relatórios</span>
+
+                </a>
+
+
+                <!-- USUÁRIOS -->
+                <a
+                    href="usuarios.html"
+                    class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#3a3a3c] text-sm font-medium no-underline hover:bg-[#f4e8f0] transition-colors">
+
+                    <span class="flex items-center justify-center">
+
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            viewBox="0 0 16 16">
+
+                            <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0M8 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4">
+                            </path>
+
+                            <path d="M8.256 14a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10q.39 0 .74.025c.226-.341.496-.65.804-.918Q8.844 9.002 8 9c-5 0-6 3-6 4s1 1 1 1z">
+                            </path>
+
+                        </svg>
+
+                    </span>
+
+                    <span>Usuários</span>
+
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- =================================================
+             CONTEÚDO PRINCIPAL
+        ================================================== -->
+
+        <main class="flex-1 h-full bg-[#f2f2f4] p-5 xl:p-6 2xl:p-8 overflow-y-auto flex flex-col gap-6">
+
+            <div class="flex flex-col gap-6">
+
+
+                <!-- CABEÇALHO -->
+                <div class="w-full flex items-center gap-6">
+
+                    <div class="text-base text-[#6F0049] whitespace-nowrap">
+
+                        <span>Isadora</span>
+
+                        <span>:</span>
+
+                        <strong class="text-[#1c1c1e]">
+                            PCP
+                        </strong>
+
+                    </div>
+
+
+                    <!-- PESQUISA -->
+                    <div class="w-full max-w-[450px] 2xl:max-w-[550px] h-[40px] bg-white border border-[#d1d1d6] rounded-[10px] flex items-center px-3.5 gap-2.5 shadow-sm">
+
+                        <span class="text-gray-500">
+
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="18"
+                                height="18"
+                                fill="currentColor"
+                                viewBox="0 0 16 16">
+
+                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0">
+                                </path>
+
+                            </svg>
+
+                        </span>
+
+                        <input
+                            type="text"
+                            placeholder="Pesquisar"
+                            class="border-none outline-none w-full text-sm bg-transparent">
+
+                    </div>
+
+                </div>
+
+
+                <!-- DASHBOARD -->
+                <section class="flex flex-col gap-6">
+
+
+                    <!-- CARDS + CALENDÁRIO -->
+                    <div class="w-full grid grid-cols-1 xl:grid-cols-[1fr_260px] 2xl:grid-cols-[1fr_280px] gap-6 items-stretch">
+
+
+                        <!-- CARDS -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 xl:gap-5">
+
+
+                            <!-- TOTAL DE ATIVIDADES -->
+                            <div class="bg-white border border-[#d1d1d6] rounded-xl px-3 py-3 xl:px-4 xl:py-3.5 flex items-center justify-center gap-3.5 shadow-sm max-w-[200px] w-full mx-auto">
+
+                                <div class="w-9 h-9 xl:w-10 xl:h-10 rounded-full bg-[#6F0049] flex items-center justify-center text-white shrink-0">
+
+                                    <!-- ÍCONE DE TODAS AS ATIVIDADES -->
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="w-4 h-4 xl:w-5 xl:h-5"
+                                        fill="currentColor"
+                                        viewBox="0 0 16 16">
+
+                                        <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5">
+                                        </path>
+
+                                        <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z">
+                                        </path>
+
+                                    </svg>
+
+                                </div>
+
+
+                                <div class="flex flex-col justify-center">
+
+                                    <span class="text-lg xl:text-xl font-bold text-[#1c1c1e] leading-none">
+                                        12
+                                    </span>
+
+                                    <span class="text-[11px] xl:text-xs text-[#6e6e73] mt-1 font-medium leading-tight whitespace-nowrap">
+                                        Total de atividades
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- CONCLUÍDO -->
+                            <div class="bg-white border border-[#d1d1d6] rounded-xl px-3 py-3 xl:px-4 xl:py-3.5 flex items-center justify-center gap-3.5 shadow-sm max-w-[200px] w-full mx-auto">
+
+                                <div class="w-9 h-9 xl:w-10 xl:h-10 rounded-full bg-[#54565B] flex items-center justify-center text-white shrink-0">
+
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="w-4 h-4 xl:w-5 xl:h-5"
+                                        fill="currentColor"
+                                        viewBox="0 0 16 16">
+
+                                        <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z">
+                                        </path>
+
+                                    </svg>
+
+                                </div>
+
+                                <div class="flex flex-col justify-center">
+
+                                    <span class="text-lg xl:text-xl font-bold text-[#1c1c1e] leading-none">
+                                        5
+                                    </span>
+
+                                    <span class="text-[11px] xl:text-xs text-[#6e6e73] mt-1 font-medium leading-tight whitespace-nowrap">
+                                        Concluído
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- EM ANDAMENTO -->
+                            <div class="bg-white border border-[#d1d1d6] rounded-xl px-3 py-3 xl:px-4 xl:py-3.5 flex items-center justify-center gap-3.5 shadow-sm max-w-[200px] w-full mx-auto">
+
+                                <div class="w-9 h-9 xl:w-10 xl:h-10 rounded-full bg-[#6F0049] flex items-center justify-center text-white shrink-0">
+
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="w-4 h-4 xl:w-5 xl:h-5"
+                                        fill="currentColor"
+                                        viewBox="0 0 16 16">
+
+                                        <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71z">
+                                        </path>
+
+                                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0">
+                                        </path>
+
+                                    </svg>
+
+                                </div>
+
+                                <div class="flex flex-col justify-center">
+
+                                    <span class="text-lg xl:text-xl font-bold text-[#1c1c1e] leading-none">
+                                        4
+                                    </span>
+
+                                    <span class="text-[11px] xl:text-xs text-[#6e6e73] mt-1 font-medium leading-tight whitespace-nowrap">
+                                        Em andamento
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- PENDENTE -->
+                            <div class="bg-white border border-[#d1d1d6] rounded-xl px-3 py-3 xl:px-4 xl:py-3.5 flex items-center justify-center gap-3.5 shadow-sm max-w-[200px] w-full mx-auto">
+
+                                <div class="w-9 h-9 xl:w-10 xl:h-10 rounded-full bg-[#54565B] flex items-center justify-center text-white shrink-0">
+
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        class="w-4 h-4 xl:w-5 xl:h-5"
+                                        fill="currentColor"
+                                        viewBox="0 0 16 16">
+
+                                        <path d="M11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z">
+                                        </path>
+
+                                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z">
+                                        </path>
+
+                                        <path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5z">
+                                        </path>
+
+                                    </svg>
+
+                                </div>
+
+                                <div class="flex flex-col justify-center">
+
+                                    <span class="text-lg xl:text-xl font-bold text-[#1c1c1e] leading-none">
+                                        3
+                                    </span>
+
+                                    <span class="text-[11px] xl:text-xs text-[#6e6e73] mt-1 font-medium leading-tight whitespace-nowrap">
+                                        Pendente
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- CALENDÁRIO -->
+                        <div class="bg-white border border-[#d1d1d6] rounded-xl p-3 xl:p-4 flex flex-col justify-between shadow-sm min-h-[170px]">
+
+                            <div
+                                class="text-center text-xs xl:text-sm font-bold text-[#54565B] mb-1 capitalize"
+                                id="cal-month-year">
+                            </div>
+
+
+                            <div class="grid grid-cols-7 text-center text-[10px] xl:text-xs font-bold text-[#8e8e93]">
+
+                                <span>D</span>
+                                <span>S</span>
+                                <span>T</span>
+                                <span>Q</span>
+                                <span>Q</span>
+                                <span>S</span>
+                                <span>S</span>
+
+                            </div>
+
+
+                            <div
+                                class="grid grid-cols-7 text-center text-[11px] xl:text-xs text-[#3a3a3c] gap-y-1 items-center"
+                                id="cal-days-grid">
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- MINHAS ATIVIDADES -->
+                    <section class="w-full flex flex-col">
+
+                        <h2 class="text-base font-bold text-[#1c1c1e] mb-3">
+                            Minhas atividades
+                        </h2>
+
+
+                        <!-- ABAS -->
+                        <div
+                            class="w-full h-[40px] flex bg-white border border-[#d1d1d6] rounded-t-xl overflow-hidden"
+                            id="tabs-container">
+
+                            <button
+                                type="button"
+                                class="tab-btn flex-1 h-full border-0 bg-transparent text-xs xl:text-[13px] font-semibold text-[#6F0049] relative flex items-center justify-center cursor-pointer transition-colors">
+
+                                <span>Todas</span>
+
+                                <span class="tab-line absolute bottom-0 w-10 h-[2.5px] bg-[#6F0049] rounded-full">
+                                </span>
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="tab-btn flex-1 h-full border-0 bg-transparent text-xs xl:text-[13px] font-semibold text-[#1c1c1e] relative flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
+
+                                <span>Pendentes</span>
+
+                                <span class="tab-line absolute bottom-0 w-10 h-[2.5px] bg-[#6F0049] rounded-full hidden">
+                                </span>
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="tab-btn flex-1 h-full border-0 bg-transparent text-xs xl:text-[13px] font-semibold text-[#1c1c1e] relative flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
+
+                                <span>Em andamento</span>
+
+                                <span class="tab-line absolute bottom-0 w-10 h-[2.5px] bg-[#6F0049] rounded-full hidden">
+                                </span>
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="tab-btn flex-1 h-full border-0 bg-transparent text-xs xl:text-[13px] font-semibold text-[#1c1c1e] relative flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
+
+                                <span>Concluídas</span>
+
+                                <span class="tab-line absolute bottom-0 w-10 h-[2.5px] bg-[#6F0049] rounded-full hidden">
+                                </span>
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                class="tab-btn flex-1 h-full border-0 bg-transparent text-xs xl:text-[13px] font-semibold text-[#1c1c1e] relative flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
+
+                                <span>Atividades</span>
+
+                                <span class="tab-line absolute bottom-0 w-10 h-[2.5px] bg-[#6F0049] rounded-full hidden">
+                                </span>
+
+                            </button>
+
+                        </div>
+
+
+                        <!-- TABELA -->
+                        <div
+                            id="tabela-minhas-atividades"
+                            class="w-full bg-white border border-[#d1d1d6] border-t-0 rounded-b-xl divide-y divide-gray-100 shadow-sm">
+
+
+                            <!-- ATIVIDADE 1 -->
+                            <div class="grid grid-cols-[2fr_1.5fr_1fr_1fr] items-center p-3.5 px-4 text-xs xl:text-sm text-[#3a3a3c] hover:bg-gray-50 transition-colors">
+
+                                <div class="flex items-center gap-3 font-medium text-[#1c1c1e]">
+
+                                    <input
+                                        type="checkbox"
+                                        class="rounded border-gray-300 text-[#6F0049] focus:ring-[#6F0049] cursor-pointer">
+
+                                    <span class="text-[#6e6e73] font-semibold min-w-[36px]">
+                                        #001
+                                    </span>
+
+                                    <span>
+                                        Reunião com equipe de Projetos
+                                    </span>
+
+                                </div>
+
+                                <div>
+                                    Isadora Cabral dos Santos
+                                </div>
+
+                                <div class="flex items-center gap-2">
+
+                                    <span class="w-2.5 h-2.5 rounded-full bg-[#6F0049]"></span>
+
+                                    <span>
+                                        Alto
+                                    </span>
+
+                                </div>
+
+                                <div class="text-xs text-[#6e6e73]">
+                                    09/06/2026
+                                </div>
+
+                            </div>
+
+
+                            <!-- ATIVIDADE 2 -->
+                            <div class="grid grid-cols-[2fr_1.5fr_1fr_1fr] items-center p-3.5 px-4 text-xs xl:text-sm text-[#3a3a3c] hover:bg-gray-50 transition-colors">
+
+                                <div class="flex items-center gap-3 font-medium text-[#1c1c1e]">
+
+                                    <input
+                                        type="checkbox"
+                                        class="rounded border-gray-300 text-[#6F0049] focus:ring-[#6F0049] cursor-pointer">
+
+                                    <span class="text-[#6e6e73] font-semibold min-w-[36px]">
+                                        #002
+                                    </span>
+
+                                    <span>
+                                        Entrega do planejamento semanal
+                                    </span>
+
+                                </div>
+
+                                <div>
+                                    Maiko Fernandes
+                                </div>
+
+                                <div class="flex items-center gap-2">
+
+                                    <span class="w-2.5 h-2.5 rounded-full bg-[#54565B]"></span>
+
+                                    <span>
+                                        Médio
+                                    </span>
+
+                                </div>
+
+                                <div class="text-xs text-[#6e6e73]">
+                                    15/06/2026
+                                </div>
+
+                            </div>
+
+
+                            <!-- ATIVIDADE 3 -->
+                            <div class="grid grid-cols-[2fr_1.5fr_1fr_1fr] items-center p-3.5 px-4 text-xs xl:text-sm text-[#3a3a3c] hover:bg-gray-50 transition-colors">
+
+                                <div class="flex items-center gap-3 font-medium text-[#1c1c1e]">
+
+                                    <input
+                                        type="checkbox"
+                                        class="rounded border-gray-300 text-[#6F0049] focus:ring-[#6F0049] cursor-pointer">
+
+                                    <span class="text-[#6e6e73] font-semibold min-w-[36px]">
+                                        #004
+                                    </span>
+
+                                    <span>
+                                        Marcar reunião
+                                    </span>
+
+                                </div>
+
+                                <div>
+                                    Ícaro Guminiak de Godoy
+                                </div>
+
+                                <div class="flex items-center gap-2">
+
+                                    <span class="w-2.5 h-2.5 rounded-full bg-[#AEB0B7]"></span>
+
+                                    <span>
+                                        Baixo
+                                    </span>
+
+                                </div>
+
+                                <div class="text-xs text-[#6e6e73]">
+                                    30/07/2026
+                                </div>
+
+                            </div>
+
+
+                            <!-- ATIVIDADE 4 -->
+                            <div class="grid grid-cols-[2fr_1.5fr_1fr_1fr] items-center p-3.5 px-4 text-xs xl:text-sm text-[#3a3a3c] hover:bg-gray-50 transition-colors">
+
+                                <div class="flex items-center gap-3 font-medium text-[#1c1c1e]">
+
+                                    <input
+                                        type="checkbox"
+                                        class="rounded border-gray-300 text-[#6F0049] focus:ring-[#6F0049] cursor-pointer">
+
+                                    <span class="text-[#6e6e73] font-semibold min-w-[36px]">
+                                        #005
+                                    </span>
+
+                                    <span>
+                                        Revisão desenhos CPFBNR
+                                    </span>
+
+                                </div>
+
+                                <div>
+                                    Isadora Cabral dos Santos
+                                </div>
+
+                                <div class="flex items-center gap-2">
+
+                                    <span class="w-2.5 h-2.5 rounded-full bg-[#6F0049]"></span>
+
+                                    <span>
+                                        Alto
+                                    </span>
+
+                                </div>
+
+                                <div class="text-xs text-[#6e6e73]">
+                                    06/08/2026
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </section>
+
+                </section>
+
+            </div>
+
+        </main>
+
+    </div>
+
+
+    <!-- =====================================================
+         SCRIPTS
+    ====================================================== -->
+
+    <script>
+
+        // =====================================================
+        // CALENDÁRIO
+        // =====================================================
+
+        function gerarCalendario() {
+
+            const hoje = new Date();
+
+            const anoAtual = hoje.getFullYear();
+
+            const mesAtual = hoje.getMonth();
+
+            const diaAtual = hoje.getDate();
+
+
+            const meses = [
+                'janeiro',
+                'fevereiro',
+                'março',
+                'abril',
+                'maio',
+                'junho',
+                'julho',
+                'agosto',
+                'setembro',
+                'outubro',
+                'novembro',
+                'dezembro'
+            ];
+
+
+            const mesAnoElem =
+                document.getElementById('cal-month-year');
+
+
+            if (mesAnoElem) {
+
+                mesAnoElem.textContent =
+                    `${meses[mesAtual]} de ${anoAtual}`;
+
+            }
+
+
+            const primeiroDiaSemana =
+                new Date(
+                    anoAtual,
+                    mesAtual,
+                    1
+                ).getDay();
+
+
+            const totalDiasNoMes =
+                new Date(
+                    anoAtual,
+                    mesAtual + 1,
+                    0
+                ).getDate();
+
+
+            const gridDias =
+                document.getElementById('cal-days-grid');
+
+
+            if (!gridDias) return;
+
+
+            gridDias.innerHTML = '';
+
+
+            // ESPAÇOS ANTES DO PRIMEIRO DIA
+
+            for (
+                let i = 0;
+                i < primeiroDiaSemana;
+                i++
+            ) {
+
+                const spanVazio =
+                    document.createElement('span');
+
+                gridDias.appendChild(spanVazio);
+
+            }
+
+
+            // DIAS DO MÊS
+
+            for (
+                let dia = 1;
+                dia <= totalDiasNoMes;
+                dia++
+            ) {
+
+                const spanDia =
+                    document.createElement('span');
+
+
+                spanDia.textContent = dia;
+
+
+                // DESTACA O DIA ATUAL
+
+                if (dia === diaAtual) {
+
+                    spanDia.className =
+                        "bg-[#6F0049] text-white rounded-full flex items-center justify-center w-5 h-5 mx-auto font-medium";
+
+                }
+
+
+                gridDias.appendChild(spanDia);
+
+            }
+
+        }
+
+
+        // =====================================================
+        // ABAS
+        // =====================================================
+
+        function inicializarAbas() {
+
+            document
+                .querySelectorAll('.tab-btn')
+                .forEach(button => {
+
+                    button.addEventListener(
+                        'click',
+                        () => {
+
+                            document
+                                .querySelectorAll('.tab-btn')
+                                .forEach(btn => {
+
+                                    btn.classList.remove(
+                                        'text-[#6F0049]'
+                                    );
+
+                                    btn.classList.add(
+                                        'text-[#1c1c1e]'
+                                    );
+
+
+                                    const line =
+                                        btn.querySelector(
+                                            '.tab-line'
+                                        );
+
+
+                                    if (line) {
+
+                                        line.classList.add(
+                                            'hidden'
+                                        );
+
+                                    }
+
+                                });
+
+
+                            button.classList.remove(
+                                'text-[#1c1c1e]'
+                            );
+
+
+                            button.classList.add(
+                                'text-[#6F0049]'
+                            );
+
+
+                            const activeLine =
+                                button.querySelector(
+                                    '.tab-line'
+                                );
+
+
+                            if (activeLine) {
+
+                                activeLine.classList.remove(
+                                    'hidden'
+                                );
+
+                            }
+
+                        }
+                    );
+
+                });
+
+        }
+
+
+        // =====================================================
+        // CARREGAR NOVAS ATIVIDADES
+        // =====================================================
+
+        function carregarAtividadesNovas() {
+
+            const container =
+                document.getElementById(
+                    'tabela-minhas-atividades'
+                );
+
+
+            if (!container) return;
+
+
+            const atividadesSalvas =
+                JSON.parse(
+                    localStorage.getItem(
+                        'atividades_novas'
+                    ) || '[]'
+                );
+
+
+            const coresPrioridade = {
+
+                'Alta':
+                    'bg-[#6F0049]',
+
+                'Urgente':
+                    'bg-[#6F0049]',
+
+                'Média':
+                    'bg-[#54565B]',
+
+                'Baixa':
+                    'bg-[#AEB0B7]'
+
+            };
+
+
+            // ATIVIDADES NOVAS
+
+            atividadesSalvas.forEach(atv => {
+
+                const cor =
+                    coresPrioridade[atv.prioridade]
+                    || 'bg-[#54565B]';
+
+
+                // FORMATA DATA
+
+                let dataFormatada =
+                    atv.dataVencimento
+                    || 'Sem data';
+
+
+                if (dataFormatada.includes('-')) {
+
+                    const partes =
+                        dataFormatada.split('-');
+
+
+                    dataFormatada =
+                        `${partes[2]}/${partes[1]}/${partes[0]}`;
+
+                }
+
+
+                // USA O CÓDIGO SALVO NA CRIAÇÃO
+
+                const codigo =
+                    atv.codigo || '#---';
+
+
+                // CRIA LINHA
+
+                const row =
+                    document.createElement('div');
+
+
+                row.className =
+                    "grid grid-cols-[2fr_1.5fr_1fr_1fr] items-center p-3.5 px-4 text-xs xl:text-sm text-[#3a3a3c] hover:bg-gray-50 transition-colors";
+
+
+                row.innerHTML = `
+
+                    <div class="flex items-center gap-3 font-medium text-[#1c1c1e]">
+
+                        <input
+                            type="checkbox"
+                            class="rounded border-gray-300 text-[#6F0049] focus:ring-[#6F0049] cursor-pointer">
+
+                        <span class="text-[#6e6e73] font-semibold min-w-[36px]">
+                            ${codigo}
+                        </span>
+
+                        <span>
+                            ${atv.titulo}
+                        </span>
+
+                    </div>
+
+
+                    <div>
+                        ${atv.responsavel || 'Não atribuído'}
+                    </div>
+
+
+                    <div class="flex items-center gap-2">
+
+                        <span
+                            class="w-2.5 h-2.5 rounded-full ${cor}">
+                        </span>
+
+                        <span>
+                            ${atv.prioridade || 'Sem prioridade'}
+                        </span>
+
+                    </div>
+
+
+                    <div class="text-xs text-[#6e6e73]">
+                        ${dataFormatada}
+                    </div>
+
+                `;
+
+
+                container.appendChild(row);
+
+            });
+
+        }
+
+
+        // =====================================================
+        // INICIALIZAÇÃO
+        // =====================================================
+
+        document.addEventListener(
+            'DOMContentLoaded',
+            () => {
+
+                gerarCalendario();
+
+                inicializarAbas();
+
+                carregarAtividadesNovas();
+
+            }
+        );
+
+    </script>
+
+</body>
+
+</html>
