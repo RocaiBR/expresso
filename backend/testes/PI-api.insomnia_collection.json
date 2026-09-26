@@ -1,0 +1,247 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2026-09-01T12:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v8.0.0",
+  "resources": [
+    {
+      "_id": "wrk_piapi",
+      "_type": "workspace",
+      "parentId": null,
+      "name": "PI API - Projeto de Extensao",
+      "description": "Testes da API do Projeto Integrador (Node.js + Express + MySQL).",
+      "scope": "collection"
+    },
+    {
+      "_id": "env_piapi",
+      "_type": "environment",
+      "parentId": "wrk_piapi",
+      "name": "Base Environment",
+      "data": {
+        "baseUrl": "http://localhost:3000"
+      },
+      "dataPropertyOrder": {
+        "&": ["baseUrl"]
+      },
+      "metaSortKey": 1,
+      "isPrivate": false
+    },
+    {
+      "_id": "fld_status",
+      "_type": "request_group",
+      "parentId": "wrk_piapi",
+      "name": "00 - Status",
+      "metaSortKey": -100
+    },
+    {
+      "_id": "fld_usuarios",
+      "_type": "request_group",
+      "parentId": "wrk_piapi",
+      "name": "01 - Usuarios",
+      "metaSortKey": -90
+    },
+    {
+      "_id": "fld_tarefas",
+      "_type": "request_group",
+      "parentId": "wrk_piapi",
+      "name": "02 - Tarefas",
+      "metaSortKey": -80
+    },
+    {
+      "_id": "fld_erros",
+      "_type": "request_group",
+      "parentId": "wrk_piapi",
+      "name": "03 - Casos de erro",
+      "metaSortKey": -70
+    },
+    {
+      "_id": "req_raiz",
+      "_type": "request",
+      "parentId": "fld_status",
+      "name": "GET / (API no ar)",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/",
+      "body": {},
+      "headers": [],
+      "metaSortKey": -100
+    },
+    {
+      "_id": "req_health",
+      "_type": "request",
+      "parentId": "fld_status",
+      "name": "GET /health (testa o banco)",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/health",
+      "body": {},
+      "headers": [],
+      "description": "Esperado 200 com banco: conectado.",
+      "metaSortKey": -99
+    },
+    {
+      "_id": "req_usu_post",
+      "_type": "request",
+      "parentId": "fld_usuarios",
+      "name": "POST /usuarios",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/usuarios",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Icaro\",\n  \"email\": \"icaro@pi.com\",\n  \"senha\": \"123456\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "metaSortKey": -90
+    },
+    {
+      "_id": "req_usu_list",
+      "_type": "request",
+      "parentId": "fld_usuarios",
+      "name": "GET /usuarios",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/usuarios",
+      "body": {},
+      "headers": [],
+      "metaSortKey": -89
+    },
+    {
+      "_id": "req_usu_id",
+      "_type": "request",
+      "parentId": "fld_usuarios",
+      "name": "GET /usuarios/1",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/usuarios/1",
+      "body": {},
+      "headers": [],
+      "metaSortKey": -88
+    },
+    {
+      "_id": "req_tar_post",
+      "_type": "request",
+      "parentId": "fld_tarefas",
+      "name": "POST /tarefas",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"Levantamento de requisitos\",\n  \"descricao\": \"Mapear fontes de dados do sistema\",\n  \"responsavel\": \"Icaro\",\n  \"usuario_id\": 1,\n  \"status\": \"em andamento\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "metaSortKey": -80
+    },
+    {
+      "_id": "req_tar_list",
+      "_type": "request",
+      "parentId": "fld_tarefas",
+      "name": "GET /tarefas",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/tarefas",
+      "body": {},
+      "headers": [],
+      "metaSortKey": -79
+    },
+    {
+      "_id": "req_tar_filtro",
+      "_type": "request",
+      "parentId": "fld_tarefas",
+      "name": "GET /tarefas?status=pendente",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/tarefas?status=pendente",
+      "body": {},
+      "headers": [],
+      "parameters": [
+        { "name": "status", "value": "pendente" }
+      ],
+      "metaSortKey": -78
+    },
+    {
+      "_id": "req_tar_id",
+      "_type": "request",
+      "parentId": "fld_tarefas",
+      "name": "GET /tarefas/1",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/tarefas/1",
+      "body": {},
+      "headers": [],
+      "metaSortKey": -77
+    },
+    {
+      "_id": "req_tar_put",
+      "_type": "request",
+      "parentId": "fld_tarefas",
+      "name": "PUT /tarefas/1",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/tarefas/1",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"status\": \"concluido\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "metaSortKey": -76
+    },
+    {
+      "_id": "req_tar_del",
+      "_type": "request",
+      "parentId": "fld_tarefas",
+      "name": "DELETE /tarefas/1",
+      "method": "DELETE",
+      "url": "{{ _.baseUrl }}/tarefas/1",
+      "body": {},
+      "headers": [],
+      "metaSortKey": -75
+    },
+    {
+      "_id": "req_feriados",
+      "_type": "request",
+      "parentId": "fld_tarefas",
+      "name": "GET /feriados/2026 (API externa)",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/feriados/2026",
+      "body": {},
+      "headers": [],
+      "metaSortKey": -74
+    },
+    {
+      "_id": "req_erro_400",
+      "_type": "request",
+      "parentId": "fld_erros",
+      "name": "POST /tarefas sem titulo (400)",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"descricao\": \"tarefa sem titulo\"\n}"
+      },
+      "headers": [
+        { "name": "Content-Type", "value": "application/json" }
+      ],
+      "metaSortKey": -70
+    },
+    {
+      "_id": "req_erro_404",
+      "_type": "request",
+      "parentId": "fld_erros",
+      "name": "GET /tarefas/9999 (404)",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/tarefas/9999",
+      "body": {},
+      "headers": [],
+      "metaSortKey": -69
+    },
+    {
+      "_id": "req_erro_rota",
+      "_type": "request",
+      "parentId": "fld_erros",
+      "name": "GET /rota-inexistente (404)",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/rota-inexistente",
+      "body": {},
+      "headers": [],
+      "metaSortKey": -68
+    }
+  ]
+}

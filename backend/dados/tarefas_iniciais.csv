@@ -1,0 +1,7 @@
+titulo,descricao,responsavel,status
+Levantamento de requisitos,Mapear fontes de dados e regras do sistema,Icaro,concluido
+Modelagem do banco de dados,Criar modelo conceitual e logico,Icaro,concluido
+Configuracao do ambiente,Setup do Node.js e conexao com MySQL,Equipe,concluido
+Criacao das rotas da API,Endpoints de tarefas e usuarios,Equipe,em andamento
+Integracao com API externa,Consumir API de feriados nacionais,Equipe,pendente
+Testes com Postman e Insomnia,Validar todas as rotas criadas,Equipe,pendente

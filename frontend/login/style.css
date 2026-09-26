@@ -1,0 +1,308 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+}
+
+.pagina {
+    width: 100%;
+    height: 100%;
+    display: flex;
+}
+
+.lado-esquerdo{
+    width: 50%;
+    height: 100%;
+}
+
+.lado-esquerdo img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+
+.lado-direito {
+    width: 50%;
+    height: 100%;
+    background-color: #6F0049;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* CAIXA DE LOGIN */
+
+.login-box{
+    width: 380px;
+    height: 520px;
+    padding:  40px 35px;
+    background-color: #f4e8f0;
+    border-radius: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.18);
+}
+
+/* LOGO DESTAQUE */
+.logo {
+    width: 100%;
+    max-width: 260px;
+    height: auto;
+    display: block;
+    margin: 0 auto 30px auto;
+}
+
+/* FORMULÁRIO */
+
+form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.campo{
+    width: 100%;
+    margin-bottom: 18px;
+    text-align: left;
+}
+
+.campo label{
+    display: block;
+    font-size: 13px;
+    color: #333;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+/* INPUTS ESTILO PILL */
+
+.campo input{
+    width: 100%;
+    height: 46px;
+    padding: 0 20px;
+    border: 1px solid #6F0049;
+    border-radius: 25px;
+    background: transparent;
+    outline: none;
+    font-size: 14px;
+}
+
+.campo input:focus{
+    border: 2px solid #6F0049;
+}
+
+/* MENSAGEM DE ERRO CENTRALIZADA E MAIOR */
+
+#mensagem-erro{
+    display: none; 
+    color: #d60000;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    margin-top: -2px;
+    margin-bottom: 18px;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+#mensagem-erro span{
+    display: inline-flex;
+    width: 18px;
+    height: 18px;
+    justify-content: center;
+    align-items: center;
+    border: 1.5px solid #d60000;
+    border-radius: 50%;
+    margin-right: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+/* BOTÃO ESTILIZADO */
+
+button {
+    width: 100%;
+    height: 46px;
+    border: none;
+    border-radius: 25px;
+    background-color: #6F0049;
+    color: white;
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: 0.2s;
+    margin-top: 10px;
+}
+
+button:hover {
+    background-color: #5a003a;
+}
+
+/* TELA DE CARREGAMENTO */
+
+.loading{
+    position: fixed;
+    inset: 0;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(111, 0, 73, 0.88);
+    z-index: 1000;
+}
+
+.loading-conteudo{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.cup-area{
+    position: relative;
+    width: 145px;
+    height: 190px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.steam{
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    width: 78px;
+    transform: translateX(-50%);
+    overflow: visible;
+    z-index: 1;
+}
+
+.steam-shape{
+    fill:url(#steamGradient);
+    opacity: 0;
+    transform-box: fill-box;
+    will-change: transform, opacity;
+    -webkit-animation: rise 2.4s linear infinite;
+    animation: rise 2.4s linear infinite;
+}
+
+@-webkit-keyframes rise{
+    0% {
+        opacity: 0;
+        transform: translateY(18px) scale(0.8, 0.9); 
+    }
+    20%{
+        opacity: 0.9;
+    }
+    55% {
+        opacity: 1;
+        transform: translateY(-12px) scale(1.05, 1.12);
+    }
+    85% {
+        opacity: 0.2;
+    }
+    100%{
+        opacity: 0;
+        transform: translateY(-34px) scale(1.2, 1.35);
+    }
+}
+
+@keyframes rise{
+0% {
+        opacity: 0;
+        transform: translateY(18px) scale(0.8, 0.9); 
+    }
+    20%{
+        opacity: 0.9;
+    }
+    55% {
+        opacity: 1;
+        transform: translateY(-12px) scale(1.05, 1.12);
+    }
+    85% {
+        opacity: 0.2;
+    }
+    100%{
+        opacity: 0;
+        transform: translateY(-34px) scale(1.2, 1.35);
+    }
+}
+
+.cup-image{
+    position: relative;
+    z-index: 2;
+    display: block;
+    width: 145px;
+    height: auto;
+    object-fit: contain;
+    user-select: none;
+    -webkit-user-drag: none;
+    filter: brightness(0) invert(1);
+}
+
+.loading-text{
+    margin-top: 25px;
+    color: white;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.85;
+}
+
+.dots{
+    display: inline-block;
+    width: 20px;
+    text-align: left;
+}
+
+/* RESPONSIVIDADE */
+
+@media (max-height: 850px){
+    .login-box{
+        width: 350px;
+        height: 480px;
+        padding: 30px 25px;
+    }
+
+    .logo{
+        max-width: 220px;
+        margin-bottom: 20px;
+    }
+
+    .campo{
+        margin-bottom: 14px;
+    }
+
+    .campo input, button{
+        height: 42px;
+    }
+}
+
+@media (max-width: 900px){
+    .lado-esquerdo{
+        display: none;
+    }
+
+    .lado-direito{
+        width: 100%;
+    }
+
+    .login-box{
+        width: 88%;
+        max-width: 380px;
+    }
+}

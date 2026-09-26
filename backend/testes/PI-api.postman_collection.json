@@ -1,0 +1,235 @@
+{
+  "info": {
+    "name": "PI API - Projeto de Extensao",
+    "description": "Colecao de testes da API do Projeto Integrador (Node.js + Express + MySQL). Atividade de 01/09/2026 - Prof. Nivaldo. Importe em File > Import e rode as requisicoes na ordem.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - Status da API",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/",
+          "host": ["{{baseUrl}}"],
+          "path": [""]
+        },
+        "description": "Verifica se o servidor Express esta no ar. Esperado: 200."
+      },
+      "response": []
+    },
+    {
+      "name": "01 - Health (testa o banco)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["health"]
+        },
+        "description": "Prova que a API conectou no MySQL. Esperado: 200 com banco: conectado."
+      },
+      "response": []
+    },
+    {
+      "name": "02 - Criar usuario (POST)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Icaro\",\n  \"email\": \"icaro@pi.com\",\n  \"senha\": \"123456\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/usuarios",
+          "host": ["{{baseUrl}}"],
+          "path": ["usuarios"]
+        },
+        "description": "Esperado: 201 Created."
+      },
+      "response": []
+    },
+    {
+      "name": "03 - Listar usuarios (GET)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/usuarios",
+          "host": ["{{baseUrl}}"],
+          "path": ["usuarios"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "04 - Buscar usuario por id (GET)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/usuarios/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["usuarios", "1"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "05 - Criar tarefa (POST)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titulo\": \"Levantamento de requisitos\",\n  \"descricao\": \"Mapear fontes de dados do sistema\",\n  \"responsavel\": \"Icaro\",\n  \"usuario_id\": 1,\n  \"status\": \"em andamento\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/tarefas",
+          "host": ["{{baseUrl}}"],
+          "path": ["tarefas"]
+        },
+        "description": "Esperado: 201 Created com o id gerado pelo MySQL."
+      },
+      "response": []
+    },
+    {
+      "name": "06 - Listar tarefas (GET)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/tarefas",
+          "host": ["{{baseUrl}}"],
+          "path": ["tarefas"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "07 - Filtrar tarefas por status (GET)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/tarefas?status=pendente",
+          "host": ["{{baseUrl}}"],
+          "path": ["tarefas"],
+          "query": [{ "key": "status", "value": "pendente" }]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "08 - Buscar tarefa por id (GET)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/tarefas/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["tarefas", "1"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "09 - Atualizar tarefa (PUT)",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"status\": \"concluido\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/tarefas/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["tarefas", "1"]
+        },
+        "description": "Atualizacao parcial: basta enviar o campo que mudou."
+      },
+      "response": []
+    },
+    {
+      "name": "10 - Excluir tarefa (DELETE)",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/tarefas/1",
+          "host": ["{{baseUrl}}"],
+          "path": ["tarefas", "1"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "11 - ERRO 400: tarefa sem titulo",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"descricao\": \"tarefa sem titulo\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/tarefas",
+          "host": ["{{baseUrl}}"],
+          "path": ["tarefas"]
+        },
+        "description": "Testa a validacao. Esperado: 400 Bad Request."
+      },
+      "response": []
+    },
+    {
+      "name": "12 - ERRO 404: tarefa inexistente",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/tarefas/9999",
+          "host": ["{{baseUrl}}"],
+          "path": ["tarefas", "9999"]
+        },
+        "description": "Esperado: 404 Not Found."
+      },
+      "response": []
+    },
+    {
+      "name": "13 - API externa: feriados",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/feriados/2026",
+          "host": ["{{baseUrl}}"],
+          "path": ["feriados", "2026"]
+        },
+        "description": "Integracao com a BrasilAPI (fonte de dados externa)."
+      },
+      "response": []
+    }
+  ]
+}

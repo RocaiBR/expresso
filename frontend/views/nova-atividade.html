@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Nova Atividade - Pinhalense</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="w-full h-screen overflow-hidden bg-[#f2f2f4] font-sans antialiased">
+
+    <!-- =====================================================
+         NAVBAR
+    ====================================================== -->
+
+    <header class="w-full h-[56px] bg-[#6F0049] flex items-center justify-between px-6 shrink-0">
+
+        <!-- LOGO -->
+        <div class="logo-area">
+            <img
+                src="../assets/img/logobranca.png"
+                alt="Pinhalense"
+                class="h-[28px] w-auto block"
+            >
+        </div>
+
+        <!-- PARTE DIREITA DA NAVBAR -->
+        <div class="flex items-center gap-[18px] text-white">
+
+            <!-- NOTIFICAÇÕES -->
+            <button
+                class="bg-transparent border-0 text-white cursor-pointer flex items-center hover:opacity-80 transition-opacity"
+                type="button"
+                aria-label="Notificações"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="18"
+                    height="18"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                >
+                    <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2M8 1.918l-.797.161A4 4 0 0 0 4 6c0 .628-.134 2.197-.459 3.742-.16.767-.376 1.566-.663 2.258h10.244c-.287-.692-.502-1.49-.663-2.258C12.134 8.197 12 6.628 12 6a4 4 0 0 0-3.203-3.92zM14.22 12c.223.447.481.801.78 1H1c.299-.199.557-.553.78-1C2.68 10.2 3 6.88 3 6c0-2.42 1.72-4.44 4.005-4.901a1 1 0 1 1 1.99 0A5 5 0 0 1 13 6c0 .88.32 4.2 1.22 6">
+                    </path>
+                </svg>
+            </button>
+
+            <!-- USUÁRIO -->
+            <button
+                class="bg-transparent border-0 text-white cursor-pointer flex items-center hover:opacity-80 transition-opacity"
+                type="button"
+                aria-label="Usuário"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    fill="currentColor"
+                    viewBox="0 0 16 16"
+                >
+                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0">
+                    </path>
+
+                    <path
+                        fill-rule="evenodd"
+                        d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"
+                    >
+                    </path>
+                </svg>
+            </button>
+
+        </div>
+    </header>
+
+
+    <!-- =====================================================
+         ESTRUTURA PRINCIPAL
+    ====================================================== -->
+
+    <div class="w-full h-[calc(100vh-56px)] flex">
+
+        <!-- =================================================
+             SIDEBAR
+        ================================================== -->
+
+        <aside class="w-[200px] h-full bg-white border-r border-[#e2e2e7] p-3 py-5 shrink-0">
+
+            <nav class="flex flex-col gap-[6px]">
+
+                <!-- HOME -->
+                <a
+                    href="home.html"
+                    class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#3a3a3c] text-sm font-medium no-underline hover:bg-[#f4e8f0] transition-colors"
+                >
+                    <span class="flex items-center justify-center">
+
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            viewBox="0 0 16 16"
+                        >
+                            <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4z">
+                            </path>
+                        </svg>
+
+                    </span>
+
+                    <span>Home</span>
+                </a>
+
+
+                <!-- ATIVIDADES -->
+                <a
+                    href="atividades.html"
+                    class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] bg-[#e8d0e0] text-[#1c1c1e] text-sm font-semibold no-underline"
+                >
+                    <span class="flex items-center justify-center text-[#1c1c1e]">
+
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            viewBox="0 0 16 16"
+                        >
+                            <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5">
+                            </path>
+
+                            <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z">
+                            </path>
+                        </svg>
+
+                    </span>
+
+                    <span>Atividades</span>
+                </a>
+
+
+                <!-- RELATÓRIOS -->
+                <a
+                    href="relatorios.html"
+                    class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#3a3a3c] text-sm font-medium no-underline hover:bg-[#f4e8f0] transition-colors"
+                >
+                    <span class="flex items-center justify-center">
+
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            viewBox="0 0 16 16"
+                        >
+                            <path d="M1 11a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1z">
+                            </path>
+                        </svg>
+
+                    </span>
+
+                    <span>Relatórios</span>
+                </a>
+
+
+                <!-- USUÁRIOS -->
+                <a
+                    href="usuarios.html"
+                    class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#3a3a3c] text-sm font-medium no-underline hover:bg-[#f4e8f0] transition-colors"
+                >
+                    <span class="flex items-center justify-center">
+
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            fill="currentColor"
+                            viewBox="0 0 16 16"
+                        >
+                            <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0M8 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4">
+                            </path>
+
+                            <path d="M8.256 14a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1">
+                            </path>
+                        </svg>
+
+                    </span>
+
+                    <span>Usuários</span>
+                </a>
+
+            </nav>
+
+        </aside>
+
+
+        <!-- =================================================
+             CONTEÚDO PRINCIPAL
+        ================================================== -->
+
+        <main
+            class="flex-1 h-full bg-[#f2f2f4] p-5 xl:p-6 2xl:p-8 overflow-y-auto flex flex-col gap-4"
+        >
+
+            <!-- BOTÃO VOLTAR -->
+            <div>
+
+                <a
+                    href="atividades.html"
+                    class="inline-flex items-center gap-1.5 text-[#6F0049] font-semibold text-sm hover:underline no-underline"
+                >
+                    <span>&lt; Voltar</span>
+                </a>
+
+            </div>
+
+
+            <!-- TÍTULO E SUBTÍTULO -->
+            <div>
+
+                <h1 class="text-xl font-bold text-[#1c1c1e]">
+                    Nova Atividade
+                </h1>
+
+                <p class="text-xs text-[#6e6e73] mt-0.5">
+                    Preencha as informações para cadastrar uma nova atividade
+                </p>
+
+            </div>
+
+
+            <!-- FORMULÁRIO -->
+            <form
+                id="formNovaAtividade"
+                class="w-full flex flex-col gap-6"
+            >
+
+                <!-- GRID DE 2 COLUNAS -->
+                <div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 items-start">
+
+
+                    <!-- =========================================
+                         COLUNA ESQUERDA
+                    ========================================== -->
+
+                    <div class="flex flex-col gap-6">
+
+
+                        <!-- CARD 1 -->
+                        <div
+                            class="bg-white border border-[#d1d1d6] rounded-xl p-5 shadow-sm flex flex-col gap-4"
+                        >
+
+                            <h2 class="text-sm font-bold text-[#1c1c1e]">
+                                Informações básicas
+                            </h2>
+
+
+                            <!-- TÍTULO -->
+                            <div class="flex flex-col gap-1.5">
+
+                                <label
+                                    for="titulo"
+                                    class="text-xs font-semibold text-[#3a3a3c]"
+                                >
+                                    Título da atividade
+                                    <span class="text-red-500">*</span>
+                                </label>
+
+                                <input
+                                    type="text"
+                                    id="titulo"
+                                    required
+                                    class="w-full border border-[#d1d1d6] rounded-lg p-2.5 text-xs xl:text-sm outline-none focus:border-[#6F0049] transition-colors bg-white"
+                                >
+
+                            </div>
+
+
+                            <!-- DESCRIÇÃO -->
+                            <div class="flex flex-col gap-1.5">
+
+                                <label
+                                    for="descricao"
+                                    class="text-xs font-semibold text-[#3a3a3c]"
+                                >
+                                    Descrição
+                                    <span class="text-red-500">*</span>
+                                </label>
+
+                                <textarea
+                                    id="descricao"
+                                    required
+                                    rows="4"
+                                    class="w-full border border-[#d1d1d6] rounded-lg p-2.5 text-xs xl:text-sm outline-none focus:border-[#6F0049] transition-colors bg-white resize-none"
+                                ></textarea>
+
+                            </div>
+
+
+                            <!-- ARQUIVOS -->
+                            <div class="flex flex-col gap-2">
+
+                                <label class="text-xs font-semibold text-[#3a3a3c]">
+                                    Arquivos
+                                    <span class="text-red-500">*</span>
+                                </label>
+
+                                <div class="flex flex-col gap-2.5">
+
+                                    <div>
+
+                                        <label
+                                            class="border border-[#d1d1d6] hover:bg-gray-50 text-[#3a3a3c] rounded-full px-4 py-2 text-xs font-medium inline-flex items-center gap-2 cursor-pointer transition-colors shadow-sm"
+                                        >
+
+                                            <span>
+                                                Adicionar arquivos
+                                            </span>
+
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                width="14"
+                                                height="14"
+                                                fill="currentColor"
+                                                viewBox="0 0 16 16"
+                                            >
+                                                <path d="M4.5 3a2.5 2.5 0 0 1 5 0v9a1.5 1.5 0 0 1-3 0V4a.5.5 0 0 1 1 0v8a.5.5 0 0 0 1 0V3a1.5 1.5 0 1 0-3 0v9a2.5 2.5 0 0 0 5 0V5a.5.5 0 0 1 1 0v7a3.5 3.5 0 1 1-7 0z"/>
+                                            </svg>
+
+                                            <input
+                                                type="file"
+                                                id="arquivos"
+                                                multiple
+                                                class="hidden"
+                                            >
+
+                                        </label>
+
+                                    </div>
+
+
+                                    <!-- LISTA DE ARQUIVOS -->
+                                    <div
+                                        id="lista-arquivos"
+                                        class="flex flex-wrap gap-2"
+                                    ></div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- CARD 2 -->
+                        <div
+                            class="bg-white border border-[#d1d1d6] rounded-xl p-5 shadow-sm flex flex-col gap-4"
+                        >
+
+                            <h2 class="text-sm font-bold text-[#1c1c1e]">
+                                Atribuições
+                            </h2>
+
+
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+
+                                <!-- RESPONSÁVEL -->
+                                <div class="flex flex-col gap-1.5">
+
+                                    <label
+                                        for="responsavel"
+                                        class="text-xs font-semibold text-[#3a3a3c]"
+                                    >
+                                        Responsável
+                                        <span class="text-red-500">*</span>
+                                    </label>
+
+                                    <select
+                                        id="responsavel"
+                                        required
+                                        class="w-full border border-[#d1d1d6] rounded-lg p-2.5 text-xs xl:text-sm text-[#3a3a3c] outline-none focus:border-[#6F0049] bg-white cursor-pointer"
+                                    >
+
+                                        <option
+                                            value=""
+                                            disabled
+                                            selected
+                                        >
+                                            Selecione um responsável
+                                        </option>
+
+                                        <option value="Isadora Cabral dos Santos">
+                                            Isadora Cabral dos Santos
+                                        </option>
+
+                                        <option value="Maiko Fernandes">
+                                            Maiko Fernandes
+                                        </option>
+
+                                        <option value="Ícaro Guminiak de Godoy">
+                                            Ícaro Guminiak de Godoy
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <!-- PARTICIPANTES -->
+                                <div class="flex flex-col gap-1.5">
+
+                                    <label
+                                        for="participantes"
+                                        class="text-xs font-semibold text-[#3a3a3c]"
+                                    >
+                                        Participantes
+                                    </label>
+
+                                    <select
+                                        id="participantes"
+                                        class="w-full border border-[#d1d1d6] rounded-lg p-2.5 text-xs xl:text-sm text-[#3a3a3c] outline-none focus:border-[#6F0049] bg-white cursor-pointer"
+                                    >
+
+                                        <option
+                                            value=""
+                                            disabled
+                                            selected
+                                        >
+                                            Selecione participantes (opcional)
+                                        </option>
+
+                                        <option value="Isadora Cabral dos Santos">
+                                            Isadora Cabral dos Santos
+                                        </option>
+
+                                        <option value="Maiko Fernandes">
+                                            Maiko Fernandes
+                                        </option>
+
+                                        <option value="Ícaro Guminiak de Godoy">
+                                            Ícaro Guminiak de Godoy
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =========================================
+                         COLUNA DIREITA
+                    ========================================== -->
+
+                    <div class="flex flex-col gap-6">
+
+
+                        <!-- CARD 3 -->
+                        <div
+                            class="bg-white border border-[#d1d1d6] rounded-xl p-5 shadow-sm flex flex-col gap-4"
+                        >
+
+                            <h2 class="text-sm font-bold text-[#1c1c1e]">
+                                Data e prazo
+                            </h2>
+
+
+                            <!-- DATA DE INÍCIO -->
+                            <div class="flex flex-col gap-1.5">
+
+                                <label
+                                    for="dataInicio"
+                                    class="text-xs font-semibold text-[#3a3a3c]"
+                                >
+                                    Data de início
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="dataInicio"
+                                    readonly
+                                    class="w-full border border-[#d1d1d6] rounded-lg p-2.5 text-xs xl:text-sm text-[#3a3a3c] outline-none bg-[#f2f2f4] cursor-not-allowed"
+                                >
+
+                            </div>
+
+
+                            <!-- DATA DE VENCIMENTO -->
+                            <div class="flex flex-col gap-1.5">
+
+                                <label
+                                    for="dataVencimento"
+                                    class="text-xs font-semibold text-[#3a3a3c]"
+                                >
+                                    Data de vencimento
+                                </label>
+
+                                <input
+                                    type="date"
+                                    id="dataVencimento"
+                                    class="w-full border border-[#d1d1d6] rounded-lg p-2.5 text-xs xl:text-sm text-[#3a3a3c] outline-none focus:border-[#6F0049] bg-white"
+                                >
+
+                            </div>
+
+
+                            <!-- PRIORIDADE -->
+                            <div class="flex flex-col gap-2 pt-1">
+
+                                <label class="text-xs font-semibold text-[#3a3a3c]">
+                                    Prioridade
+                                </label>
+
+                                <div class="flex flex-col gap-2">
+
+                                    <label
+                                        class="inline-flex items-center gap-2.5 text-xs text-[#3a3a3c] cursor-pointer"
+                                    >
+
+                                        <input
+                                            type="radio"
+                                            name="prioridade"
+                                            value="Alta"
+                                            checked
+                                            class="w-4 h-4 accent-[#6F0049] cursor-pointer"
+                                        >
+
+                                        <span>Alta</span>
+
+                                    </label>
+
+
+                                    <label
+                                        class="inline-flex items-center gap-2.5 text-xs text-[#3a3a3c] cursor-pointer"
+                                    >
+
+                                        <input
+                                            type="radio"
+                                            name="prioridade"
+                                            value="Média"
+                                            class="w-4 h-4 accent-[#6F0049] cursor-pointer"
+                                        >
+
+                                        <span>Média</span>
+
+                                    </label>
+
+
+                                    <label
+                                        class="inline-flex items-center gap-2.5 text-xs text-[#3a3a3c] cursor-pointer"
+                                    >
+
+                                        <input
+                                            type="radio"
+                                            name="prioridade"
+                                            value="Baixa"
+                                            class="w-4 h-4 accent-[#6F0049] cursor-pointer"
+                                        >
+
+                                        <span>Baixa</span>
+
+                                    </label>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- BOTÕES -->
+                        <div class="flex items-center justify-end gap-3 mt-2">
+
+                            <a
+                                href="atividades.html"
+                                class="border border-[#6F0049] text-[#6F0049] hover:bg-[#6F0049]/5 font-medium text-xs xl:text-sm px-6 py-2.5 rounded-lg transition-colors no-underline"
+                            >
+                                Cancelar
+                            </a>
+
+                            <button
+                                type="submit"
+                                class="bg-[#6F0049] hover:bg-[#560039] text-white font-medium text-xs xl:text-sm px-6 py-2.5 rounded-lg shadow-sm transition-colors cursor-pointer"
+                            >
+                                Salvar Atividade
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </main>
+
+    </div>
+
+
+    <!-- =====================================================
+         SCRIPT
+    ====================================================== -->
+
+    <script>
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            /* =================================================
+               DATA DE INÍCIO = DATA DE HOJE
+            ================================================= */
+
+            const campoDataInicio =
+                document.getElementById('dataInicio');
+
+            const hoje = new Date();
+
+            const ano =
+                hoje.getFullYear();
+
+            const mes =
+                String(hoje.getMonth() + 1)
+                    .padStart(2, '0');
+
+            const dia =
+                String(hoje.getDate())
+                    .padStart(2, '0');
+
+            campoDataInicio.value =
+                `${ano}-${mes}-${dia}`;
+
+
+            /* =================================================
+               GERENCIAMENTO DE ARQUIVOS
+            ================================================= */
+
+            const inputArquivos =
+                document.getElementById('arquivos');
+
+            const listaArquivosContainer =
+                document.getElementById('lista-arquivos');
+
+            const form =
+                document.getElementById('formNovaAtividade');
+
+            const dt =
+                new DataTransfer();
+
+
+            inputArquivos.addEventListener('change', (e) => {
+
+                for (let file of e.target.files) {
+
+                    dt.items.add(file);
+
+                }
+
+                inputArquivos.files =
+                    dt.files;
+
+                renderizarListaArquivos();
+
+            });
+
+
+            function renderizarListaArquivos() {
+
+                listaArquivosContainer.innerHTML = '';
+
+
+                Array.from(inputArquivos.files)
+                    .forEach((file, index) => {
+
+                        const tag =
+                            document.createElement('div');
+
+                        tag.className =
+                            'flex items-center gap-2 bg-[#f2f2f4] border border-[#d1d1d6] text-[#1c1c1e] text-xs px-3 py-1.5 rounded-lg shadow-sm';
+
+
+                        tag.innerHTML = `
+
+                            <span class="truncate max-w-[180px] font-medium">
+                                ${file.name}
+                            </span>
+
+                            <button
+                                type="button"
+                                class="btn-remover text-[#6e6e73] hover:text-red-600 transition-colors cursor-pointer flex items-center justify-center"
+                                data-index="${index}"
+                            >
+
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="14"
+                                    height="14"
+                                    fill="currentColor"
+                                    viewBox="0 0 16 16"
+                                >
+                                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                                </svg>
+
+                            </button>
+
+                        `;
+
+
+                        tag
+                            .querySelector('.btn-remover')
+                            .addEventListener('click', (ev) => {
+
+                                const idx =
+                                    ev.currentTarget
+                                        .getAttribute('data-index');
+
+                                dt.items.remove(idx);
+
+                                inputArquivos.files =
+                                    dt.files;
+
+                                renderizarListaArquivos();
+
+                            });
+
+
+                        listaArquivosContainer
+                            .appendChild(tag);
+
+                    });
+
+            }
+
+
+            /* =================================================
+               GERA O PRÓXIMO CÓDIGO
+            ================================================= */
+
+            function gerarProximoCodigo() {
+
+                const atividadesNovas =
+                    JSON.parse(
+                        localStorage.getItem('atividades_novas') || '[]'
+                    );
+
+
+                /*
+                    As atividades que já existem
+                    vão de #001 até #015.
+                */
+
+                let maiorNumero = 15;
+
+
+                /*
+                    Procura o maior código entre
+                    as atividades criadas pelo usuário.
+                */
+
+                atividadesNovas.forEach(atividade => {
+
+                    if (atividade.codigo) {
+
+                        const numero =
+                            parseInt(
+                                atividade.codigo.replace('#', ''),
+                                10
+                            );
+
+
+                        if (
+                            !isNaN(numero) &&
+                            numero > maiorNumero
+                        ) {
+
+                            maiorNumero = numero;
+
+                        }
+
+                    }
+
+                });
+
+
+                /*
+                    Cria o próximo número.
+                    Exemplo:
+                    #015 -> #016
+                    #016 -> #017
+                    #017 -> #018
+                */
+
+                const proximoNumero =
+                    maiorNumero + 1;
+
+
+                return '#' +
+                    String(proximoNumero)
+                        .padStart(3, '0');
+
+            }
+
+
+            /* =================================================
+               ENVIO DO FORMULÁRIO
+            ================================================= */
+
+            form.addEventListener('submit', (e) => {
+
+                e.preventDefault();
+
+
+                /* ---------------------------------------------
+                   PEGA OS VALORES
+                --------------------------------------------- */
+
+                const titulo =
+                    document
+                        .getElementById('titulo')
+                        .value;
+
+                const descricao =
+                    document
+                        .getElementById('descricao')
+                        .value;
+
+                const responsavel =
+                    document
+                        .getElementById('responsavel')
+                        .value;
+
+                const participantes =
+                    document
+                        .getElementById('participantes')
+                        .value;
+
+                const dataInicio =
+                    document
+                        .getElementById('dataInicio')
+                        .value;
+
+                const dataVencimento =
+                    document
+                        .getElementById('dataVencimento')
+                        .value;
+
+                const prioridade =
+                    document
+                        .querySelector(
+                            'input[name="prioridade"]:checked'
+                        )
+                        .value;
+
+
+                /* ---------------------------------------------
+                   CRIA A NOVA ATIVIDADE
+                --------------------------------------------- */
+
+                const novaAtividade = {
+
+                    codigo:
+                        gerarProximoCodigo(),
+
+                    titulo:
+                        titulo,
+
+                    descricao:
+                        descricao,
+
+                    responsavel:
+                        responsavel,
+
+                    participantes:
+                        participantes,
+
+                    dataInicio:
+                        dataInicio,
+
+                    dataVencimento:
+                        dataVencimento,
+
+                    prioridade:
+                        prioridade
+
+                };
+
+
+                /* ---------------------------------------------
+                   PEGA ATIVIDADES EXISTENTES
+                --------------------------------------------- */
+
+                const atividadesNovas =
+                    JSON.parse(
+                        localStorage.getItem('atividades_novas') || '[]'
+                    );
+
+
+                /* ---------------------------------------------
+                   ADICIONA A NOVA ATIVIDADE
+                --------------------------------------------- */
+
+                atividadesNovas.push(
+                    novaAtividade
+                );
+
+
+                /* ---------------------------------------------
+                   SALVA NO LOCALSTORAGE
+                --------------------------------------------- */
+
+                localStorage.setItem(
+                    'atividades_novas',
+                    JSON.stringify(atividadesNovas)
+                );
+
+
+                /* ---------------------------------------------
+                   SALVA A ÚLTIMA CRIADA
+                --------------------------------------------- */
+
+                localStorage.setItem(
+                    'ultima_atividade_criada',
+                    JSON.stringify(novaAtividade)
+                );
+
+
+                /* ---------------------------------------------
+                   VAI PARA CONFIRMAÇÃO
+                --------------------------------------------- */
+
+                window.location.href =
+                    'confirmacao.html';
+
+            });
+
+        });
+
+    </script>
+
+</body>
+
+</html>

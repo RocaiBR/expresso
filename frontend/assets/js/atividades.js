@@ -1,0 +1,1 @@
+localStorage.getItem('ultima_atividade_criada')

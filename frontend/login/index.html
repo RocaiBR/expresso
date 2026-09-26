@@ -1,0 +1,189 @@
+<!DOCTYPE HTML>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UFT-8">
+    <meta name"viewport" content="width=device-widths, initial-scale=1.0">
+
+    <title>Login</title>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <!-- PÁGINA DE LOGIN -->
+
+    <main class="pagina">
+
+        <!-- LADO ESQUERDO -->
+        <section class="lado-esquerdo">
+            <img src="img/fundo.png" alt="Café">
+        </section>
+
+        <!-- LADO DIREITO -->
+
+        <section class="lado-direito">
+            <div class="login-box">
+                <img
+                    src="img/logo.png"
+                    class="logo"
+                    alt="Pinhalense"
+                    >
+                       <!-- USUÁRIO -->
+                <div class="campo">
+                    <label for="usuario">
+                        Usuário
+                    </label>
+                    <input
+                    type="text"
+                    id="usuario"
+                    >
+                </div>
+
+                    <!-- SENHA -->
+
+                <div class="campo">
+                    <label for="senha">
+                        Senha
+                    </label>
+                    <input
+                        type="password"
+                        id="senha"
+                    >
+                </div>
+
+                <p id="mensagem-erro">
+                    <span>!</span>
+                    Usuário/Senha incorretos!
+                </p>
+
+                <button type="submit">
+                    LOGIN   
+                </button>
+            </div>
+        </section>
+    </main>
+    <div class="loading" id="loading">
+        <div class="loading-conteudo">
+               <!-- ÁREA DA CANECA + FUMAÇA -->
+            <div class="cup-area">
+               <!-- FUMAÇA -->
+
+               <svg
+                class="steam"
+                viewBox="0 0 100 170"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+                >
+                    <defs>
+                    <!-- Gradiente branco -->
+                     <linearGradient
+                     id="steamGradient"
+                     x1="0"
+                     y1="1"
+                     x2="0"
+                     y2="0"
+                    >
+                        <stop
+                            offset="0%"
+                            stop-color="#ffffff"
+                            stop-opacity="0.95"
+                            />
+                            <stop
+                                offset="35%"
+                                stop-color="#ffffff"
+                                stop-opacity="0.70"
+                            />
+                            <stop 
+                                offset="65%"
+                                stop-color="#ffffff"
+                                stop-opacity="0.30"
+                            />
+                            <stop
+                                offeset="100%"
+                                stop-color="#ffffff"
+                                stop-opacity="0"
+                            />
+                        </linearGradient>
+                    </defs>
+                    <!-- FUMAÇA EM COBRINHA -->
+                     <path
+                        class="steam-shape"
+                        d="M48 165
+                           C25 150,
+                            20 137,
+                            38 125
+                            
+                           C58 112,
+                            82 113,
+                            82 96
+                            
+                           C82 82,
+                            55 78,
+                            38 70
+                           
+                           C20 62,
+                            20 49,
+                            37 42
+                           
+                           C53 35,
+                            72 38,
+                            72 25
+                           
+                           C72 17,
+                            64 10,
+                            61 2
+                           
+                           L72 0
+                           
+                           C70 10,
+                            82 17,
+                            80 28
+                           
+                           C78 43,
+                            52 45,
+                            43 51
+                            
+                           C34 57,
+                            48 62,
+                            68 67
+                           
+                           C91 73,
+                            98 88,
+                            88 103
+                            
+                           C78 119,
+                            52 119,
+                            43 129
+
+                           C35 138,
+                            47 149,
+                            61 165
+
+                           Z 
+                        "
+                    />    
+                </svg>
+
+                <!-- CANECA -->
+
+                <img
+                    src="img/cafe.png"
+                    class="cup-image"
+                    alt="Café"
+                >
+                
+                <!-- TEXTO -->
+
+                <div class="loading-text">
+                    Carregando <span class="dots">.</span>
+                </div>
+            </div>
+        </div>
+    </div> 
+        <script src="script.js"></script>
+
+</body>
+
+</html>
