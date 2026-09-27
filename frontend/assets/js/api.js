@@ -34,6 +34,22 @@ const Api = (function () {
                 method: "PUT",
                 body: JSON.stringify(campos)
             });
+        },
+
+        listarUsuarios: function () {
+            return requisitar("/usuarios");
+        },
+        buscarUsuario: function (id) {
+            return requisitar("/usuarios/" + encodeURIComponent(id));
+        },
+        criarUsuario: function (usuario) {
+            return requisitar("/usuarios", { method: "POST", body: JSON.stringify(usuario) });
+        },
+        atualizarUsuario: function (id, campos) {
+            return requisitar("/usuarios/" + encodeURIComponent(id), {
+                method: "PUT",
+                body: JSON.stringify(campos)
+            });
         }
     };
 })();
@@ -55,7 +71,7 @@ const Formato = {
     },
 
     prioridade: {
-        // valor do banco
+        // valor do banco -> texto na tela
         rotulo: { baixo: "Baixo", medio: "Médio", alto: "Alto", urgente: "Urgente" },
         cor: {
             baixo: "bg-[#AEB0B7]",
@@ -63,7 +79,7 @@ const Formato = {
             alto: "bg-[#6F0049]",
             urgente: "bg-[#6F0049]"
         },
-        // texto do formulário
+        // texto do formulário -> valor do banco
         doFormulario: { "Baixa": "baixo", "Média": "medio", "Alta": "alto", "Urgente": "urgente" }
     },
 
@@ -75,6 +91,10 @@ const Formato = {
             "cancelado": "Cancelada"
         }
     },
+
+    // Usuários: valor do banco -> texto na tela
+    setores: { "PCP": "PCP", "ENGENHARIA": "ENGENHARIA" },
+    funcoes: { "usuario": "USUÁRIO COMUM", "gestor": "GESTOR" },
 
     rotuloPrioridade: function (valor) {
         return this.prioridade.rotulo[valor] || "Médio";
@@ -122,7 +142,7 @@ function montarLinhaTarefa(tarefa, opcoes) {
         <div class="text-xs text-[#6e6e73]">${Formato.data(tarefa.data_conclusao)}</div>
     `;
 
-    // Marcar o checkbox conclui a tarefa no banco
+    // Marcar o checkbox conclui a tarefa no banco 
     const checkbox = linha.querySelector('input[type="checkbox"]');
     checkbox.addEventListener("click", async function (evento) {
         evento.stopPropagation();
@@ -169,8 +189,9 @@ function filtrarTarefas(tarefas, filtro) {
     return ativas.filter(function (t) { return t.status === filtro; });
 }
 
-/* Pesquisa  */
+/*  Pesquisa  */
 
+// "Reunião" -> "reuniao" 
 function normalizarTexto(valor) {
     return String(valor == null ? "" : valor)
         .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
