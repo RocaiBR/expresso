@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const API_URL = "http://localhost:3000";
 
 document.addEventListener("DOMContentLoaded", async function () {
@@ -156,3 +157,6 @@ function configurarAbas() {
         });
     });
 }
+=======
+localStorage.getItem('ultima_atividade_criada')
+>>>>>>> 900620a2d20b83983f9fa941f4a8f1c8b387e67b
