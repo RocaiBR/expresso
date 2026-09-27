@@ -1,60 +1,96 @@
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 
-async function main (){
-    console.log(`testando API em ${BASE_URL}\n`);
+let falhas = 0;
+function conferir(condicao, mensagem) {
+    console.log(`   ${condicao ? '✔' : '✘'} ${mensagem}`);
+    if (!condicao) falhas++;
+}
 
-    console.log('1) Verificando /health...');
+async function main() {
+    console.log(`Testando API em ${BASE_URL}\n`);
+
+    // Servidor e banco
+    console.log('1) GET /health');
     const health = await fetch(`${BASE_URL}/health`).then((r) => r.json()).catch(() => null);
-
     if (!health || health.banco !== 'conectado') {
-        console.error(' 𓏵 Servidor ou banco não responderam como esperando. 𓏵');
-        console.error(' ⚠ Confira se  " npm run dev " está rodando e se o MuSQL está ligado ⚠');
-        console.error(' Resposta recebida:', health);
-        process.exit(1);
+        console.error('   ✘ Servidor ou banco não responderam.');
+        console.error('     Confira se "npm run dev" está rodando e se o MySQL está ligado.');
+        console.error('     Resposta recebida:', health);
+        process.exitCode = 1;
+        return;
     }
+    console.log(`   ✔ API no ar, banco "${health.banco_nome}" conectado\n`);
 
-    console.log(` ✔ API no ar, banco "${health.banco_nome}" conectado\n`);
+    // Criar tarefa com todos os campos que o formulário envia
+    const tituloTeste = `Teste automático ${new Date().toISOString()}`;
+    const enviada = {
+        titulo: tituloTeste,
+        descricao: 'Registro criado pelo script de teste.',
+        responsavel: 'script-teste',
+        participantes: 'Equipe de teste',
+        status: 'pendente',
+        prioridade: 'alto',
+        data_inicio: '2026-10-01',
+        data_conclusao: '2026-10-15',
+    };
 
-    const titulosTeste = `Teste automático ${new Date().toISOString()}`;
-    console.log (`2) Eviando POST /tarefas com título: "${tituloTeste}"...`);
-
-    const respotaCriar = await fetch(`${BASE_URL}/tarefas`,{
+    console.log('2) POST /tarefas');
+    const respostaCriar = await fetch(`${BASE_URL}/tarefas`, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            titulo: titulosTeste,
-            descricao: 'Registro criado pelo script de teste.',
-            responsavel: 'script-teste',
-            status: 'pendente',
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(enviada),
     });
 
-    if(respotaCriar.status !== 201){
-        console.error(`𓏵 Esperava status 201 e recebi ${respostaCriar.status}.𓏵`);
-        console.error(await respostaCriar.text());
-        process.exit(1);    
+    if (respostaCriar.status !== 201) {
+        console.error(`   ✘ Esperava status 201 e recebi ${respostaCriar.status}.`);
+        console.error('    ', await respostaCriar.text());
+        process.exitCode = 1;
+        return;
     }
+    const criada = await respostaCriar.json();
+    console.log(`   ✔ Servidor aceitou e devolveu id ${criada.id}\n`);
 
-    const tarefaCriada = await respostaCriar.json();
-    console.log (`✔ Servidor aceitou os dados e devolveu id ${tarefaCriada.id}.\n`);
+    // Ler de volta do banco e comparar campo por campo
+    console.log(`3) GET /tarefas/${criada.id}`);
+    const salva = await fetch(`${BASE_URL}/tarefas/${criada.id}`).then((r) => r.json());
+    const data = (valor) => (valor ? String(valor).split('T')[0] : valor);
 
-    console.log(`3) Buscando Get /tarefas/${tarefaCriada.id} para conferir se foi gravado ...`);
-    const respostaBuscar = await fetch (`${BASE_URL}/tarefas/${tarefaCriada.id}`);
-    const tarefaSalva = await respostaBuscar.json();
+    conferir(salva.titulo === enviada.titulo, 'titulo gravado');
+    conferir(salva.responsavel === enviada.responsavel, 'responsavel gravado');
+    conferir(salva.participantes === enviada.participantes, 'participantes gravado');
+    conferir(salva.prioridade === enviada.prioridade, `prioridade gravada (veio: ${salva.prioridade})`);
+    conferir(data(salva.data_inicio) === enviada.data_inicio, `data_inicio gravada (veio: ${salva.data_inicio})`);
+    conferir(data(salva.data_conclusao) === enviada.data_conclusao, `data_conclusao gravada (veio: ${salva.data_conclusao})`);
+    console.log('');
 
-    if (respostaBuscar.status === 200 && tarefaSalva.titulo === tituloTeste) {
-        console.log('✔ Dados confirmados no banco:', tarefaSala);
-        console.log('\n ✮ Teste passou: o servidor está recebendo e gravando dados novos corretamente.\n');
-        console.log(`Obs: essa tarefa de teste (id ${tarefaCriada.id}) ficou salva no banco.`);
-        console.log(`Se quiser remover, rode:curl -X DELETE ${BASE_URL}/tarefas/${tarefaCriada.id}`)
+    // Atualizar status (o que os botões Concluir/Cancelar fazem)
+    console.log(`4) PUT /tarefas/${criada.id}  { status: "concluido" }`);
+    const respostaPut = await fetch(`${BASE_URL}/tarefas/${criada.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'concluido' }),
+    });
+    const atualizada = await respostaPut.json();
+    conferir(respostaPut.status === 200 && atualizada.tarefa && atualizada.tarefa.status === 'concluido', 'status atualizado');
+    console.log('');
+
+    // Apagar a tarefa de teste para não sujar o banco
+    console.log(`5) DELETE /tarefas/${criada.id}`);
+    const respostaDelete = await fetch(`${BASE_URL}/tarefas/${criada.id}`, { method: 'DELETE' });
+    conferir(respostaDelete.status === 200, 'tarefa de teste removida');
+    console.log('');
+
+    if (falhas === 0) {
+        console.log('✮ Tudo certo: o backend está recebendo, gravando e atualizando tarefas no MySQL.');
     } else {
-        console.log('𓏵 Não encotrei de volta os dados esperando no banco.');
-        console.log('Resposta:',tarefaSalva);
-        process.exit(1);
+        console.log(`✘ ${falhas} verificação(ões) falharam.`);
+        console.log('  Se foram prioridade/datas/participantes: falta trocar o tarefaController.js');
+        console.log('  ou criar as colunas data_inicio e participantes no banco.');
+        process.exitCode = 1;
     }
 }
 
 main().catch((erro) => {
-    console.error('𓏵 Erro inesperado ao rodar o teste:', erro.menssage);
-    process.exit(1);
-})
+    console.error('✘ Erro inesperado ao rodar o teste:', erro.message);
+    process.exitCode = 1;
+});

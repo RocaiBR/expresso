@@ -9,7 +9,10 @@ const pool = mysql.createPool({
     database: process.env.DB_NAME,
     waitForConnections: true,
     connectionLimit: 10,
-    queueLimit: 0
+    queueLimit: 0,
+    dateStrings: ['DATE']
+
+    // Nota: Devolve colunas DATE como texto 'AAAA-MM-DD' (evita o dia mudar por causa do fuso)
 });
 
 async function testarConexao() {

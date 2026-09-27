@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Detalhes da Atividade - Pinhalense</title>
 
     <!-- Tailwind CSS -->
@@ -13,24 +11,19 @@
 
 <body class="w-full min-h-screen bg-[#f2f2f4] font-sans antialiased">
 
-    <!-- =====================================================
-         NAVBAR
-    ====================================================== -->
+    <!--NAVBAR-->
 
     <header class="w-full h-[56px] bg-[#6F0049] flex items-center justify-between px-6">
-
+       
         <!-- LOGO -->
-
+        
         <div class="flex items-center">
-
             <img
                 src="../assets/img/logobranca.png"
                 alt="Pinhalense"
                 class="h-[28px] w-auto block"
             >
-
         </div>
-
 
         <!-- PARTE DIREITA -->
 
@@ -59,7 +52,6 @@
 
             </button>
 
-
             <!-- USUÁRIO -->
 
             <button
@@ -84,49 +76,34 @@
                         d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8m8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1"
                     >
                     </path>
-
                 </svg>
-
-                <span class="text-sm">
+                <span class="text-sm" id="nome-logado">
                     Usuário
                 </span>
-
                 <span class="text-xs">
                     ▼
                 </span>
-
             </button>
-
         </div>
-
     </header>
 
-
-
-    <!-- =====================================================
-         ESTRUTURA PRINCIPAL
-    ====================================================== -->
+    <!--ESTRUTURA PRINCIPAL-->
 
     <div class="w-full min-h-[calc(100vh-56px)] flex">
 
-
-        <!-- =================================================
-             SIDEBAR
-        ================================================== -->
+        <!--SIDEBAR-->
 
         <aside class="w-[200px] min-h-[calc(100vh-56px)] bg-white border-r border-[#e2e2e7] p-3 py-5 shrink-0">
-
             <nav class="flex flex-col gap-[6px]">
-
+                
                 <!-- HOME -->
 
                 <a
                     href="home.html"
+                    data-pagina="home.html"
                     class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#3a3a3c] text-sm font-medium no-underline hover:bg-[#f4e8f0] transition-colors"
                 >
-
                     <span class="flex items-center justify-center">
-
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="16"
@@ -134,31 +111,23 @@
                             fill="currentColor"
                             viewBox="0 0 16 16"
                         >
-
                             <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4z">
                             </path>
-
                         </svg>
-
                     </span>
-
                     <span>
                         Home
                     </span>
-
                 </a>
-
-
 
                 <!-- ATIVIDADES -->
 
                 <a
                     href="atividades.html"
+                    data-pagina="atividades.html"
                     class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] bg-[#e8d0e0] text-[#1c1c1e] text-sm font-semibold no-underline"
                 >
-
                     <span class="flex items-center justify-center">
-
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="16"
@@ -166,34 +135,25 @@
                             fill="currentColor"
                             viewBox="0 0 16 16"
                         >
-
                             <path d="M5.5 7a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1zM5 9.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5m0 2a.5.5 0 0 1 .5-.5h2a.5.5 0 0 1 0 1h-2a.5.5 0 0 1-.5-.5">
                             </path>
-
                             <path d="M9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4.5zm0 1v2A1.5 1.5 0 0 0 11 4.5h2V14a1.5 1.5 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z">
                             </path>
-
                         </svg>
-
                     </span>
-
                     <span>
                         Atividades
                     </span>
-
                 </a>
-
-
 
                 <!-- RELATÓRIOS -->
 
                 <a
                     href="relatorios.html"
+                    data-pagina="relatorios.html"
                     class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#3a3a3c] text-sm font-medium no-underline hover:bg-[#f4e8f0] transition-colors"
                 >
-
                     <span class="flex items-center justify-center">
-
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="16"
@@ -201,31 +161,23 @@
                             fill="currentColor"
                             viewBox="0 0 16 16"
                         >
-
                             <path d="M1 11a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1z">
                             </path>
-
                         </svg>
-
                     </span>
-
                     <span>
                         Relatórios
                     </span>
-
                 </a>
-
-
 
                 <!-- USUÁRIOS -->
 
                 <a
                     href="usuarios.html"
+                    data-pagina="usuarios.html"
                     class="flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-[#3a3a3c] text-sm font-medium no-underline hover:bg-[#f4e8f0] transition-colors"
                 >
-
                     <span class="flex items-center justify-center">
-
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="16"
@@ -233,84 +185,56 @@
                             fill="currentColor"
                             viewBox="0 0 16 16"
                         >
-
                             <path d="M12.5 16a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7m.5-5v1h1a.5.5 0 0 1 0 1h-1v1a.5.5 0 0 1-1 0v-1h-1a.5.5 0 0 1 0-1h1v-1a.5.5 0 0 1 1 0M8 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0M8 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4">
                             </path>
-
                             <path d="M8.256 14a4.5 4.5 0 0 1-.229-1.004H3c.001-.246.154-.986.832-1.664C4.484 10.68 5.711 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1">
                             </path>
-
                         </svg>
-
                     </span>
-
                     <span>
                         Usuários
                     </span>
-
                 </a>
-
             </nav>
-
         </aside>
 
-
-
-        <!-- =================================================
-             CONTEÚDO
-        ================================================== -->
+        <!--CONTEÚDO-->
 
         <main class="flex-1 min-h-[calc(100vh-56px)] bg-[#f2f2f4] p-5 xl:p-6 2xl:p-8 overflow-y-auto">
-
 
             <!-- CABEÇALHO -->
 
             <div class="mb-6">
-
                 <div class="flex items-center gap-3 mb-2">
-
                     <a
                         href="atividades.html"
                         class="text-[#6F0049] text-sm no-underline hover:underline"
                     >
                         Atividades
                     </a>
-
                     <span class="text-[#8e8e93]">
                         /
                     </span>
-
                     <span class="text-[#6e6e73] text-sm">
                         Detalhes
                     </span>
-
                 </div>
-
-
                 <h1
                     id="tituloPagina"
                     class="text-2xl xl:text-3xl font-bold text-[#1c1c1e]"
                 >
                     Detalhes da atividade
                 </h1>
-
             </div>
 
-
-
-            <!-- =================================================
-                 CARD PRINCIPAL
-            ================================================== -->
+            <!--CARD PRINCIPAL-->
 
             <section class="w-full max-w-[1000px] bg-white border border-[#d1d1d6] rounded-[15px] shadow-sm p-6 xl:p-8">
-
 
                 <!-- CÓDIGO + STATUS -->
 
                 <div class="flex items-center justify-between gap-4 mb-6">
-
                     <div>
-
                         <span
                             id="codigoAtividade"
                             class="text-sm font-semibold text-[#6e6e73]"
@@ -327,7 +251,6 @@
 
                     </div>
 
-
                     <!-- STATUS -->
 
                     <span
@@ -336,39 +259,30 @@
                     >
                         Pendente
                     </span>
-
                 </div>
-
 
                 <!-- LINHA -->
 
                 <div class="border-t border-[#e5e5e7] mb-6">
                 </div>
 
-
                 <!-- INFORMAÇÕES -->
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
 
-
                     <!-- RESPONSÁVEL -->
 
                     <div>
-
                         <label class="block text-xs font-semibold text-[#6e6e73] mb-1">
                             Responsável
                         </label>
-
                         <div
                             id="responsavelAtividade"
                             class="w-full min-h-[42px] bg-[#f8f8fa] border border-[#e1e1e5] rounded-[10px] px-3 py-2.5 text-sm text-[#1c1c1e] flex items-center"
                         >
                             -
                         </div>
-
                     </div>
-
-
 
                     <!-- PRIORIDADE -->
 
@@ -377,102 +291,74 @@
                         <label class="block text-xs font-semibold text-[#6e6e73] mb-1">
                             Prioridade
                         </label>
-
                         <div
                             id="prioridadeAtividade"
                             class="w-full min-h-[42px] bg-[#f8f8fa] border border-[#e1e1e5] rounded-[10px] px-3 py-2.5 text-sm text-[#1c1c1e] flex items-center"
                         >
                             -
                         </div>
-
                     </div>
-
-
 
                     <!-- DATA DE INÍCIO -->
 
                     <div>
-
                         <label class="block text-xs font-semibold text-[#6e6e73] mb-1">
                             Data de início
                         </label>
-
                         <div
                             id="dataInicioAtividade"
                             class="w-full min-h-[42px] bg-[#f8f8fa] border border-[#e1e1e5] rounded-[10px] px-3 py-2.5 text-sm text-[#1c1c1e] flex items-center"
                         >
                             -
                         </div>
-
                     </div>
-
-
 
                     <!-- DATA DE VENCIMENTO -->
 
                     <div>
-
                         <label class="block text-xs font-semibold text-[#6e6e73] mb-1">
                             Data de vencimento
                         </label>
-
                         <div
                             id="dataVencimentoAtividade"
                             class="w-full min-h-[42px] bg-[#f8f8fa] border border-[#e1e1e5] rounded-[10px] px-3 py-2.5 text-sm text-[#1c1c1e] flex items-center"
                         >
                             -
                         </div>
-
                     </div>
-
-
 
                     <!-- PARTICIPANTES -->
 
                     <div class="md:col-span-2">
-
                         <label class="block text-xs font-semibold text-[#6e6e73] mb-1">
                             Participantes
                         </label>
-
                         <div
                             id="participantesAtividade"
                             class="w-full min-h-[42px] bg-[#f8f8fa] border border-[#e1e1e5] rounded-[10px] px-3 py-2.5 text-sm text-[#1c1c1e] flex items-center"
                         >
                             Nenhum participante informado
                         </div>
-
                     </div>
-
-
 
                     <!-- DESCRIÇÃO -->
 
                     <div class="md:col-span-2">
-
                         <label class="block text-xs font-semibold text-[#6e6e73] mb-1">
                             Descrição
                         </label>
-
                         <div
                             id="descricaoAtividade"
                             class="w-full min-h-[120px] bg-[#f8f8fa] border border-[#e1e1e5] rounded-[10px] px-3 py-3 text-sm text-[#1c1c1e] whitespace-pre-wrap"
                         >
                             Nenhuma descrição informada.
                         </div>
-
                     </div>
-
                 </div>
 
-
-
-                <!-- =================================================
-                     BOTÕES
-                ================================================== -->
+                <!-- BOTÕES -->
 
                 <div class="flex flex-wrap justify-end gap-3 mt-8 pt-6 border-t border-[#e5e5e7]">
-
 
                     <!-- VOLTAR -->
 
@@ -482,9 +368,7 @@
                     >
                         Voltar
                     </a>
-
-
-
+                  
                     <!-- CANCELAR -->
 
                     <button
@@ -495,8 +379,6 @@
                         Cancelar atividade
                     </button>
 
-
-
                     <!-- CONCLUIR -->
 
                     <button
@@ -506,98 +388,57 @@
                     >
                         Concluir atividade
                     </button>
-
                 </div>
-
             </section>
-
         </main>
-
     </div>
 
-
-
-    <!-- =====================================================
-         JAVASCRIPT
-    ====================================================== -->
+    <!-- JAVASCRIPT -->
 
     <script>
 
-        // =====================================================
         // PEGA O CÓDIGO DA URL
-        // =====================================================
 
         function pegarCodigo() {
-
             const parametros = new URLSearchParams(
                 window.location.search
             );
-
             return parametros.get("codigo");
         }
 
-
-
-        // =====================================================
         // FORMATA DATA
-        // =====================================================
-
+        
         function formatarData(data) {
-
             if (!data) {
                 return "-";
             }
-
             if (!data.includes("-")) {
                 return data;
             }
-
             const partes = data.split("-");
-
             if (partes.length !== 3) {
                 return data;
             }
-
             return `${partes[2]}/${partes[1]}/${partes[0]}`;
         }
 
-
-
-        // =====================================================
         // PEGA AS ATIVIDADES SALVAS
-        // =====================================================
 
         function pegarAtividadesSalvas() {
-
             try {
-
                 return JSON.parse(
                     localStorage.getItem("atividades_novas") || "[]"
                 );
-
             } catch (erro) {
-
-                console.error(
-                    "Erro ao ler atividades:",
-                    erro
-                );
-
+                console.error("Erro ao ler atividades:", erro);
                 return [];
-
             }
-
         }
 
-
-
-        // =====================================================
         // ATIVIDADES FIXAS
-        // =====================================================
 
         const atividadesFixas = {
-
             "#001": {
-
                 codigo: "#001",
                 titulo: "Reunião com equipe de Projetos",
                 responsavel: "Isadora Cabral dos Santos",
@@ -607,12 +448,9 @@
                 prioridade: "Alta",
                 descricao: "Reunião com a equipe de Projetos.",
                 status: "Concluída"
-
             },
 
-
             "#002": {
-
                 codigo: "#002",
                 titulo: "Entrega do planejamento semanal",
                 responsavel: "Maiko Fernandes",
@@ -622,12 +460,9 @@
                 prioridade: "Média",
                 descricao: "Entrega do planejamento semanal.",
                 status: "Concluída"
-
             },
 
-
             "#004": {
-
                 codigo: "#004",
                 titulo: "Marcar reunião",
                 responsavel: "Ícaro Guminiak de Godoy",
@@ -637,12 +472,9 @@
                 prioridade: "Baixa",
                 descricao: "Marcar reunião.",
                 status: "Pendente"
-
             },
 
-
             "#005": {
-
                 codigo: "#005",
                 titulo: "Revisão desenhos CPFBNR",
                 responsavel: "Isadora Cabral dos Santos",
@@ -652,140 +484,83 @@
                 prioridade: "Alta",
                 descricao: "Revisão dos desenhos CPFBNR.",
                 status: "Pendente"
-
             }
-
         };
 
-
-
-        // =====================================================
         // CARREGA ATIVIDADE
-        // =====================================================
 
         function carregarAtividade() {
-
             const codigo = pegarCodigo();
-
-
-            // -------------------------------------------------
-            // SE NÃO TIVER CÓDIGO
-            // -------------------------------------------------
-
             if (!codigo) {
-
-                mostrarAtividadeNaoEncontrada(
-                    "Código da atividade não informado."
-                );
-
+                mostrarAtividadeNaoEncontrada("Código da atividade não informado.");
                 return;
-
             }
 
-
-            // -------------------------------------------------
             // PRIMEIRO PROCURA NAS ATIVIDADES NOVAS
-            // -------------------------------------------------
 
             const atividadesSalvas =
                 pegarAtividadesSalvas();
-
-
             const atividadeNova =
                 atividadesSalvas.find(
                     atividade =>
                         atividade.codigo === codigo
                 );
-
-
             if (atividadeNova) {
-
                 preencherAtividade(
                     atividadeNova
                 );
-
                 verificarBotoes(
                     atividadeNova
                 );
-
                 return;
-
             }
 
-
-            // -------------------------------------------------
             // DEPOIS PROCURA NAS ATIVIDADES FIXAS
-            // -------------------------------------------------
 
             const atividadeFixa =
                 atividadesFixas[codigo];
-
-
             if (atividadeFixa) {
-
                 preencherAtividade(
                     atividadeFixa
                 );
-
                 verificarBotoes(
                     atividadeFixa
                 );
-
                 return;
-
             }
 
-
-            // -------------------------------------------------
             // NÃO ENCONTROU
-            // -------------------------------------------------
 
             mostrarAtividadeNaoEncontrada(
                 "Atividade não encontrada."
             );
-
         }
 
-
-
-        // =====================================================
         // PREENCHE OS DADOS DA ATIVIDADE
-        // =====================================================
 
         function preencherAtividade(atividade) {
-
             document.getElementById(
                 "codigoAtividade"
             ).textContent =
                 atividade.codigo || "#---";
-
-
             document.getElementById(
                 "tituloAtividade"
             ).textContent =
                 atividade.titulo || "Sem título";
-
-
             document.getElementById(
                 "tituloPagina"
             ).textContent =
                 atividade.titulo || "Detalhes da atividade";
-
-
             document.getElementById(
                 "responsavelAtividade"
             ).textContent =
                 atividade.responsavel ||
                 "Não atribuído";
-
-
             document.getElementById(
                 "prioridadeAtividade"
             ).textContent =
                 atividade.prioridade ||
                 "Não informada";
-
-
             document.getElementById(
                 "dataInicioAtividade"
             ).textContent =
@@ -793,360 +568,219 @@
                     atividade.dataInicio
                 );
 
-
             document.getElementById(
                 "dataVencimentoAtividade"
             ).textContent =
                 formatarData(
                     atividade.dataVencimento
                 );
-
-
             document.getElementById(
                 "participantesAtividade"
             ).textContent =
                 atividade.participantes ||
                 "Nenhum participante informado";
-
-
             document.getElementById(
                 "descricaoAtividade"
             ).textContent =
                 atividade.descricao ||
                 "Nenhuma descrição informada";
 
-
-            // -------------------------------------------------
             // STATUS
-            // -------------------------------------------------
 
             const status =
                 atividade.status ||
                 "Pendente";
-
-
             atualizarVisualStatus(
                 status
             );
-
         }
 
-
-
-        // =====================================================
         // MOSTRA ATIVIDADE NÃO ENCONTRADA
-        // =====================================================
 
         function mostrarAtividadeNaoEncontrada(mensagem) {
-
             document.getElementById(
                 "codigoAtividade"
             ).textContent =
                 pegarCodigo() || "#---";
-
-
             document.getElementById(
                 "tituloPagina"
             ).textContent =
                 "Atividade não encontrada";
-
-
             document.getElementById(
                 "tituloAtividade"
             ).textContent =
                 "Atividade não encontrada";
-
-
             document.getElementById(
                 "statusAtividade"
             ).textContent =
                 "Não encontrada";
-
-
             document.getElementById(
                 "responsavelAtividade"
             ).textContent =
                 "-";
-
-
             document.getElementById(
                 "prioridadeAtividade"
             ).textContent =
                 "-";
-
-
             document.getElementById(
                 "dataInicioAtividade"
             ).textContent =
                 "-";
-
-
             document.getElementById(
                 "dataVencimentoAtividade"
             ).textContent =
                 "-";
-
-
             document.getElementById(
                 "participantesAtividade"
             ).textContent =
                 "-";
-
-
             document.getElementById(
                 "descricaoAtividade"
             ).textContent =
                 mensagem;
-
-
             document.getElementById(
                 "btnCancelar"
             ).style.display =
                 "none";
-
-
             document.getElementById(
                 "btnConcluir"
             ).style.display =
                 "none";
-
         }
 
-
-
-        // =====================================================
         // ATUALIZA VISUAL DO STATUS
-        // =====================================================
 
         function atualizarVisualStatus(status) {
-
             const elemento =
                 document.getElementById(
                     "statusAtividade"
                 );
-
-
             elemento.textContent =
                 status;
-
-
             elemento.className =
                 "px-4 py-2 rounded-full text-sm font-semibold";
-
-
             if (status === "Concluída") {
-
                 elemento.classList.add(
                     "bg-[#e7e7e9]",
                     "text-[#54565B]"
                 );
-
             }
 
             else if (status === "Cancelada") {
-
                 elemento.classList.add(
                     "bg-[#f4e8f0]",
                     "text-[#6F0049]"
                 );
-
             }
-
             else if (status === "Em andamento") {
-
                 elemento.classList.add(
                     "bg-[#f4e8f0]",
                     "text-[#6F0049]"
                 );
-
             }
-
             else {
-
                 elemento.classList.add(
                     "bg-[#f4e8f0]",
                     "text-[#6F0049]"
                 );
-
             }
-
         }
 
-
-
-        // =====================================================
         // VERIFICA OS BOTÕES DE ACORDO COM O STATUS
-        // =====================================================
 
         function verificarBotoes(atividade) {
-
             const btnCancelar =
                 document.getElementById(
                     "btnCancelar"
                 );
-
             const btnConcluir =
                 document.getElementById(
                     "btnConcluir"
                 );
-
-
             const status =
                 atividade.status ||
                 "Pendente";
-
-
-            // -----------------------------------------------
-            // JÁ CONCLUÍDA
-            // -----------------------------------------------
-
             if (status === "Concluída") {
-
                 btnConcluir.disabled = true;
-
                 btnConcluir.classList.add(
                     "opacity-50",
                     "cursor-not-allowed"
                 );
-
             }
 
-
-            // -----------------------------------------------
             // JÁ CANCELADA
-            // -----------------------------------------------
 
             if (status === "Cancelada") {
-
                 btnCancelar.disabled = true;
-
                 btnCancelar.classList.add(
                     "opacity-50",
                     "cursor-not-allowed"
                 );
-
             }
-
         }
 
-
-
-        // =====================================================
         // ATUALIZA UMA ATIVIDADE NO LOCALSTORAGE
-        // =====================================================
 
         function atualizarStatus(codigo, novoStatus) {
-
             const atividades =
                 pegarAtividadesSalvas();
-
-
             const indice =
                 atividades.findIndex(
                     atividade =>
                         atividade.codigo === codigo
                 );
 
-
-            // -------------------------------------------------
             // ATIVIDADE FIXA
-            // -------------------------------------------------
 
             if (indice === -1) {
-
-                alert(
-                    "Esta atividade fixa não pode ser alterada nesta versão."
-                );
-
+                alert("Esta atividade fixa não pode ser alterada nesta versão.");
                 return false;
-
             }
 
-
-            // -------------------------------------------------
             // ATUALIZA STATUS
-            // -------------------------------------------------
 
             atividades[indice].status =
                 novoStatus;
-
-
             localStorage.setItem(
                 "atividades_novas",
                 JSON.stringify(
                     atividades
                 )
             );
-
-
             return true;
-
         }
 
-
-
-        // =====================================================
         // CANCELAR ATIVIDADE
-        // =====================================================
 
         document
             .getElementById("btnCancelar")
             .addEventListener(
                 "click",
                 function () {
-
                     const codigo =
                         pegarCodigo();
-
-
                     if (!codigo) {
-
                         alert(
                             "Não foi possível identificar a atividade."
                         );
-
                         return;
-
                     }
-
-
                     const confirmar =
-                        confirm(
-                            "Tem certeza que deseja cancelar esta atividade?"
-                        );
-
-
+                        confirm("Tem certeza que deseja cancelar esta atividade?");
                     if (!confirmar) {
-
                         return;
-
                     }
-
-
                     const sucesso =
                         atualizarStatus(
                             codigo,
                             "Cancelada"
                         );
-
-
                     if (!sucesso) {
-
                         return;
-
                     }
-
-
-                    atualizarVisualStatus(
-                        "Cancelada"
-                    );
-
-
+                    atualizarVisualStatus("Cancelada");
                     alert(
-                        "Atividade cancelada com sucesso!"
-                    );
-
-
+                        "Atividade cancelada com sucesso!");
                     const btn =
                         document.getElementById(
                             "btnCancelar"
@@ -1165,92 +799,49 @@
                 }
             );
 
-
-
-        // =====================================================
         // CONCLUIR ATIVIDADE
-        // =====================================================
 
         document
             .getElementById("btnConcluir")
             .addEventListener(
                 "click",
                 function () {
-
                     const codigo =
                         pegarCodigo();
-
-
                     if (!codigo) {
-
-                        alert(
-                            "Não foi possível identificar a atividade."
-                        );
-
+                        alert("Não foi possível identificar a atividade.");
                         return;
-
                     }
-
-
                     const sucesso =
-                        atualizarStatus(
-                            codigo,
-                            "Concluída"
-                        );
-
-
+                        atualizarStatus(codigo,"Concluída");
                     if (!sucesso) {
-
                         return;
-
                     }
+                    atualizarVisualStatus("Concluída");
 
-
-                    atualizarVisualStatus(
-                        "Concluída"
-                    );
-
-
-                    alert(
-                        "Atividade concluída com sucesso!"
-                    );
-
+                    alert("Atividade concluída com sucesso!");
 
                     const btn =
-                        document.getElementById(
-                            "btnConcluir"
-                        );
-
-
+                        document.getElementById("btnConcluir");
                     btn.disabled =
                         true;
-
-
                     btn.classList.add(
                         "opacity-50",
                         "cursor-not-allowed"
                     );
-
                 }
             );
 
-
-
-        // =====================================================
         // INICIALIZAÇÃO
-        // =====================================================
 
         document.addEventListener(
             "DOMContentLoaded",
             function () {
-
                 carregarAtividade();
-
             }
         );
 
     </script>
-
     <script src="../assets/js/sidebar.js"></script>
 </body>
 

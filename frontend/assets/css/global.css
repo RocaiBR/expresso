@@ -224,3 +224,15 @@ tbody tr:hover{
     color: #888;
     font-size: 14px;
 }
+
+/* Botão "Voltar para a home" na página de usuários */
+.topo-esquerda {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.botao-voltar {
+    display: inline-block;
+    text-decoration: none;
+}
