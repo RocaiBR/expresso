@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 
 const { pool, testConnection } = require('./src/config/db');
+const { atualizarEstruturaDoBanco } = require('./src/config/estrutura');
 const { rotaNaoEncontrada, tratadorDeErros } = require('./src/middlewares/errorHandler');
 
 const tarefaRoutes = require('./src/routes/tarefaRoutes');
@@ -55,6 +56,13 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
     console.log(`------------------------------`);
     console.log(`Servidor rodando em http://localhost:${PORT}`);
-    await testConnection();
+    const conectado = await testConnection();
+    if (conectado) {
+        try {
+            await atualizarEstruturaDoBanco();
+        } catch (error) {
+            console.error('[DB] Não foi possível atualizar a estrutura do banco:', error.message);
+        }
+    }
     console.log(`------------------------------`);
 });

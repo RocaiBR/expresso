@@ -1,6 +1,6 @@
 #  Expresso — Projeto Integrador (PI)
 
-Sistema web para controle de fluxo e atividades, com funcionalidades semelhantes ao **Trello** e ao **Fluig**. O projeto é dividido em uma **API REST** (Node.js + Express + MySQL) e um **frontend** em HTML, CSS e JavaScript puro.
+Sistema web para controle de fluxo e atividades, com funcionalidades semelhantes ao **Trello** e ao **Fluig**. O projeto é dividido em uma **API REST** (Node.js + Express + MySQL) e um **frontend** em React (Vite + React Router + Tailwind CSS).
 
 ##  Sobre o projeto
 
@@ -10,9 +10,10 @@ O Expresso permite:
 - Cadastro, edição, listagem e exclusão de **usuários**;
 - Cadastro, edição, listagem e exclusão de **tarefas** (com filtro por status);
 - Consulta de **feriados nacionais** por ano, via integração com a [BrasilAPI](https://brasilapi.com.br/);
-- Importação de tarefas iniciais a partir de um arquivo CSV.
+- Importação de tarefas iniciais a partir de um arquivo CSV;
+- **Relatórios** com evolução do backlog, tempo médio para conclusão, resumo do período (com dias úteis descontando feriados), filtros e exportação em CSV — tudo calculado a partir das tarefas do banco.
 
-> Este é um Projeto Integrador acadêmico (UNIFEOB) e está em desenvolvimento — algumas telas do frontend (dashboard, relatórios, atividades) ainda estão em construção.
+> Este é um Projeto Integrador acadêmico (UNIFEOB) e está em desenvolvimento.
 
 ##  Equipe
 
@@ -25,7 +26,7 @@ O Expresso permite:
 | 25000215    | Vitória Karolina Santos Silva      | Frontend       |
 
 - **Backend** (Node.js, Express, MySQL): Ícaro, Kevin e Vitor.
-- **Frontend** (HTML, CSS, JavaScript): Isadora e Vitória.
+- **Frontend** (React): Isadora e Vitória.
 
 ##  Tecnologias utilizadas
 
@@ -38,7 +39,10 @@ O Expresso permite:
 - [Nodemon](https://www.npmjs.com/package/nodemon) (ambiente de desenvolvimento)
 
 **Frontend**
-- HTML5, CSS3 e JavaScript puro (sem frameworks)
+- [React 19](https://react.dev/) + [Vite](https://vite.dev/)
+- [React Router](https://reactrouter.com/) (navegação entre as telas)
+- [Tailwind CSS 4](https://tailwindcss.com/)
+- [Chart.js](https://www.chartjs.org/) (gráficos da tela de relatórios)
 - Consumo da API via `fetch`
 
 ##  Estrutura do projeto
@@ -73,17 +77,20 @@ expresso/
 │   ├── package.json
 │   └── server.js                      # ponto de entrada da API
 │
-└── frontend/
-    ├── assets/
-    │   ├── css/                       # estilos (global, dashboard, relatórios, usuários)
-    │   └── js/                        # scripts (atividades, auth, relatórios, sidebar, usuários)
-    ├── login/
-    │   ├── index.html
-    │   ├── script.js
-    │   └── style.css
-    └── views/
-        ├── relatorios.html
-        └── usuarios.html
+└── frontend-react/
+    ├── index.html                     # página única (o React monta tudo nela)
+    ├── package.json
+    ├── vite.config.js
+    └── src/
+        ├── main.jsx                   # ponto de entrada
+        ├── App.jsx                    # rotas da aplicação
+        ├── assets/                    # imagens (logo, fundo do login, caneca)
+        ├── services/                  # chamadas à API (fetch)
+        ├── context/                   # usuário logado (AuthContext)
+        ├── hooks/                     # useTarefas (atualização automática)
+        ├── utils/                     # formatações, filtros, pesquisa e cálculos dos relatórios
+        ├── components/                # navbar, sidebar, abas, linhas da tabela, gráfico...
+        └── pages/                     # uma por tela (Login, Home, Atividades...)
 ```
 
 ##  Configuração e instalação
@@ -123,7 +130,9 @@ DB_NAME=nome_do_banco
 
 ### 4. Criar o banco de dados
 
-Crie no MySQL um banco com as tabelas `usuarios` e `tarefas` compatíveis com os campos usados pela API (ex.: `usuarios(id, nome, email, senha, criado_em)` e `tarefas(id, titulo, descricao, responsavel, usuario_id, status)`).
+Crie no MySQL um banco com as tabelas `usuarios` e `tarefas` compatíveis com os campos usados pela API (ex.: `usuarios(id, nome, usuario, email, senha, setor, funcao, ativo, criado_em)` e `tarefas(id, titulo, descricao, responsavel, participantes, usuario_id, status, prioridade, data_inicio, data_conclusao, criado_em)`).
+
+Ao subir, a API cria sozinha as colunas novas que estiverem faltando (veja `backend/src/config/estrutura.js`). Hoje isso vale para `tarefas.finalizado_em`, que guarda o momento em que a tarefa foi concluída ou cancelada e é usada nos relatórios. Tarefas encerradas antes dessa coluna existir ficam sem essa data e não entram no cálculo do backlog nem do tempo médio.
 
 ### 5. (Opcional) Importar tarefas iniciais
 
@@ -143,11 +152,21 @@ npm start       # execução simples
 
 O servidor sobe em `http://localhost:3000` (ou na porta definida em `PORT`).
 
-### 7. Abrir o frontend
+### 7. Rodar o frontend
 
-Abra o arquivo `frontend/login/index.html` diretamente no navegador (ou sirva a pasta `frontend/` com uma extensão como Live Server). A tela de login redireciona para `frontend/views/usuarios.html` após a autenticação.
+Em outra janela do terminal:
 
-> O frontend consome a API a partir de `http://localhost:3000`, então o backend precisa estar em execução.
+```bash
+cd frontend-react
+npm install     # só na primeira vez
+npm run dev
+```
+
+Abra o endereço que aparece no terminal (normalmente `http://localhost:5173`). A tela de login redireciona para a Home após a autenticação.
+
+> O frontend consome a API a partir de `http://localhost:3000`, então o backend precisa estar em execução. Para apontar para outro endereço, crie um arquivo `.env` em `frontend-react/` com `VITE_API_URL=http://outro-endereco:3000`.
+
+Para gerar a versão de produção: `npm run build` (cria a pasta `frontend-react/dist/`).
 
 ##  Endpoints da API
 
@@ -201,9 +220,13 @@ Há também um script auxiliar, `testar_gravacao.js`, para testes de gravação 
 
 ##  Status do frontend
 
-| Tela                      | Situação        |
-|---------------------------|------------------|
-| Login                     | ✅ Implementada   |
-| Usuários                  | ✅ Implementada   |
-| Relatórios                | 🚧 Em construção |
-| Dashboard / Atividades    | 🚧 Em construção |
+| Tela                      | Rota                      | Situação        |
+|---------------------------|---------------------------|------------------|
+| Login                     | `/login`                  | ✅ Implementada   |
+| Home (dashboard)          | `/`                       | ✅ Implementada   |
+| Atividades                | `/atividades`             | ✅ Implementada   |
+| Nova atividade / Detalhes | `/atividades/nova`, `/atividades/:id` | ✅ Implementadas |
+| Usuários                  | `/usuarios`               | ✅ Implementada   |
+| Relatórios                | `/relatorios`             | ✅ Implementada   |
+
+> O frontend original em HTML/CSS/JS puro foi convertido para React. A versão antiga pode ser consultada no histórico do git (commit `Expresso 1.5v`).

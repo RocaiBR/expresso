@@ -9,6 +9,9 @@ const CAMPOS_PERMITIDOS = [
 const STATUS_VALIDOS = ['pendente', 'em andamento', 'concluido', 'cancelado'];
 const PRIORIDADES_VALIDAS = ['baixo', 'medio', 'alto', 'urgente'];
 
+// Status que encerram a tarefa: ao entrar em um deles, "finalizado_em" guarda o momento
+const STATUS_FINAIS = ['concluido', 'cancelado'];
+
 // Converte "" em null
 function vazioParaNulo(valor) {
     if (valor === undefined || valor === null) return null;
@@ -75,18 +78,20 @@ async function criarTarefa(req, res, next) {
         }
         const erro = validar(req.body);
         if (erro) return res.status(400).json({ erro });
+        const statusInicial = status || 'pendente';
+        const finalizadoEm = STATUS_FINAIS.includes(statusInicial) ? 'NOW()' : 'NULL';
         const [resultado] = await pool.query(
             `INSERT INTO tarefas
                 (titulo, descricao, responsavel, participantes, usuario_id,
-                 status, prioridade, data_inicio, data_conclusao)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                 status, prioridade, data_inicio, data_conclusao, finalizado_em)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ${finalizadoEm})`,
             [
                 titulo.trim(),
                 vazioParaNulo(descricao),
                 vazioParaNulo(responsavel),
                 vazioParaNulo(participantes),
                 vazioParaNulo(usuario_id),
-                status || 'pendente',
+                statusInicial,
                 prioridade || 'medio',
                 vazioParaNulo(data_inicio),
                 vazioParaNulo(data_conclusao),
@@ -121,6 +126,19 @@ async function atualizarTarefa(req, res, next) {
                 erro: 'Envie ao menos um campo para atualizar.',
                 campos_aceitos: CAMPOS_PERMITIDOS,
             });
+        }
+
+        // Concluir/cancelar registra o momento; reabrir apaga
+        if (req.body.status !== undefined) {
+            const [atual] = await pool.query('SELECT status FROM tarefas WHERE id = ?', [id]);
+            if (atual.length === 0) {
+                return res.status(404).json({ erro: 'Tarefa não encontrada.' });
+            }
+            if (!STATUS_FINAIS.includes(req.body.status)) {
+                camposParaAtualizar.push('finalizado_em = NULL');
+            } else if (atual[0].status !== req.body.status) {
+                camposParaAtualizar.push('finalizado_em = NOW()');
+            }
         }
 
         valores.push(id);
