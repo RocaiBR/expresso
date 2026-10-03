@@ -12,12 +12,9 @@ const CORES = {
     cinza: "#54565B",
     cinzaClaro: "#B9B9BE",
     lilas: "#C48FB0",
-    dourado: "#C99A3E",
-    verde: "#3E8E5A",
-    azul: "#4472C4",
     grade: [
         "#6F0049", "#9C3F7C", "#C48FB0", "#54565B",
-        "#C99A3E", "#4472C4", "#3E8E5A", "#8e8e93"
+        "#B9B9BE", "#54565B", "#C48FB0", "#6F0049"
     ]
 };
 
@@ -446,7 +443,7 @@ function montarGraficoStatus(dados) {
             labels: dados.rotulos,
             datasets: [{
                 data: dados.valores,
-                backgroundColor: [CORES.cinzaClaro, CORES.vinhoMedio, CORES.vinho],
+                backgroundColor: [CORES.vinho, CORES.vinhoMedio, CORES.cinzaClaro],
                 borderWidth: 0
             }]
         },
@@ -469,7 +466,7 @@ function montarGraficoPrioridade(dados) {
             labels: dados.rotulos,
             datasets: [{
                 data: dados.valores,
-                backgroundColor: [CORES.cinzaClaro, CORES.dourado, CORES.vinhoMedio, CORES.vinho],
+                backgroundColor: [CORES.cinzaClaro, CORES.cinza, CORES.vinhoMedio, CORES.vinho],
                 borderWidth: 0
             }]
         },
@@ -559,9 +556,13 @@ function exportarCsv() {
 
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
+    link.href = url;
     link.download = "relatorio-atividades.csv";
+    document.body.appendChild(link);
     link.click();
+    link.remove();
+    window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
 }
 
 /* =====================================================
