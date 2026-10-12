@@ -1,7 +1,7 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env.servidor') });
 const fs = require('fs');
 const path = require('path');
-const { pool } = require('../src/config/db');
+const { db, FieldValue, proximoId, descreverBanco } = require('../src/config/firebase');
 
 const CAMINHO_CSV = path.join(__dirname, '..', 'dados', 'tarefas_iniciais.csv');
 
@@ -24,14 +24,27 @@ async function importar() {
     const conteudo = fs.readFileSync(CAMINHO_CSV, 'utf-8');
     const tarefas = parsearCSV(conteudo);
 
-    console.log(`${tarefas.length} tarefas encontradas no CSV. Inserindo no banco...`);
+    console.log(`${tarefas.length} tarefas encontradas no CSV. Inserindo no ${descreverBanco()}...`);
 
     let inseridos = 0;
     for (const tarefa of tarefas) {
-        await pool.query(
-            'INSERT INTO tarefas (titulo, descricao, responsavel, status) VALUES (?, ?, ?, ?)',
-            [tarefa.titulo, tarefa.descricao, tarefa.responsavel, tarefa.status]
-        );
+        await db.runTransaction(async (transacao) => {
+            const id = await proximoId(transacao, 'tarefas');
+            transacao.set(db.collection('tarefas').doc(String(id)), {
+                id,
+                titulo: tarefa.titulo,
+                descricao: tarefa.descricao,
+                responsavel: tarefa.responsavel,
+                participantes: null,
+                usuario_id: null,
+                status: tarefa.status,
+                prioridade: 'medio',
+                data_inicio: null,
+                data_conclusao: null,
+                criado_em: FieldValue.serverTimestamp(),
+                finalizado_em: null,
+            });
+        });
         inseridos += 1;
     }
 

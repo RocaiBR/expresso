@@ -1,0 +1,9 @@
+# Firebase CLI
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+
+# Dados salvos do emulador (npm run emuladores)
+.emulador-dados/
+firebase-export-*/

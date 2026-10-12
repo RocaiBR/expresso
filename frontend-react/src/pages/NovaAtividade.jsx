@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Api } from "../services/api";
 import { Formato } from "../utils/formato";
+import { ACEITOS, validarArquivo } from "../utils/anexos";
 import { IconeClipe, IconeX } from "../components/Icones";
 
 const PESSOAS = [
@@ -32,12 +33,34 @@ export default function NovaAtividade() {
     const [prioridade, setPrioridade] = useState("Alta");
     const [arquivos, setArquivos] = useState([]);
     const [salvando, setSalvando] = useState(false);
+    // Envio dos anexos depois de criar a tarefa: { atual, total, progresso (0 a 1) }
+    const [envio, setEnvio] = useState(null);
 
     const dataInicio = dataDeHoje();
 
     function adicionarArquivos(evento) {
-        setArquivos(atuais => [...atuais, ...Array.from(evento.target.files)]);
+        const escolhidos = Array.from(evento.target.files);
+        const recusados = escolhidos.map(validarArquivo).filter(Boolean);
+        if (recusados.length > 0) alert("Arquivos não adicionados:\n" + recusados.join("\n"));
+
+        setArquivos(atuais => [...atuais, ...escolhidos.filter(arquivo => !validarArquivo(arquivo))]);
         evento.target.value = "";
+    }
+
+    // Envia um arquivo por vez; devolve os nomes dos que falharam
+    async function enviarArquivos(tarefaId) {
+        const falhas = [];
+        for (let indice = 0; indice < arquivos.length; indice++) {
+            setEnvio({ atual: indice + 1, total: arquivos.length, progresso: 0 });
+            try {
+                await Api.anexarArquivo(tarefaId, arquivos[indice], progresso => {
+                    setEnvio({ atual: indice + 1, total: arquivos.length, progresso });
+                });
+            } catch (erro) {
+                falhas.push(arquivos[indice].name + " (" + erro.message + ")");
+            }
+        }
+        return falhas;
     }
 
     function removerArquivo(indice) {
@@ -59,10 +82,19 @@ export default function NovaAtividade() {
             status: "pendente"
         };
 
-        /* ENVIA PARA A API -> MySQL */
+        /* ENVIA PARA A API -> Firestore */
         setSalvando(true);
         try {
             const salva = await Api.criarTarefa(novaTarefa);
+
+            /* ENVIA OS ARQUIVOS -> Storage (a tarefa já existe, então uma falha não desfaz o cadastro) */
+            const falhas = await enviarArquivos(salva.id);
+            if (falhas.length > 0) {
+                alert(
+                    "A atividade foi criada, mas estes arquivos não foram enviados:\n" + falhas.join("\n") +
+                    "\n\nVocê pode anexá-los de novo na tela de detalhes da atividade."
+                );
+            }
 
             // A tela de confirmação só mostra o resumo do que foi gravado
             localStorage.setItem("ultima_atividade_criada", JSON.stringify({
@@ -80,7 +112,15 @@ export default function NovaAtividade() {
         } catch (erro) {
             alert("Não foi possível salvar a atividade: " + erro.message);
             setSalvando(false);
+            setEnvio(null);
         }
+    }
+
+    function textoDoBotao() {
+        if (envio) {
+            return "Enviando arquivo " + envio.atual + " de " + envio.total + "... " + Math.round(envio.progresso * 100) + "%";
+        }
+        return salvando ? "Salvando..." : "Salvar Atividade";
     }
 
     return (
@@ -158,6 +198,7 @@ export default function NovaAtividade() {
                                             <input
                                                 type="file"
                                                 multiple
+                                                accept={ACEITOS}
                                                 onChange={adicionarArquivos}
                                                 className="hidden"
                                             />
@@ -305,7 +346,7 @@ export default function NovaAtividade() {
                                 disabled={salvando}
                                 className="bg-[#6F0049] hover:bg-[#560039] text-white font-medium text-xs xl:text-sm px-6 py-2.5 rounded-lg shadow-sm transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                                Salvar Atividade
+                                {textoDoBotao()}
                             </button>
                         </div>
                     </div>

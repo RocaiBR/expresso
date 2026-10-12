@@ -1,7 +1,6 @@
-const { pool } = require('../config/db');
+const { db, FieldValue, proximoId, buscarDoc, paraJson } = require('../config/firebase');
 
-// Colunas devolvidas pela API
-const COLUNAS = 'id, nome, usuario, email, setor, funcao, ativo, criado_em';
+const usuarios = db.collection('usuarios');
 
 const SETORES_VALIDOS = ['PCP', 'ENGENHARIA'];
 const FUNCOES_VALIDAS = ['usuario', 'gestor'];
@@ -23,20 +22,33 @@ function validar(dados) {
     return null;
 }
 
-// Traduz o erro de duplicidade do MySQL para uma mensagem clara
-function mensagemDuplicado(error) {
-    const texto = error.sqlMessage || '';
-    if (texto.includes("'usuario'") || texto.includes('usuarios.usuario')) {
-        return 'Já existe alguém com esse nome de usuário.';
+// A senha nunca sai da API
+function semSenha(doc) {
+    const { senha, ...usuario } = paraJson(doc);
+    return usuario;
+}
+
+// O Firestore não tem índice UNIQUE: confere e-mail e usuário antes de gravar.
+// Roda dentro da transação, então dois cadastros iguais ao mesmo tempo não passam.
+async function mensagemDuplicado(transacao, dados, idAtual) {
+    const unicos = [
+        ['usuario', 'Já existe alguém com esse nome de usuário.'],
+        ['email', 'Já existe um usuário com esse e-mail.'],
+    ];
+    for (const [campo, mensagem] of unicos) {
+        if (!dados[campo]) continue;
+        const iguais = await transacao.get(usuarios.where(campo, '==', dados[campo]));
+        if (iguais.docs.some((doc) => doc.id !== String(idAtual))) return mensagem;
     }
-    return 'Já existe um usuário com esse e-mail.';
+    return null;
 }
 
 // GET /usuarios
 async function listarUsuarios(req, res, next) {
     try {
-        const [linhas] = await pool.query(`SELECT ${COLUNAS} FROM usuarios ORDER BY nome`);
-        res.status(200).json(linhas);
+        const resultado = await usuarios.get();
+        const lista = resultado.docs.map(semSenha).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+        res.status(200).json(lista);
     } catch (error) {
         next(error);
     }
@@ -45,12 +57,12 @@ async function listarUsuarios(req, res, next) {
 // GET /usuarios/:id
 async function buscarUsuarioPorId(req, res, next) {
     try {
-        const [linhas] = await pool.query(`SELECT ${COLUNAS} FROM usuarios WHERE id = ?`, [req.params.id]);
+        const doc = await buscarDoc('usuarios', req.params.id);
 
-        if (linhas.length === 0) {
+        if (!doc) {
             return res.status(404).json({ erro: 'Usuário não encontrado.' });
         }
-        res.status(200).json(linhas[0]);
+        res.status(200).json(semSenha(doc));
     } catch (error) {
         next(error);
     }
@@ -66,24 +78,32 @@ async function criarUsuario(req, res, next) {
         const erro = validar(req.body);
         if (erro) return res.status(400).json({ erro });
 
-        const [resultado] = await pool.query(
-            `INSERT INTO usuarios (nome, usuario, email, senha, setor, funcao, ativo)
-             VALUES (?, ?, ?, ?, ?, ?, 1)`,
-            [
-                nome.trim(),
-                vazioParaNulo(usuario),
-                email.trim(),
-                senha,
-                vazioParaNulo(setor),
-                funcao || 'usuario',
-            ]
-        );
-        const [linhas] = await pool.query(`SELECT ${COLUNAS} FROM usuarios WHERE id = ?`, [resultado.insertId]);
-        res.status(201).json(linhas[0]);
-    } catch (error) {
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(409).json({ erro: mensagemDuplicado(error) });
+        const novo = {
+            nome: nome.trim(),
+            usuario: vazioParaNulo(usuario),
+            email: email.trim(),
+            senha,
+            setor: vazioParaNulo(setor),
+            funcao: funcao || 'usuario',
+            ativo: true,
+        };
+
+        const resultado = await db.runTransaction(async (transacao) => {
+            const duplicado = await mensagemDuplicado(transacao, novo, null);
+            if (duplicado) return { duplicado };
+
+            const id = await proximoId(transacao, 'usuarios');
+            transacao.set(usuarios.doc(String(id)), { id, ...novo, criado_em: FieldValue.serverTimestamp() });
+            return { id };
+        });
+
+        if (resultado.duplicado) {
+            return res.status(409).json({ erro: resultado.duplicado });
         }
+        const doc = await buscarDoc('usuarios', resultado.id);
+        console.log(`[USUARIOS] Usuário #${resultado.id} gravado no Firestore: "${novo.nome}"`);
+        res.status(201).json(semSenha(doc));
+    } catch (error) {
         next(error);
     }
 }
@@ -96,43 +116,41 @@ async function atualizarUsuario(req, res, next) {
         const erro = validar(req.body);
         if (erro) return res.status(400).json({ erro });
 
-        const camposParaAtualizar = [];
-        const valores = [];
+        const camposParaAtualizar = {};
 
         ['nome', 'usuario', 'email', 'setor', 'funcao'].forEach((campo) => {
             if (req.body[campo] !== undefined) {
-                camposParaAtualizar.push(`${campo} = ?`);
-                valores.push(vazioParaNulo(req.body[campo]));
+                camposParaAtualizar[campo] = vazioParaNulo(req.body[campo]);
             }
         });
 
         if (req.body.senha) {
-            camposParaAtualizar.push('senha = ?');
-            valores.push(req.body.senha);
+            camposParaAtualizar.senha = req.body.senha;
         }
         if (req.body.ativo !== undefined) {
-            camposParaAtualizar.push('ativo = ?');
-            valores.push(req.body.ativo ? 1 : 0);
+            camposParaAtualizar.ativo = Boolean(req.body.ativo);
         }
-        if (camposParaAtualizar.length === 0) {
+        if (Object.keys(camposParaAtualizar).length === 0) {
             return res.status(400).json({ erro: 'Envie ao menos um campo para atualizar.' });
         }
 
-        valores.push(id);
-
-        const [resultado] = await pool.query(
-            `UPDATE usuarios SET ${camposParaAtualizar.join(', ')} WHERE id = ?`,
-            valores
-        );
-        if (resultado.affectedRows === 0) {
+        const atual = await buscarDoc('usuarios', id);
+        if (!atual) {
             return res.status(404).json({ erro: 'Usuário não encontrado.' });
         }
-        const [linhas] = await pool.query(`SELECT ${COLUNAS} FROM usuarios WHERE id = ?`, [id]);
-        res.status(200).json({ mensagem: 'Usuário atualizado com sucesso.', usuario: linhas[0] });
-    } catch (error) {
-        if (error.code === 'ER_DUP_ENTRY') {
-            return res.status(409).json({ erro: mensagemDuplicado(error) });
+
+        const duplicado = await db.runTransaction(async (transacao) => {
+            const mensagem = await mensagemDuplicado(transacao, camposParaAtualizar, id);
+            if (!mensagem) transacao.update(atual.ref, camposParaAtualizar);
+            return mensagem;
+        });
+        if (duplicado) {
+            return res.status(409).json({ erro: duplicado });
         }
+
+        const doc = await buscarDoc('usuarios', id);
+        res.status(200).json({ mensagem: 'Usuário atualizado com sucesso.', usuario: semSenha(doc) });
+    } catch (error) {
         next(error);
     }
 }
@@ -141,11 +159,12 @@ async function atualizarUsuario(req, res, next) {
 async function excluirUsuario(req, res, next) {
     try {
         const { id } = req.params;
-        const [resultado] = await pool.query('DELETE FROM usuarios WHERE id = ?', [id]);
+        const doc = await buscarDoc('usuarios', id);
 
-        if (resultado.affectedRows === 0) {
+        if (!doc) {
             return res.status(404).json({ erro: 'Usuário não encontrado.' });
         }
+        await doc.ref.delete();
 
         res.status(200).json({ mensagem: 'Usuário excluído com sucesso.', id: Number(id) });
     } catch (error) {

@@ -1,6 +1,6 @@
 #  Expresso — Projeto Integrador (PI)
 
-Sistema web para controle de fluxo e atividades, com funcionalidades semelhantes ao **Trello** e ao **Fluig**. O projeto é dividido em uma **API REST** (Node.js + Express + MySQL) e um **frontend** em React (Vite + React Router + Tailwind CSS).
+Sistema web para controle de fluxo e atividades, com funcionalidades semelhantes ao **Trello** e ao **Fluig**. O projeto é dividido em uma **API REST** (Node.js + Express + Firestore) e um **frontend** em React (Vite + React Router + Tailwind CSS), hospedados no **Firebase**.
 
 ##  Sobre o projeto
 
@@ -9,6 +9,7 @@ O Expresso permite:
 - Autenticação de usuários (login);
 - Cadastro, edição, listagem e exclusão de **usuários**;
 - Cadastro, edição, listagem e exclusão de **tarefas** (com filtro por status);
+- **Anexos** nas tarefas (PDF, imagens, Word, Excel, PowerPoint, vídeos e áudios, até 200 MB cada), guardados no Cloud Storage;
 - Consulta de **feriados nacionais** por ano, via integração com a [BrasilAPI](https://brasilapi.com.br/);
 - Importação de tarefas iniciais a partir de um arquivo CSV;
 - **Relatórios** com evolução do backlog, tempo médio para conclusão, resumo do período (com dias úteis descontando feriados), filtros e exportação em CSV — tudo calculado a partir das tarefas do banco.
@@ -25,7 +26,7 @@ O Expresso permite:
 | 25001227    | Isadora Cabral dos Santos          | Frontend       |
 | 25000215    | Vitória Karolina Santos Silva      | Frontend       |
 
-- **Backend** (Node.js, Express, MySQL): Ícaro, Kevin e Vitor.
+- **Backend** (Node.js, Express, Firebase): Ícaro, Kevin e Vitor.
 - **Frontend** (React): Isadora e Vitória.
 
 ##  Tecnologias utilizadas
@@ -33,7 +34,8 @@ O Expresso permite:
 **Backend**
 - [Node.js](https://nodejs.org/)
 - [Express](https://expressjs.com/)
-- [MySQL2](https://www.npmjs.com/package/mysql2) (pool de conexões)
+- [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup) (acesso ao Cloud Firestore)
+- [Cloud Functions for Firebase](https://firebase.google.com/docs/functions) (a API roda na nuvem como a função `api`)
 - [dotenv](https://www.npmjs.com/package/dotenv)
 - [CORS](https://www.npmjs.com/package/cors)
 - [Nodemon](https://www.npmjs.com/package/nodemon) (ambiente de desenvolvimento)
@@ -45,19 +47,31 @@ O Expresso permite:
 - [Chart.js](https://www.chartjs.org/) (gráficos da tela de relatórios)
 - Consumo da API via `fetch`
 
+**Nuvem (Firebase)**
+- **Cloud Firestore**: banco de dados (coleções `tarefas`, `usuarios` e `contadores`)
+- **Cloud Storage**: guarda os arquivos anexados às tarefas (`tarefas/<id>/...`)
+- **Cloud Functions**: executa a API Node.js (região `southamerica-east1`, São Paulo)
+- **Hosting**: publica o frontend e encaminha `/api/**` para a função
+- **Emulator Suite**: roda tudo isso localmente, sem custo, para desenvolvimento e testes
+
 ##  Estrutura do projeto
 
 ```
 expresso/
-├── backend/
+├── firebase.json                      # serviços do Firebase (Firestore, Functions, Hosting, emuladores)
+├── firestore.rules                    # bloqueia acesso direto do navegador ao banco
+├── storage.rules                      # idem para os arquivos (o acesso passa pela API)
+├── backend/                           # também é a pasta da Cloud Function
 │   ├── dados/
 │   │   └── tarefas_iniciais.csv       # dados de exemplo para importação
 │   ├── scripts/
 │   │   └── importarCsv.js             # script de importação de tarefas via CSV
 │   ├── src/
+│   │   ├── app.js                     # monta o Express (rotas, middlewares, log de requisições)
 │   │   ├── config/
-│   │   │   └── db.js                  # pool de conexão com o MySQL
+│   │   │   └── firebase.js            # conexão com o Firestore/Storage e helpers (ids, datas, links)
 │   │   ├── controllers/
+│   │   │   ├── anexoController.js     # arquivos das tarefas (tipos aceitos e limite de tamanho)
 │   │   │   ├── authController.js
 │   │   │   ├── feriadoController.js
 │   │   │   ├── tarefaController.js
@@ -73,9 +87,10 @@ expresso/
 │   │   ├── PI-api.insomnia_collection.json
 │   │   ├── PI-api.postman_collection.json
 │   │   └── testar_gravacao.js
-│   ├── .env                           # variáveis de ambiente (não versionado)
+│   ├── .env.servidor.exemplo          # modelo do .env.servidor (o real não é versionado)
+│   ├── index.js                       # ponto de entrada na nuvem (Cloud Function "api")
 │   ├── package.json
-│   └── server.js                      # ponto de entrada da API
+│   └── server.js                      # ponto de entrada local (npm run dev)
 │
 └── frontend-react/
     ├── index.html                     # página única (o React monta tudo nela)
@@ -97,8 +112,9 @@ expresso/
 
 ### Pré-requisitos
 
-- [Node.js](https://nodejs.org/) instalado
-- Um servidor [MySQL](https://www.mysql.com/) em execução
+- [Node.js](https://nodejs.org/) 24
+- [Firebase CLI](https://firebase.google.com/docs/cli): `npm install -g firebase-tools` e depois `firebase login`
+- [Java](https://adoptium.net/) 11 ou superior (exigido pelo emulador do Firestore)
 
 ### 1. Clonar o repositório
 
@@ -116,27 +132,35 @@ npm install
 
 ### 3. Configurar as variáveis de ambiente
 
-Crie um arquivo `.env` dentro da pasta `backend/` com o seguinte formato:
+Copie `backend/.env.servidor.exemplo` para `backend/.env.servidor`. Ele já vem pronto para usar o emulador:
 
 ```env
 PORT=3000
-
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=seu_usuario
-DB_PASSWORD=sua_senha
-DB_NAME=nome_do_banco
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
+FIREBASE_STORAGE_EMULATOR_HOST=127.0.0.1:9199
+PROJETO_FIREBASE=demo-expresso
+BUCKET_FIREBASE=demo-expresso.appspot.com
 ```
 
-### 4. Criar o banco de dados
+> Não crie um `backend/.env`: a pasta `backend/` também é a pasta da Cloud Function, e o Firebase CLI envia as variáveis desse arquivo para a nuvem (e recusa `PORT`). O `.env.servidor` só é lido pelo `npm run dev` e pelo `npm run importar:csv`.
 
-Crie no MySQL um banco com as tabelas `usuarios` e `tarefas` compatíveis com os campos usados pela API (ex.: `usuarios(id, nome, usuario, email, senha, setor, funcao, ativo, criado_em)` e `tarefas(id, titulo, descricao, responsavel, participantes, usuario_id, status, prioridade, data_inicio, data_conclusao, criado_em)`).
+Para o servidor local usar o **Firestore de verdade** em vez do emulador, troque para a opção B do arquivo de exemplo: baixe a chave em *Console do Firebase > Configurações do projeto > Contas de serviço > Gerar nova chave privada*, salve como `backend/serviceAccountKey.json` (já está no `.gitignore`) e aponte `GOOGLE_APPLICATION_CREDENTIALS` para ela.
 
-Ao subir, a API cria sozinha as colunas novas que estiverem faltando (veja `backend/src/config/estrutura.js`). Hoje isso vale para `tarefas.finalizado_em`, que guarda o momento em que a tarefa foi concluída ou cancelada e é usada nos relatórios. Tarefas encerradas antes dessa coluna existir ficam sem essa data e não entram no cálculo do backlog nem do tempo médio.
+### 4. Subir os emuladores do Firebase
+
+```bash
+npm run emuladores
+```
+
+Sobe localmente o Firestore (porta 8080), o Storage (9199), a API como Cloud Function (5001), o Hosting com o frontend (5000) e o **Emulator UI** em `http://127.0.0.1:4000`, onde dá para ver os dados gravados e os logs da função. Os dados ficam salvos em `.emulador-dados/` ao fechar com `Ctrl+C`.
+
+Não é preciso criar tabelas: o Firestore cria as coleções no primeiro registro. Como o Firestore não tem `AUTO_INCREMENT`, o último id de cada coleção fica em `contadores/<colecao>`, e as tarefas e usuários continuam com ids numéricos (`#001`, `#002`...).
+
+Para entrar no sistema é preciso ter ao menos um usuário. Crie o primeiro pelo Postman/Insomnia (`POST /usuarios`) com `"funcao": "gestor"`.
 
 ### 5. (Opcional) Importar tarefas iniciais
 
-O arquivo `backend/dados/tarefas_iniciais.csv` contém tarefas de exemplo que podem ser inseridas no banco:
+O arquivo `backend/dados/tarefas_iniciais.csv` contém tarefas de exemplo que podem ser inseridas no banco configurado no `.env.servidor`:
 
 ```bash
 npm run importar:csv
@@ -144,13 +168,17 @@ npm run importar:csv
 
 ### 6. Rodar a API
 
+Com os emuladores no ar, a API já responde em `http://127.0.0.1:5001/demo-expresso/southamerica-east1/api`. Para desenvolver com o servidor local (recarrega sozinho a cada alteração), abra outro terminal:
+
 ```bash
 npm run dev     # com nodemon (recarrega automaticamente)
 # ou
 npm start       # execução simples
 ```
 
-O servidor sobe em `http://localhost:3000` (ou na porta definida em `PORT`).
+O servidor sobe em `http://localhost:3000` (ou na porta definida em `PORT`) e usa o banco configurado no `.env.servidor`.
+
+Para conferir a gravação de ponta a ponta: `npm run testar` (ou `BASE_URL=<endereço da API> npm run testar` para testar outro endereço, como a função na nuvem).
 
 ### 7. Rodar o frontend
 
@@ -164,9 +192,36 @@ npm run dev
 
 Abra o endereço que aparece no terminal (normalmente `http://localhost:5173`). A tela de login redireciona para a Home após a autenticação.
 
-> O frontend consome a API a partir de `http://localhost:3000`, então o backend precisa estar em execução. Para apontar para outro endereço, crie um arquivo `.env` em `frontend-react/` com `VITE_API_URL=http://outro-endereco:3000`.
+> No `npm run dev` o frontend consome a API a partir de `http://localhost:3000`, então o servidor local precisa estar em execução. Para apontar para outro endereço, crie um arquivo `.env` em `frontend-react/` com `VITE_API_URL=http://outro-endereco:3000`.
 
-Para gerar a versão de produção: `npm run build` (cria a pasta `frontend-react/dist/`).
+Para gerar a versão de produção: `npm run build` (cria a pasta `frontend-react/dist/`). Ela usa `VITE_API_URL=/api` (arquivo `frontend-react/.env.production`), que é o endereço da API dentro do Firebase Hosting.
+
+##  Publicando no Firebase
+
+1. No [Console do Firebase](https://console.firebase.google.com/), crie o projeto e, em **Firestore Database**, crie o banco `(default)` na edição Standard, em modo de produção, na região `southamerica-east1` (São Paulo).
+2. Mude o projeto para o plano **Blaze** (*Upgrade*). Ele é exigido para publicar Cloud Functions e para o Storage; o uso de um projeto acadêmico cabe na cota gratuita, mas vale criar um alerta de orçamento no Google Cloud.
+3. Em **Storage**, clique em *Começar* e crie o bucket em modo de produção. Os locais dos EUA (`US-EAST1`, `US-CENTRAL1`, `US-WEST1`) têm cota gratuita; os demais cobram desde o primeiro byte.
+4. Na raiz do repositório, vincule o projeto (cria o `.firebaserc`) e publique:
+
+```bash
+firebase use --add                # escolha o projeto criado
+firebase deploy                   # Firestore e Storage (regras) + Functions (API) + Hosting (frontend)
+```
+
+O deploy do Hosting já roda o `npm run build` do frontend. Ao final o terminal mostra os endereços:
+
+- Site: `https://<projeto>.web.app` (a API responde no mesmo site, em `/api`, ex.: `/api/health`)
+- API direta: `https://southamerica-east1-<projeto>.cloudfunctions.net/api`
+
+Sem o plano Blaze ainda dá para publicar o banco e o site (`firebase deploy --only firestore,hosting`), mas a API precisa rodar fora do Firebase.
+
+### Logs
+
+Cada requisição gera uma linha `[HTTP] MÉTODO /rota -> status (tempo)`, e as gravações geram `[TAREFAS]`/`[USUARIOS]`/`[ANEXOS]`. Elas aparecem:
+
+- no terminal do `npm run dev`;
+- no **Emulator UI** (`http://127.0.0.1:4000/logs`) ao usar os emuladores;
+- na nuvem, em `npm run logs` (`firebase functions:log`) ou no *Console do Firebase > Functions > Logs*.
 
 ##  Endpoints da API
 
@@ -175,7 +230,7 @@ Para gerar a versão de produção: `npm run build` (cria a pasta `frontend-reac
 | Método | Rota      | Descrição                                  |
 |--------|-----------|---------------------------------------------|
 | GET    | `/`       | Informações básicas da API                  |
-| GET    | `/health` | Verifica se a API e o banco estão ativos    |
+| GET    | `/health` | Verifica se a API e o Firestore estão ativos (devolve a hora do banco) |
 
 ### Autenticação
 
@@ -201,7 +256,22 @@ Para gerar a versão de produção: `npm run build` (cria a pasta `frontend-reac
 | GET    | `/tarefas/:id` | Busca uma tarefa pelo ID                            |
 | POST   | `/tarefas`     | Cria uma nova tarefa                                |
 | PUT    | `/tarefas/:id` | Atualiza campos de uma tarefa existente             |
-| DELETE | `/tarefas/:id` | Remove uma tarefa                                   |
+| DELETE | `/tarefas/:id` | Remove uma tarefa (e os arquivos dela no Storage)   |
+
+### Anexos
+
+O arquivo não passa pela API (a Cloud Function aceita no máximo 32 MB por requisição). O envio tem três passos: a API valida e devolve um endereço temporário (`url_envio`), o navegador faz um `PUT` do arquivo direto nesse endereço do Storage e depois avisa a API em `/concluir`. O frontend faz isso em `Api.anexarArquivo` (`frontend-react/src/services/api.js`).
+
+| Método | Rota                                       | Descrição                                                        |
+|--------|--------------------------------------------|------------------------------------------------------------------|
+| GET    | `/tarefas/:id/anexos`                      | Lista os anexos da tarefa, cada um com o link `url` para abrir/baixar |
+| POST   | `/tarefas/:id/anexos`                      | Inicia um envio: recebe `{ nome, tamanho }` e devolve `{ anexo, url_envio }` |
+| POST   | `/tarefas/:id/anexos/:anexoId/concluir`    | Confirma o anexo depois que o arquivo chegou ao Storage          |
+| DELETE | `/tarefas/:id/anexos/:anexoId`             | Remove o anexo e o arquivo                                       |
+
+Tipos aceitos e limite de tamanho ficam em `backend/src/controllers/anexoController.js` (e espelhados em `frontend-react/src/utils/anexos.js`).
+
+Ao confirmar, a API lê só o começo do arquivo no Storage e confere a **assinatura** (os bytes iniciais que identificam cada formato) com a extensão, em `backend/src/utils/assinaturas.js`. Um `.exe` renomeado para `.pdf`, um HTML salvo como `.png` ou um ZIP comum com nome `.docx` são recusados e apagados, com um log `[ANEXOS] ... recusado`. Isso não substitui um antivírus: um arquivo do formato certo, mas com conteúdo malicioso (ex.: um PDF ou um `.doc` com macro), ainda passa.
 
 ### Feriados
 
