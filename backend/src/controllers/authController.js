@@ -1,4 +1,13 @@
-const { pool } = require('../config/db');
+const { db } = require('../config/firebase');
+
+// Aceita entrar com e-mail, nome de usuário ou nome (nessa ordem)
+async function buscarPorLogin(valor) {
+    for (const campo of ['email', 'usuario', 'nome']) {
+        const resultado = await db.collection('usuarios').where(campo, '==', valor).limit(1).get();
+        if (!resultado.empty) return resultado.docs[0].data();
+    }
+    return null;
+}
 
 async function login(req, res, next) {
     try {
@@ -8,18 +17,10 @@ async function login(req, res, next) {
             return res.status(400).json({ erro: 'Informe usuário e senha.' });
         }
 
-        const valor = usuario.trim();
-        const [linhas] = await pool.query(
-            `SELECT id, nome, usuario, email, senha, setor, funcao, ativo
-             FROM usuarios
-             WHERE email = ? OR usuario = ? OR nome = ?
-             LIMIT 1`,
-            [valor, valor, valor]
-        );
-        if (linhas.length === 0 || linhas[0].senha !== senha) {
+        const encontrado = await buscarPorLogin(usuario.trim());
+        if (!encontrado || encontrado.senha !== senha) {
             return res.status(401).json({ erro: 'Usuário ou senha incorretos.' });
         }
-        const encontrado = linhas[0];
         if (!encontrado.ativo) {
             return res.status(403).json({ erro: 'Este usuário está inativo. Fale com um gestor.' });
         }

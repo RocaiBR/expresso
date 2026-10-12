@@ -1,6 +1,10 @@
-node_module/
+node_modules/
 
+# Configuração local e credenciais (nunca versionar)
 .env
+.env.*
+!.env.servidor.exemplo
+serviceAccountKey*.json
 
 npm-debug.log*
 *.log

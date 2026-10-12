@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Api } from "../services/api";
 import { Formato } from "../utils/formato";
+import Anexos from "../components/Anexos";
 
 function CampoLeitura({ rotulo, valor, grande = false, colunaDupla = false }) {
     return (
@@ -146,6 +147,7 @@ export default function DetalhesAtividade() {
                         grande
                         colunaDupla
                     />
+                    {tarefa && <Anexos tarefaId={tarefa.id} />}
                 </div>
 
                 {/* BOTÕES */}

@@ -1,0 +1,11 @@
+rules_version = '2';
+
+// O navegador não lê nem grava direto no Storage pelo SDK: a API (firebase-admin) cria um
+// endereço de envio temporário para cada anexo e devolve um link de download com token.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

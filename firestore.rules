@@ -1,0 +1,11 @@
+rules_version = '2';
+
+// O navegador não acessa o Firestore direto: tudo passa pela API (Cloud Function "api"),
+// que usa o firebase-admin e por isso não é afetada por estas regras.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
