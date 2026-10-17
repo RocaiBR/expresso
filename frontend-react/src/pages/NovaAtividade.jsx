@@ -1,15 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Api } from "../services/api";
 import { Formato } from "../utils/formato";
 import { ACEITOS, validarArquivo } from "../utils/anexos";
 import { IconeClipe, IconeX } from "../components/Icones";
-
-const PESSOAS = [
-    "Isadora Cabral dos Santos",
-    "Maiko Fernandes",
-    "Ícaro Guminiak de Godoy"
-];
 
 function dataDeHoje() {
     const hoje = new Date();
@@ -27,6 +21,8 @@ export default function NovaAtividade() {
 
     const [titulo, setTitulo] = useState("");
     const [descricao, setDescricao] = useState("");
+    // Quem pode ser responsável depende do cargo (a API devolve a lista; o primeiro é quem está logado)
+    const [pessoas, setPessoas] = useState([]);
     const [responsavel, setResponsavel] = useState("");
     const [participantes, setParticipantes] = useState("");
     const [dataVencimento, setDataVencimento] = useState("");
@@ -37,6 +33,18 @@ export default function NovaAtividade() {
     const [envio, setEnvio] = useState(null);
 
     const dataInicio = dataDeHoje();
+
+    useEffect(() => {
+        let ativo = true;
+        Api.listarAtribuiveis()
+            .then(lista => {
+                if (!ativo) return;
+                setPessoas(lista);
+                if (lista.length > 0) setResponsavel(String(lista[0].id));
+            })
+            .catch(erro => alert("Não foi possível carregar os responsáveis: " + erro.message));
+        return () => { ativo = false; };
+    }, []);
 
     function adicionarArquivos(evento) {
         const escolhidos = Array.from(evento.target.files);
@@ -74,7 +82,7 @@ export default function NovaAtividade() {
         const novaTarefa = {
             titulo,
             descricao,
-            responsavel,
+            usuario_id: Number(responsavel),
             participantes,
             data_inicio: dataInicio,
             data_conclusao: dataVencimento,
@@ -244,11 +252,14 @@ export default function NovaAtividade() {
                                         required
                                         value={responsavel}
                                         onChange={evento => setResponsavel(evento.target.value)}
-                                        className={classesCampo + " text-[#3a3a3c] cursor-pointer"}
+                                        disabled={pessoas.length <= 1}
+                                        className={classesCampo + " text-[#3a3a3c] cursor-pointer disabled:bg-[#f2f2f4] disabled:cursor-not-allowed"}
                                     >
                                         <option value="" disabled>Selecione um responsável</option>
-                                        {PESSOAS.map(pessoa => (
-                                            <option key={pessoa} value={pessoa}>{pessoa}</option>
+                                        {pessoas.map((pessoa, indice) => (
+                                            <option key={pessoa.id} value={pessoa.id}>
+                                                {pessoa.nome}{indice === 0 ? " (você)" : ""}
+                                            </option>
                                         ))}
                                     </select>
                                 </div>
@@ -258,17 +269,14 @@ export default function NovaAtividade() {
                                     <label htmlFor="participantes" className="text-xs font-semibold text-[#3a3a3c]">
                                         Participantes
                                     </label>
-                                    <select
+                                    <input
+                                        type="text"
                                         id="participantes"
+                                        placeholder="Ex.: Maria, João (opcional)"
                                         value={participantes}
                                         onChange={evento => setParticipantes(evento.target.value)}
-                                        className={classesCampo + " text-[#3a3a3c] cursor-pointer"}
-                                    >
-                                        <option value="" disabled>Selecione participantes (opcional)</option>
-                                        {PESSOAS.map(pessoa => (
-                                            <option key={pessoa} value={pessoa}>{pessoa}</option>
-                                        ))}
-                                    </select>
+                                        className={classesCampo + " text-[#3a3a3c]"}
+                                    />
                                 </div>
                             </div>
                         </div>

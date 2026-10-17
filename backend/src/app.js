@@ -3,6 +3,7 @@ const cors = require('cors');
 
 const { descreverBanco, horaDoBanco } = require('./config/firebase');
 const { rotaNaoEncontrada, tratadorDeErros } = require('./middlewares/errorHandler');
+const { autenticar } = require('./middlewares/autenticacao');
 
 const tarefaRoutes = require('./routes/tarefaRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
@@ -48,9 +49,10 @@ rotas.get('/health', async (req, res) => {
     }
 });
 
-rotas.use('/tarefas', tarefaRoutes);
-rotas.use('/usuarios', usuarioRoutes);
-rotas.use('/feriados', feriadoRoutes);
+// Tudo exige login, menos o login e a recuperação de senha (em /auth)
+rotas.use('/tarefas', autenticar, tarefaRoutes);
+rotas.use('/usuarios', autenticar, usuarioRoutes);
+rotas.use('/feriados', autenticar, feriadoRoutes);
 rotas.use('/auth', authRouters);
 
 // No Firebase Hosting as chamadas chegam com o prefixo /api (ver firebase.json)

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { Api } from "../services/api";
 import { Formato } from "../utils/formato";
 import Anexos from "../components/Anexos";
@@ -24,6 +24,7 @@ function CampoLeitura({ rotulo, valor, grande = false, colunaDupla = false }) {
 
 export default function DetalhesAtividade() {
     const { id } = useParams();
+    const navigate = useNavigate();
     const [tarefa, setTarefa] = useState(null);
     const [erro, setErro] = useState(null);
     const [atualizando, setAtualizando] = useState(false);
@@ -65,10 +66,24 @@ export default function DetalhesAtividade() {
         mudarStatus("concluido", "Atividade concluída com sucesso!");
     }
 
+    async function excluirAtividade() {
+        if (!confirm("Excluir esta atividade e todos os arquivos dela? Essa ação não pode ser desfeita.")) return;
+        setAtualizando(true);
+        try {
+            await Api.excluirTarefa(tarefa.id);
+            navigate("/atividades");
+        } catch (erroApi) {
+            alert("Não foi possível excluir: " + erroApi.message);
+            setAtualizando(false);
+        }
+    }
+
     const naoEncontrada = Boolean(erro);
     const carregandoTarefa = !tarefa && !erro;
     const encerrada = tarefa && (tarefa.status === "concluido" || tarefa.status === "cancelado");
     const statusConcluido = tarefa?.status === "concluido";
+    // O que o usuário logado pode fazer com esta atividade (calculado pela API conforme o cargo)
+    const permissoes = tarefa?.permissoes || {};
 
     const titulo = naoEncontrada
         ? "Atividade não encontrada"
@@ -147,11 +162,29 @@ export default function DetalhesAtividade() {
                         grande
                         colunaDupla
                     />
-                    {tarefa && <Anexos tarefaId={tarefa.id} />}
+                    {tarefa && (
+                        <Anexos
+                            tarefaId={tarefa.id}
+                            podeAnexar={permissoes.status}
+                            podeRemoverTodos={permissoes.editar}
+                        />
+                    )}
                 </div>
 
                 {/* BOTÕES */}
                 <div className="flex flex-wrap justify-end gap-3 mt-8 pt-6 border-t border-[#e5e5e7]">
+
+                    {/* EXCLUIR (fica sozinho à esquerda) */}
+                    {permissoes.excluir && (
+                        <button
+                            type="button"
+                            onClick={excluirAtividade}
+                            disabled={atualizando}
+                            className="mr-auto px-5 py-2.5 rounded-[15px] border border-red-600 bg-white text-red-600 text-sm font-medium hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Excluir atividade
+                        </button>
+                    )}
 
                     {/* VOLTAR */}
                     <Link
@@ -161,7 +194,7 @@ export default function DetalhesAtividade() {
                         Voltar
                     </Link>
 
-                    {!naoEncontrada && (
+                    {!naoEncontrada && permissoes.status && (
                         <>
                             {/* CANCELAR */}
                             <button

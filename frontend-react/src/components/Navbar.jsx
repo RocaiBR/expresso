@@ -18,7 +18,7 @@ export default function Navbar() {
         navigate("/login");
     }
 
-    const funcoes = { usuario: "Usuário comum", gestor: "Gestor" };
+    const funcoes = { usuario: "Usuário padrão", gestor: "Gestor", ti: "TI" };
     const detalhe = [usuario?.setor, funcoes[usuario?.funcao]].filter(Boolean).join(" · ");
     const primeiroNome = usuario?.nome ? usuario.nome.split(" ")[0] : "Usuário";
 

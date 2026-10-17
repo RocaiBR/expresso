@@ -1,12 +1,12 @@
 const { randomUUID } = require('crypto');
-const { db, FieldValue, bucket, urlDeDownload, buscarDoc, paraJson } = require('../config/firebase');
+const { db, FieldValue, bucket, urlDeDownload, paraJson } = require('../config/firebase');
 const { conteudoConfere, temVerificacao } = require('../utils/assinaturas');
+const { carregarTarefa } = require('../utils/permissoes');
 
-// Limite por arquivo (vídeos são os maiores). Mude aqui e em frontend-react/src/utils/anexos.js
+// Limite por arquivo (vídeos são os maiores).
 const TAMANHO_MAXIMO = 200 * 1024 * 1024; // 200 MB
 
 // Extensões aceitas e o tipo gravado no Storage (é ele que faz o navegador abrir ou baixar).
-// Cada extensão precisa de uma assinatura em src/utils/assinaturas.js
 const TIPOS_PERMITIDOS = {
     // Documentos
     pdf: 'application/pdf',
@@ -55,7 +55,7 @@ function extensao(nome) {
     return partes.length > 1 ? partes.pop() : '';
 }
 
-// Nome usado no caminho do Storage (o nome original continua salvo no Firestore)
+// Nome usado no caminho do Storage
 function nomeSeguro(nome) {
     return nome.replace(/[^\w.\- ]/g, '_').slice(-100);
 }
@@ -70,6 +70,9 @@ function paraJsonAnexo(doc) {
 // GET /tarefas/:id/anexos
 async function listarAnexos(req, res, next) {
     try {
+        if (!(await carregarTarefa(req.usuario, req.params.id))) {
+            return res.status(404).json({ erro: 'Tarefa não encontrada.' });
+        }
         const resultado = await anexosDa(req.params.id).where('status', '==', 'pronto').get();
         const lista = resultado.docs.map(paraJsonAnexo).sort((a, b) => a.criado_em.localeCompare(b.criado_em));
         res.status(200).json(lista);
@@ -79,7 +82,6 @@ async function listarAnexos(req, res, next) {
 }
 
 // POST /tarefas/:id/anexos  { nome, tamanho }
-// Não recebe o arquivo: devolve um endereço temporário para o navegador enviar direto ao Storage
 async function iniciarAnexo(req, res, next) {
     try {
         const { id } = req.params;
@@ -98,8 +100,13 @@ async function iniciarAnexo(req, res, next) {
         if (!Number.isInteger(tamanho) || tamanho <= 0 || tamanho > TAMANHO_MAXIMO) {
             return res.status(400).json({ erro: `O arquivo deve ter até ${TAMANHO_MAXIMO / 1024 / 1024} MB.` });
         }
-        if (!(await buscarDoc('tarefas', id))) {
+        // Anexar segue a permissão de mudar o status da atividade
+        const tarefa = await carregarTarefa(req.usuario, id);
+        if (!tarefa) {
             return res.status(404).json({ erro: 'Tarefa não encontrada.' });
+        }
+        if (!tarefa.permissoes.status) {
+            return res.status(403).json({ erro: 'Você não pode anexar arquivos nesta atividade.' });
         }
 
         const ref = anexosDa(id).doc();
@@ -123,6 +130,7 @@ async function iniciarAnexo(req, res, next) {
             tamanho,
             caminho,
             token,
+            enviado_por: req.usuario.id,
             status: 'enviando',
             criado_em: FieldValue.serverTimestamp(),
         });
@@ -136,6 +144,10 @@ async function iniciarAnexo(req, res, next) {
 // POST /tarefas/:id/anexos/:anexoId/concluir  (depois que o navegador terminou o envio)
 async function concluirAnexo(req, res, next) {
     try {
+        const tarefa = await carregarTarefa(req.usuario, req.params.id);
+        if (!tarefa || !tarefa.permissoes.status) {
+            return res.status(404).json({ erro: 'Anexo não encontrado.' });
+        }
         const ref = anexosDa(req.params.id).doc(req.params.anexoId);
         const doc = await ref.get();
         if (!doc.exists) {
@@ -180,10 +192,20 @@ async function concluirAnexo(req, res, next) {
 // DELETE /tarefas/:id/anexos/:anexoId
 async function excluirAnexo(req, res, next) {
     try {
+        const tarefa = await carregarTarefa(req.usuario, req.params.id);
+        if (!tarefa) {
+            return res.status(404).json({ erro: 'Anexo não encontrado.' });
+        }
         const ref = anexosDa(req.params.id).doc(req.params.anexoId);
         const doc = await ref.get();
         if (!doc.exists) {
             return res.status(404).json({ erro: 'Anexo não encontrado.' });
+        }
+
+        // Remove quem pode editar a atividade, ou quem enviou o próprio arquivo
+        const enviouEste = doc.data().enviado_por === req.usuario.id && tarefa.permissoes.status;
+        if (!tarefa.permissoes.editar && !enviouEste) {
+            return res.status(403).json({ erro: 'Você só pode remover os arquivos que você mesmo enviou.' });
         }
 
         await bucket().file(doc.data().caminho).delete({ ignoreNotFound: true });

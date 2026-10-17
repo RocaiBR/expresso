@@ -1,14 +1,33 @@
 const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
+// O token do login fica guardado junto com o usuário logado (ver AuthContext)
+export const CHAVE_SESSAO = "usuarioLogado";
+
+function tokenDaSessao() {
+    try {
+        const sessao = JSON.parse(sessionStorage.getItem(CHAVE_SESSAO) || "null");
+        return sessao ? sessao.token : null;
+    } catch (erro) {
+        return null;
+    }
+}
+
 async function requisitar(caminho, opcoes) {
+    const token = tokenDaSessao();
+    const cabecalhos = { "Content-Type": "application/json" };
+    if (token) cabecalhos.Authorization = "Bearer " + token;
+
     let resposta;
     try {
-        resposta = await fetch(BASE_URL + caminho, {
-            headers: { "Content-Type": "application/json" },
-            ...opcoes
-        });
+        resposta = await fetch(BASE_URL + caminho, { ...opcoes, headers: cabecalhos });
     } catch (erro) {
         throw new Error("Servidor fora do ar. Rode o backend com npm run dev.");
+    }
+
+    // Sessão vencida ou derrubada (senha trocada, usuário desativado): volta para o login
+    if (resposta.status === 401 && token) {
+        sessionStorage.removeItem(CHAVE_SESSAO);
+        window.location.assign("/login");
     }
 
     const dados = await resposta.json().catch(function () { return null; });
@@ -45,6 +64,21 @@ export const Api = {
             body: JSON.stringify({ usuario, senha })
         });
     },
+    sair() {
+        return requisitar("/auth/sair", { method: "POST" });
+    },
+    solicitarRecuperacao(email) {
+        return requisitar("/auth/recuperar-senha", {
+            method: "POST",
+            body: JSON.stringify({ email })
+        });
+    },
+    redefinirSenha(email, codigo, novaSenha) {
+        return requisitar("/auth/redefinir-senha", {
+            method: "POST",
+            body: JSON.stringify({ email, codigo, nova_senha: novaSenha })
+        });
+    },
 
     listarTarefas() {
         return requisitar("/tarefas");
@@ -60,6 +94,9 @@ export const Api = {
             method: "PUT",
             body: JSON.stringify(campos)
         });
+    },
+    excluirTarefa(id) {
+        return requisitar("/tarefas/" + encodeURIComponent(id), { method: "DELETE" });
     },
 
     listarAnexos(tarefaId) {
@@ -82,6 +119,10 @@ export const Api = {
         return requisitar(caminho + "/" + encodeURIComponent(inicio.anexo.id) + "/concluir", { method: "POST" });
     },
 
+    // Quem o usuário logado pode escolher como responsável de uma atividade
+    listarAtribuiveis() {
+        return requisitar("/usuarios/atribuiveis");
+    },
     listarUsuarios() {
         return requisitar("/usuarios");
     },
@@ -90,6 +131,9 @@ export const Api = {
     },
     criarUsuario(usuario) {
         return requisitar("/usuarios", { method: "POST", body: JSON.stringify(usuario) });
+    },
+    excluirUsuario(id) {
+        return requisitar("/usuarios/" + encodeURIComponent(id), { method: "DELETE" });
     },
     atualizarUsuario(id, campos) {
         return requisitar("/usuarios/" + encodeURIComponent(id), {

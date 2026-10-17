@@ -1,9 +1,11 @@
 const { db, FieldValue, proximoId, buscarDoc, paraJson } = require('../config/firebase');
+const { encerrarSessoesDoUsuario } = require('../middlewares/autenticacao');
+const { FUNCOES, usuariosAtribuiveis } = require('../utils/permissoes');
 
 const usuarios = db.collection('usuarios');
 
-const SETORES_VALIDOS = ['PCP', 'ENGENHARIA'];
-const FUNCOES_VALIDAS = ['usuario', 'gestor'];
+const SETORES_VALIDOS = ['PCP', 'ENGENHARIA', 'TI'];
+const FUNCOES_VALIDAS = FUNCOES;
 
 // "" vira null
 function vazioParaNulo(valor) {
@@ -28,8 +30,9 @@ function semSenha(doc) {
     return usuario;
 }
 
-// O Firestore não tem índice UNIQUE: confere e-mail e usuário antes de gravar.
-// Roda dentro da transação, então dois cadastros iguais ao mesmo tempo não passam.
+/* O Firestore não tem índice UNIQUE: confere e-mail e usuário antes de gravar.
+    Roda dentro da transação, então dois cadastros iguais ao mesmo tempo não passam.
+ */
 async function mensagemDuplicado(transacao, dados, idAtual) {
     const unicos = [
         ['usuario', 'Já existe alguém com esse nome de usuário.'],
@@ -43,7 +46,24 @@ async function mensagemDuplicado(transacao, dados, idAtual) {
     return null;
 }
 
-// GET /usuarios
+// O sistema nunca pode ficar sem um TI ativo (senão ninguém mais administra os usuários)
+async function haOutroTIAtivo(idAtual) {
+    const tis = await usuarios.where('funcao', '==', 'ti').get();
+    return tis.docs.some((doc) => doc.id !== String(idAtual) && doc.data().ativo);
+}
+
+const MENSAGEM_ULTIMO_TI = 'É preciso manter ao menos um usuário TI ativo. Promova outra pessoa a TI antes.';
+
+// GET /usuarios/atribuiveis — quem o usuário logado pode escolher como responsável
+async function listarAtribuiveis(req, res, next) {
+    try {
+        res.status(200).json(await usuariosAtribuiveis(req.usuario));
+    } catch (error) {
+        next(error);
+    }
+}
+
+// GET /usuarios (só TI)
 async function listarUsuarios(req, res, next) {
     try {
         const resultado = await usuarios.get();
@@ -54,9 +74,12 @@ async function listarUsuarios(req, res, next) {
     }
 }
 
-// GET /usuarios/:id
+// GET /usuarios/:id (TI, ou a própria pessoa)
 async function buscarUsuarioPorId(req, res, next) {
     try {
+        if (req.usuario.funcao !== 'ti' && String(req.usuario.id) !== String(req.params.id)) {
+            return res.status(403).json({ erro: 'Apenas o TI pode ver os dados de outros usuários.' });
+        }
         const doc = await buscarDoc('usuarios', req.params.id);
 
         if (!doc) {
@@ -139,6 +162,12 @@ async function atualizarUsuario(req, res, next) {
             return res.status(404).json({ erro: 'Usuário não encontrado.' });
         }
 
+        const deixaDeSerTI = atual.data().funcao === 'ti'
+            && ((camposParaAtualizar.funcao && camposParaAtualizar.funcao !== 'ti') || camposParaAtualizar.ativo === false);
+        if (deixaDeSerTI && !(await haOutroTIAtivo(id))) {
+            return res.status(409).json({ erro: MENSAGEM_ULTIMO_TI });
+        }
+
         const duplicado = await db.runTransaction(async (transacao) => {
             const mensagem = await mensagemDuplicado(transacao, camposParaAtualizar, id);
             if (!mensagem) transacao.update(atual.ref, camposParaAtualizar);
@@ -148,7 +177,11 @@ async function atualizarUsuario(req, res, next) {
             return res.status(409).json({ erro: duplicado });
         }
 
+        // Senha nova derruba os logins abertos 
+        if (camposParaAtualizar.senha) await encerrarSessoesDoUsuario(id);
+
         const doc = await buscarDoc('usuarios', id);
+        console.log(`[USUARIOS] Usuário #${id} atualizado por #${req.usuario.id}: ${Object.keys(camposParaAtualizar).join(', ')}`);
         res.status(200).json({ mensagem: 'Usuário atualizado com sucesso.', usuario: semSenha(doc) });
     } catch (error) {
         next(error);
@@ -164,7 +197,17 @@ async function excluirUsuario(req, res, next) {
         if (!doc) {
             return res.status(404).json({ erro: 'Usuário não encontrado.' });
         }
+        if (String(req.usuario.id) === String(id)) {
+            return res.status(400).json({ erro: 'Você não pode excluir a própria conta. Peça a outro usuário TI.' });
+        }
+        if (doc.data().funcao === 'ti' && !(await haOutroTIAtivo(id))) {
+            return res.status(409).json({ erro: MENSAGEM_ULTIMO_TI });
+        }
+        // As atividades da pessoa ficam (com o nome dela) para o histórico e os relatórios
         await doc.ref.delete();
+        await encerrarSessoesDoUsuario(id);
+        await db.collection('recuperacoes').doc(String(id)).delete();
+        console.log(`[USUARIOS] Usuário #${id} excluído por #${req.usuario.id}`);
 
         res.status(200).json({ mensagem: 'Usuário excluído com sucesso.', id: Number(id) });
     } catch (error) {
@@ -173,6 +216,7 @@ async function excluirUsuario(req, res, next) {
 }
 
 module.exports = {
+    listarAtribuiveis,
     listarUsuarios,
     buscarUsuarioPorId,
     criarUsuario,

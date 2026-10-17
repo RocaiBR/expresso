@@ -5,6 +5,7 @@ node_modules/
 .env.*
 !.env.servidor.exemplo
 serviceAccountKey*.json
+.secret.local
 
 npm-debug.log*
 *.log
