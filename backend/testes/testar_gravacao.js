@@ -1,10 +1,9 @@
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
-// A API exige login: use um usuário de teste 
 const TESTE_LOGIN = process.env.TESTE_LOGIN;
 const TESTE_SENHA = process.env.TESTE_SENHA;
 
 let token = null;
-// Chamada à API já com o token do login
+
 function api(caminho, opcoes = {}) {
     return fetch(BASE_URL + caminho, {
         ...opcoes,
@@ -52,16 +51,20 @@ async function main() {
     token = login.token;
     console.log(`   ✔ Logado como ${login.usuario.nome} (${login.usuario.funcao})\n`);
 
-    // Criar tarefa com todos os campos que o formulário envia
+    /* Criar tarefa com todos os campos que o formulário envia
+    (prazo no futuro: prazo vencido viraria "urgente" sozinho, ver src/utils/prazos.js)
+    */
+    const diaEmSaoPaulo = (dias) => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo' })
+        .format(new Date(Date.now() + dias * 86400000));
     const tituloTeste = `Teste automático ${new Date().toISOString()}`;
     const enviada = {
         titulo: tituloTeste,
         descricao: 'Registro criado pelo script de teste.',
-        participantes: 'Equipe de teste',
+        participantes_ids: [login.usuario.id],
         status: 'pendente',
         prioridade: 'alto',
-        data_inicio: '2026-10-01',
-        data_conclusao: '2026-10-15',
+        data_inicio: diaEmSaoPaulo(0),
+        data_conclusao: diaEmSaoPaulo(14),
     };
 
     console.log('2) POST /tarefas');
@@ -88,7 +91,7 @@ async function main() {
     conferir(salva.titulo === enviada.titulo, 'titulo gravado');
     // Sem usuario_id, a API atribui a atividade a quem está logado
     conferir(salva.usuario_id === login.usuario.id && salva.responsavel === login.usuario.nome, 'responsável = quem criou');
-    conferir(salva.participantes === enviada.participantes, 'participantes gravado');
+    conferir(salva.participantes === login.usuario.nome && salva.participantes_ids[0] === login.usuario.id, 'participantes gravado (pelo nome do usuário)');
     conferir(salva.prioridade === enviada.prioridade, `prioridade gravada (veio: ${salva.prioridade})`);
     conferir(data(salva.data_inicio) === enviada.data_inicio, `data_inicio gravada (veio: ${salva.data_inicio})`);
     conferir(data(salva.data_conclusao) === enviada.data_conclusao, `data_conclusao gravada (veio: ${salva.data_conclusao})`);
@@ -160,4 +163,4 @@ async function main() {
 main().catch((erro) => {
     console.error('✘ Erro inesperado ao rodar o teste:', erro.message);
     process.exitCode = 1;
-});
+});

@@ -9,12 +9,14 @@ const tarefaRoutes = require('./routes/tarefaRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const feriadoRoutes = require('./routes/feriadoRoutes');
 const authRouters = require('./routes/authRoutes');
+const notificacaoRoutes = require('./routes/notificacaoRoutes');
+const perfilRoutes = require('./routes/perfilRoutes');
 
 const app = express();
 
 // ------------ 1. MIDDLEWARES ------------
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '1mb' })); // a foto de perfil vem em base64 (normalmente uns 40 KB)
 
 // Uma linha de log por requisição (aparece no terminal, no Emulator UI e no Cloud Logging)
 app.use((req, res, next) => {
@@ -53,6 +55,8 @@ rotas.get('/health', async (req, res) => {
 rotas.use('/tarefas', autenticar, tarefaRoutes);
 rotas.use('/usuarios', autenticar, usuarioRoutes);
 rotas.use('/feriados', autenticar, feriadoRoutes);
+rotas.use('/notificacoes', autenticar, notificacaoRoutes);
+rotas.use('/perfil', autenticar, perfilRoutes);
 rotas.use('/auth', authRouters);
 
 // No Firebase Hosting as chamadas chegam com o prefixo /api (ver firebase.json)

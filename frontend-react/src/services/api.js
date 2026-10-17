@@ -95,6 +95,10 @@ export const Api = {
             body: JSON.stringify(campos)
         });
     },
+    // Só TI: roda agora a verificação de prazos vencidos (normalmente roda sozinha toda madrugada)
+    verificarPrazos() {
+        return requisitar("/tarefas/verificar-prazos", { method: "POST" });
+    },
     excluirTarefa(id) {
         return requisitar("/tarefas/" + encodeURIComponent(id), { method: "DELETE" });
     },
@@ -123,6 +127,10 @@ export const Api = {
     listarAtribuiveis() {
         return requisitar("/usuarios/atribuiveis");
     },
+    // Usuários ativos que podem ser marcados como participantes (id, nome e setor)
+    listarParticipantes() {
+        return requisitar("/usuarios/participantes");
+    },
     listarUsuarios() {
         return requisitar("/usuarios");
     },
@@ -140,6 +148,40 @@ export const Api = {
             method: "PUT",
             body: JSON.stringify(campos)
         });
+    },
+
+    // Meu perfil (sempre da pessoa logada)
+    buscarPerfil() {
+        return requisitar("/perfil");
+    },
+    trocarFotoPerfil(imagem) {
+        return requisitar("/perfil/foto", { method: "PUT", body: JSON.stringify({ imagem }) });
+    },
+    removerFotoPerfil() {
+        return requisitar("/perfil/foto", { method: "DELETE" });
+    },
+    salvarTema(tema) {
+        return requisitar("/perfil/tema", { method: "PUT", body: JSON.stringify({ tema }) });
+    },
+    trocarSenha(senhaAtual, novaSenha) {
+        return requisitar("/perfil/senha", {
+            method: "PUT",
+            body: JSON.stringify({ senha_atual: senhaAtual, nova_senha: novaSenha })
+        });
+    },
+
+    // Sino: o número de não lidas é consultado sempre; a lista, só ao abrir
+    contarNotificacoes() {
+        return requisitar("/notificacoes/contagem");
+    },
+    listarNotificacoes() {
+        return requisitar("/notificacoes");
+    },
+    marcarNotificacaoLida(id) {
+        return requisitar("/notificacoes/" + encodeURIComponent(id) + "/lida", { method: "POST" });
+    },
+    marcarTodasNotificacoesLidas() {
+        return requisitar("/notificacoes/lidas", { method: "POST" });
     },
 
     listarFeriados(ano) {

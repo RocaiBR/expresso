@@ -13,8 +13,8 @@ const LINKS = [
 function classesDoLink({ isActive }) {
     const base = "flex items-center gap-3 px-[14px] py-[10px] rounded-[10px] text-sm no-underline transition-colors ";
     return isActive
-        ? base + "bg-[#e8d0e0] text-[#1c1c1e] font-semibold hover:bg-[#e1c4d7]"
-        : base + "text-[#3a3a3c] font-medium hover:bg-[#f4e8f0]";
+        ? base + "bg-realce-forte text-texto font-semibold hover:bg-realce-forte-hover"
+        : base + "text-texto-2 font-medium hover:bg-realce";
 }
 
 export default function Sidebar() {
@@ -22,7 +22,7 @@ export default function Sidebar() {
     const links = LINKS.filter(link => !link.somenteTI || usuario?.funcao === "ti");
 
     return (
-        <aside className="w-[200px] h-full bg-white border-r border-[#e2e2e7] p-3 py-5 shrink-0">
+        <aside className="w-[200px] h-full bg-superficie border-r border-borda-suave p-3 py-5 shrink-0">
             <nav className="flex flex-col gap-[6px]">
                 {links.map(({ para, rotulo, Icone, exato }) => (
                     <NavLink key={para} to={para} end={exato} className={classesDoLink}>

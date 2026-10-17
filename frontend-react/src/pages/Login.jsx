@@ -6,11 +6,15 @@ import "./login.css";
 
 import imgFundo from "../assets/fundo.png";
 import imgLogo from "../assets/logo.png";
+import imgLogoBranca from "../assets/logobranca.png";
+import { aplicarTema, useTema } from "../utils/tema";
 import imgCafe from "../assets/cafe.png";
 
 export default function Login() {
     const navigate = useNavigate();
     const { entrar } = useAuth();
+    // Nos temas escuros o logo cinza some; usa o branco
+    const tema = useTema();
 
     const [usuario, setUsuario] = useState("");
     const [senha, setSenha] = useState("");
@@ -41,6 +45,8 @@ export default function Login() {
         try {
             const dados = await Api.login(valorUsuario, senha);
             entrar({ ...dados.usuario, token: dados.token });
+            // O tema escolhido na conta vale em qualquer aparelho
+            if (dados.usuario.tema) aplicarTema(dados.usuario.tema);
             setTimeout(() => {
                 navigate("/");
             }, 1200);
@@ -62,7 +68,7 @@ export default function Login() {
                 {/* LADO DIREITO */}
                 <section className="lado-direito">
                     <div className="login-box">
-                        <img src={imgLogo} className="logo" alt="Pinhalense" />
+                        <img src={tema === "claro" ? imgLogo : imgLogoBranca} className="logo" alt="Pinhalense" />
                         <form onSubmit={fazerLogin}>
 
                             {/* USUÁRIO */}

@@ -36,6 +36,7 @@ async function importar() {
                 descricao: tarefa.descricao,
                 responsavel: tarefa.responsavel,
                 participantes: null,
+                participantes_ids: [],
                 usuario_id: null,
                 criado_por: null,
                 status: tarefa.status,

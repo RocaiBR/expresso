@@ -1,18 +1,20 @@
 import { useEffect, useRef } from "react";
 import Chart from "chart.js/auto";
+import { corDoTema, useTema } from "../utils/tema";
 
-// Mesma fonte e cor de texto do restante das telas
+// Mesma fonte do restante das telas (a cor do texto vem do tema, a cada desenho)
 Chart.defaults.font.family =
     'ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"';
 Chart.defaults.font.size = 11;
-Chart.defaults.color = "#6e6e73";
 
 /* Gráfico do Chart.js dentro de um <canvas>.
-   É recriado sempre que os dados mudam e destruído ao sair da tela. */
+   É recriado sempre que os dados ou o tema mudam e destruído ao sair da tela. */
 export default function Grafico({ tipo, dados, opcoes, plugins = [], descricao, className = "h-[220px]" }) {
     const canvasRef = useRef(null);
+    const tema = useTema();
 
     useEffect(() => {
+        Chart.defaults.color = corDoTema("texto-suave");
         const grafico = new Chart(canvasRef.current, {
             type: tipo,
             data: dados,
@@ -20,7 +22,7 @@ export default function Grafico({ tipo, dados, opcoes, plugins = [], descricao, 
             plugins
         });
         return () => grafico.destroy();
-    }, [tipo, dados, opcoes, plugins]);
+    }, [tipo, dados, opcoes, plugins, tema]);
 
     return (
         <div className={"relative w-full " + className}>

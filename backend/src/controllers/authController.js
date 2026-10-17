@@ -49,6 +49,8 @@ async function login(req, res, next) {
                 email: encontrado.email,
                 setor: encontrado.setor,
                 funcao: encontrado.funcao || 'usuario',
+                foto_url: encontrado.foto_url || null,
+                tema: encontrado.tema || null,
             },
         });
     } catch (error) {

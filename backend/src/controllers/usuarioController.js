@@ -1,6 +1,7 @@
-const { db, FieldValue, proximoId, buscarDoc, paraJson } = require('../config/firebase');
+const { db, FieldValue, proximoId, buscarDoc, paraJson, bucket } = require('../config/firebase');
 const { encerrarSessoesDoUsuario } = require('../middlewares/autenticacao');
 const { FUNCOES, usuariosAtribuiveis } = require('../utils/permissoes');
+const { excluirNotificacoesDoUsuario } = require('./notificacaoController');
 
 const usuarios = db.collection('usuarios');
 
@@ -30,7 +31,8 @@ function semSenha(doc) {
     return usuario;
 }
 
-/* O Firestore não tem índice UNIQUE: confere e-mail e usuário antes de gravar.
+/* 
+    O Firestore não tem índice UNIQUE: confere e-mail e usuário antes de gravar.
     Roda dentro da transação, então dois cadastros iguais ao mesmo tempo não passam.
  */
 async function mensagemDuplicado(transacao, dados, idAtual) {
@@ -58,6 +60,22 @@ const MENSAGEM_ULTIMO_TI = 'É preciso manter ao menos um usuário TI ativo. Pro
 async function listarAtribuiveis(req, res, next) {
     try {
         res.status(200).json(await usuariosAtribuiveis(req.usuario));
+    } catch (error) {
+        next(error);
+    }
+}
+
+/*
+GET /usuarios/participantes — usuários ativos que podem ser marcados como participantes
+(qualquer setor: participante só informa quem está envolvido, não dá acesso à atividade)
+*/
+async function listarParticipantes(req, res, next) {
+    try {
+        const resultado = await usuarios.where('ativo', '==', true).get();
+        const lista = resultado.docs
+            .map((doc) => ({ id: doc.data().id, nome: doc.data().nome, setor: doc.data().setor || null }))
+            .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+        res.status(200).json(lista);
     } catch (error) {
         next(error);
     }
@@ -207,6 +225,8 @@ async function excluirUsuario(req, res, next) {
         await doc.ref.delete();
         await encerrarSessoesDoUsuario(id);
         await db.collection('recuperacoes').doc(String(id)).delete();
+        await excluirNotificacoesDoUsuario(id);
+        if (doc.data().foto_caminho) await bucket().file(doc.data().foto_caminho).delete({ ignoreNotFound: true });
         console.log(`[USUARIOS] Usuário #${id} excluído por #${req.usuario.id}`);
 
         res.status(200).json({ mensagem: 'Usuário excluído com sucesso.', id: Number(id) });
@@ -217,6 +237,7 @@ async function excluirUsuario(req, res, next) {
 
 module.exports = {
     listarAtribuiveis,
+    listarParticipantes,
     listarUsuarios,
     buscarUsuarioPorId,
     criarUsuario,

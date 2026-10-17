@@ -20,13 +20,13 @@ const ABAS = [
 
 function CartaoContagem({ valor, rotulo, corIcone, children }) {
     return (
-        <div className="bg-white border border-[#d1d1d6] rounded-xl px-3 py-3 xl:px-4 xl:py-3.5 flex items-center justify-center gap-3.5 shadow-sm max-w-[200px] w-full mx-auto">
+        <div className="bg-superficie border border-borda rounded-xl px-3 py-3 xl:px-4 xl:py-3.5 flex items-center justify-center gap-3.5 shadow-sm max-w-[200px] w-full mx-auto">
             <div className={`w-9 h-9 xl:w-10 xl:h-10 rounded-full ${corIcone} flex items-center justify-center text-white shrink-0`}>
                 {children}
             </div>
             <div className="flex flex-col justify-center">
-                <span className="text-lg xl:text-xl font-bold text-[#1c1c1e] leading-none">{valor}</span>
-                <span className="text-[11px] xl:text-xs text-[#6e6e73] mt-1 font-medium leading-tight whitespace-nowrap">
+                <span className="text-lg xl:text-xl font-bold text-texto leading-none">{valor}</span>
+                <span className="text-[11px] xl:text-xs text-texto-suave mt-1 font-medium leading-tight whitespace-nowrap">
                     {rotulo}
                 </span>
             </div>
@@ -60,12 +60,12 @@ export default function Home() {
 
             {/* CABEÇALHO */}
             <div className="w-full flex items-center gap-6">
-                <div className="text-base text-[#6F0049] whitespace-nowrap">
+                <div className="text-base text-marca-texto whitespace-nowrap">
                     <span>{usuario?.nome || "Usuário"}</span>
                     {usuario?.setor && (
                         <>
                             <span> : </span>
-                            <strong className="text-[#1c1c1e]">{usuario.setor}</strong>
+                            <strong className="text-texto">{usuario.setor}</strong>
                         </>
                     )}
                 </div>
@@ -86,16 +86,16 @@ export default function Home() {
 
                     {/* CARDS */}
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 xl:gap-5">
-                        <CartaoContagem valor={ativas.length} rotulo="Total de atividades" corIcone="bg-[#6F0049]">
+                        <CartaoContagem valor={ativas.length} rotulo="Total de atividades" corIcone="bg-marca">
                             <IconeAtividades tamanho={20} />
                         </CartaoContagem>
-                        <CartaoContagem valor={contar("concluido")} rotulo="Concluído" corIcone="bg-[#54565B]">
+                        <CartaoContagem valor={contar("concluido")} rotulo="Concluído" corIcone="bg-cinza">
                             <IconeCheck />
                         </CartaoContagem>
-                        <CartaoContagem valor={contar("em andamento")} rotulo="Em andamento" corIcone="bg-[#6F0049]">
+                        <CartaoContagem valor={contar("em andamento")} rotulo="Em andamento" corIcone="bg-marca">
                             <IconeRelogio />
                         </CartaoContagem>
-                        <CartaoContagem valor={contar("pendente")} rotulo="Pendente" corIcone="bg-[#54565B]">
+                        <CartaoContagem valor={contar("pendente")} rotulo="Pendente" corIcone="bg-cinza">
                             <IconeCalendario />
                         </CartaoContagem>
                     </div>
@@ -106,7 +106,7 @@ export default function Home() {
 
                 {/* MINHAS ATIVIDADES */}
                 <section className="w-full flex flex-col">
-                    <h2 className="text-base font-bold text-[#1c1c1e] mb-3">
+                    <h2 className="text-base font-bold text-texto mb-3">
                         Minhas atividades
                     </h2>
 
@@ -114,7 +114,7 @@ export default function Home() {
                     <Abas abas={ABAS} filtroAtivo={filtro} aoSelecionar={aoSelecionarAba} />
 
                     {/* TABELA */}
-                    <div className="w-full bg-white border border-[#d1d1d6] border-t-0 rounded-b-xl divide-y divide-gray-100 shadow-sm">
+                    <div className="w-full bg-superficie border border-borda border-t-0 rounded-b-xl divide-y divide-borda-suave shadow-sm">
                         {carregando && <MensagemTabela>Carregando atividades...</MensagemTabela>}
                         {!carregando && erro && tarefas.length === 0 && (
                             <MensagemTabela>{erro}</MensagemTabela>

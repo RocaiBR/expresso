@@ -5,6 +5,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expresso - Pinhalense</title>
+    <script>
+        // Aplica o tema salvo antes de a página aparecer (evita piscar no claro)
+        try {
+            var tema = localStorage.getItem("tema");
+            if (tema === "claro" || tema === "escuro" || tema === "profundo") {
+                document.documentElement.dataset.tema = tema;
+            }
+        } catch (erro) {}
+    </script>
 </head>
 
 <body>

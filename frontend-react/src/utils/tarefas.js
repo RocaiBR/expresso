@@ -1,5 +1,11 @@
 import { Formato } from "./formato";
 
+/* Prazo vencido: a API marca "atrasada" e sobe a prioridade para urgente.
+   Só mostra o aviso enquanto a atividade está aberta. */
+export function estaAtrasada(tarefa) {
+    return Boolean(tarefa.atrasada) && (tarefa.status === "pendente" || tarefa.status === "em andamento");
+}
+
 /* Filtros das abas */
 
 export function filtrarTarefas(tarefas, filtro) {

@@ -5,8 +5,9 @@ import { Formato } from "../utils/formato";
 import Grafico from "../components/Grafico";
 import SeletorPeriodo from "../components/SeletorPeriodo";
 import { IconeBaixar, IconeFunil, IconeSetaBaixo } from "../components/Icones";
+import { comTransparencia, corDoTema, useTema } from "../utils/tema";
 import {
-    CORES, FILTROS_PADRAO, anosDoPeriodo, aplicarFiltros, calcularBacklog,
+    FILTROS_PADRAO, anosDoPeriodo, aplicarFiltros, calcularBacklog,
     calcularDiasUteis, calcularTempoConclusao, contarCriadasNoPeriodo, exportarCsv,
     formatarDia, formatarNumero, periodoUltimosDias, responsaveisDasTarefas, tarefasDoPeriodo
 } from "../utils/relatorios";
@@ -19,7 +20,7 @@ const rotulosNasBarras = {
         const valores = grafico.data.datasets[0].data;
         ctx.save();
         ctx.font = "600 11px ui-sans-serif, system-ui, sans-serif";
-        ctx.fillStyle = "#1c1c1e";
+        ctx.fillStyle = corDoTema("texto");
         ctx.textAlign = "center";
         ctx.textBaseline = "bottom";
         grafico.getDatasetMeta(0).data.forEach((barra, indice) => {
@@ -31,17 +32,16 @@ const rotulosNasBarras = {
 };
 const PLUGINS_BARRAS = [rotulosNasBarras];
 
-// Preenchimento do backlog: vinho clarinho em cima, sumindo até o eixo
+// Preenchimento do backlog: vinho clarinho em cima, sumindo até o eixo (cor do tema atual)
 function degradeVinho(contexto) {
     const { ctx, chartArea } = contexto.chart;
     if (!chartArea) return "transparent";
+    const vinho = corDoTema("marca-texto");
     const degrade = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-    degrade.addColorStop(0, "rgba(111, 0, 73, 0.16)");
-    degrade.addColorStop(1, "rgba(111, 0, 73, 0)");
+    degrade.addColorStop(0, comTransparencia(vinho, 0.16));
+    degrade.addColorStop(1, comTransparencia(vinho, 0));
     return degrade;
 }
-
-const EIXO = { grid: { color: CORES.grade }, border: { display: false } };
 
 function Selecao({ valor, aoMudar, rotulo, className = "", children }) {
     return (
@@ -50,11 +50,11 @@ function Selecao({ valor, aoMudar, rotulo, className = "", children }) {
                 aria-label={rotulo}
                 value={valor}
                 onChange={evento => aoMudar(evento.target.value)}
-                className="w-full h-[32px] appearance-none bg-white border border-[#d1d1d6] rounded-md pl-3 pr-8 text-xs text-[#1c1c1e] cursor-pointer outline-none focus:border-[#6F0049] transition-colors"
+                className="w-full h-[32px] appearance-none bg-superficie border border-borda rounded-md pl-3 pr-8 text-xs text-texto cursor-pointer outline-none focus:border-marca-texto transition-colors"
             >
                 {children}
             </select>
-            <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-[#3a3a3c]">
+            <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-texto-2">
                 <IconeSetaBaixo />
             </span>
         </div>
@@ -63,11 +63,11 @@ function Selecao({ valor, aoMudar, rotulo, className = "", children }) {
 
 function CartaoGrafico({ titulo, descricao, controle, aviso, children }) {
     return (
-        <article className="bg-white border border-[#d1d1d6] rounded-xl shadow-sm p-4 xl:p-5 flex flex-col gap-3 min-w-0">
+        <article className="bg-superficie border border-borda rounded-xl shadow-sm p-4 xl:p-5 flex flex-col gap-3 min-w-0">
             <div className="flex items-start justify-between gap-3">
                 <div>
-                    <h2 className="text-sm xl:text-base font-bold text-[#1c1c1e]">{titulo}</h2>
-                    <p className="text-xs text-[#6e6e73] mt-0.5">{descricao}</p>
+                    <h2 className="text-sm xl:text-base font-bold text-texto">{titulo}</h2>
+                    <p className="text-xs text-texto-suave mt-0.5">{descricao}</p>
                 </div>
                 {controle}
             </div>
@@ -75,7 +75,7 @@ function CartaoGrafico({ titulo, descricao, controle, aviso, children }) {
                 {children}
                 {aviso && (
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="bg-white/90 px-3 py-1.5 rounded-md text-xs text-[#6e6e73] text-center">
+                        <span className="bg-superficie/90 px-3 py-1.5 rounded-md text-xs text-texto-suave text-center">
                             {aviso}
                         </span>
                     </div>
@@ -87,7 +87,7 @@ function CartaoGrafico({ titulo, descricao, controle, aviso, children }) {
 
 function CampoFiltro({ rotulo, children }) {
     return (
-        <label className="flex flex-col gap-1.5 text-xs font-medium text-[#3a3a3c]">
+        <label className="flex flex-col gap-1.5 text-xs font-medium text-texto-2">
             {rotulo}
             {children}
         </label>
@@ -97,8 +97,8 @@ function CampoFiltro({ rotulo, children }) {
 function LinhaResumo({ rotulo, valor }) {
     return (
         <div className="flex items-start justify-between gap-3">
-            <dt className="font-semibold text-[#1c1c1e]">{rotulo}</dt>
-            <dd className="text-[#3a3a3c] text-right whitespace-nowrap">{valor}</dd>
+            <dt className="font-semibold text-texto">{rotulo}</dt>
+            <dd className="text-texto-2 text-right whitespace-nowrap">{valor}</dd>
         </div>
     );
 }
@@ -162,6 +162,11 @@ export default function Relatorios() {
         return () => { ativo = false; };
     }, [chaveAnos, feriadosPorAno]);
 
+    // Cores dos gráficos: lidas do tema e recalculadas quando ele muda
+    const tema = useTema();
+    const cores = useMemo(() => ({ vinho: corDoTema("marca-texto"), grade: corDoTema("grade") }), [tema]);
+    const EIXO = useMemo(() => ({ grid: { color: cores.grade }, border: { display: false } }), [cores]);
+
     const tarefasFiltradas = useMemo(() => aplicarFiltros(tarefas, filtros), [tarefas, filtros]);
     const responsaveis = useMemo(() => responsaveisDasTarefas(tarefas), [tarefas]);
 
@@ -185,17 +190,17 @@ export default function Relatorios() {
         datasets: [{
             label: "Atividades em aberto",
             data: backlog.valores,
-            borderColor: CORES.vinho,
+            borderColor: cores.vinho,
             borderWidth: 1.5,
             backgroundColor: degradeVinho,
             fill: "origin",
             tension: 0,
             pointRadius: backlog.valores.length > 31 ? 0 : 3,
             pointHoverRadius: 5,
-            pointBackgroundColor: CORES.vinho,
+            pointBackgroundColor: cores.vinho,
             pointBorderWidth: 0
         }]
-    }), [backlog]);
+    }), [backlog, cores]);
 
     const opcoesBacklog = useMemo(() => ({
         plugins: {
@@ -211,7 +216,7 @@ export default function Relatorios() {
             x: { ...EIXO, ticks: { maxRotation: 0, autoSkipPadding: 12 } },
             y: { ...EIXO, beginAtZero: true, grace: "20%", ticks: { precision: 0, maxTicksLimit: 7 } }
         }
-    }), [backlog]);
+    }), [backlog, EIXO]);
 
     /* TEMPO MÉDIO PARA CONCLUSÃO */
     const tempo = useMemo(
@@ -225,11 +230,11 @@ export default function Relatorios() {
         datasets: [{
             label: estatistica === "mediana" ? "Mediana (dias)" : "Média (dias)",
             data: tempo.valores,
-            backgroundColor: CORES.vinho,
+            backgroundColor: cores.vinho,
             maxBarThickness: 42,
             borderRadius: 2
         }]
-    }), [tempo, estatistica]);
+    }), [tempo, estatistica, cores]);
 
     const opcoesTempo = useMemo(() => ({
         layout: { padding: { top: 18 } },
@@ -252,7 +257,7 @@ export default function Relatorios() {
                 ? { ...EIXO, beginAtZero: true, grace: "25%", ticks: { maxTicksLimit: 6 } }
                 : { ...EIXO, min: 0, max: 8, ticks: { stepSize: 2 } }
         }
-    }), [tempo, temConcluidas]);
+    }), [tempo, temConcluidas, EIXO]);
 
     function avisoDoGrafico(semDados) {
         if (carregando) return "Carregando dados...";
@@ -276,7 +281,7 @@ export default function Relatorios() {
 
             {/* TOPO: VOLTAR + PERÍODO + EXPORTAR */}
             <div className="flex flex-wrap items-center justify-between gap-3">
-                <Link to="/" className="text-[#6F0049] text-base font-semibold no-underline hover:underline">
+                <Link to="/" className="text-marca-texto text-base font-semibold no-underline hover:underline">
                     &lt; Voltar
                 </Link>
                 <div className="flex items-center gap-3">
@@ -286,7 +291,7 @@ export default function Relatorios() {
                         onClick={() => exportarCsv(tarefasParaExportar, periodo)}
                         disabled={carregando || tarefasParaExportar.length === 0}
                         title="Baixa em CSV as atividades do período com os filtros aplicados"
-                        className="h-[32px] bg-white border border-[#6F0049] text-[#6F0049] hover:bg-[#f4e8f0] rounded-md px-4 flex items-center gap-2 text-xs font-medium cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="h-[32px] bg-superficie border border-marca-texto text-marca-texto hover:bg-realce rounded-md px-4 flex items-center gap-2 text-xs font-medium cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         <IconeBaixar tamanho={13} />
                         <span>Exportar</span>
@@ -295,7 +300,7 @@ export default function Relatorios() {
             </div>
 
             {erro && (
-                <div className="w-full rounded-lg px-4 py-3 text-sm bg-red-50 text-red-700 border border-red-200">
+                <div className="w-full rounded-lg px-4 py-3 text-sm bg-perigo-fundo text-perigo border border-perigo-borda">
                     {erro}
                 </div>
             )}
@@ -363,8 +368,8 @@ export default function Relatorios() {
 
                 {/* LATERAL: FILTROS + RESUMO */}
                 <div className="flex flex-col gap-4">
-                    <section className="bg-white border border-[#d1d1d6] rounded-xl shadow-sm p-4 flex flex-col gap-3.5">
-                        <h2 className="text-base font-bold text-[#1c1c1e]">Filtros</h2>
+                    <section className="bg-superficie border border-borda rounded-xl shadow-sm p-4 flex flex-col gap-3.5">
+                        <h2 className="text-base font-bold text-texto">Filtros</h2>
 
                         <CampoFiltro rotulo="Responsável">
                             <Selecao valor={selecao.responsavel} aoMudar={mudarSelecao("responsavel")}>
@@ -396,7 +401,7 @@ export default function Relatorios() {
                         <button
                             type="button"
                             onClick={() => setFiltros(selecao)}
-                            className="mt-1 w-full h-[34px] bg-[#6F0049] hover:bg-[#560039] text-white text-xs font-medium rounded-md flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                            className="mt-1 w-full h-[34px] bg-marca hover:bg-marca-escura text-white text-xs font-medium rounded-md flex items-center justify-center gap-2 cursor-pointer transition-colors"
                         >
                             <IconeFunil />
                             <span>Aplicar filtros</span>
@@ -404,14 +409,14 @@ export default function Relatorios() {
                         <button
                             type="button"
                             onClick={limparFiltros}
-                            className="bg-transparent border-0 text-[#6F0049] text-xs font-semibold cursor-pointer hover:underline"
+                            className="bg-transparent border-0 text-marca-texto text-xs font-semibold cursor-pointer hover:underline"
                         >
                             Limpar filtros
                         </button>
                     </section>
 
-                    <section className="bg-white border border-[#d1d1d6] rounded-xl shadow-sm p-4 flex flex-col gap-4">
-                        <h2 className="text-sm xl:text-base font-bold text-[#1c1c1e]">Resumo do período</h2>
+                    <section className="bg-superficie border border-borda rounded-xl shadow-sm p-4 flex flex-col gap-4">
+                        <h2 className="text-sm xl:text-base font-bold text-texto">Resumo do período</h2>
                         <dl className="flex flex-col gap-4 text-[11px]">
                             <LinhaResumo
                                 rotulo="Período selecionado"
