@@ -37,8 +37,8 @@ export const Formato = {
     },
 
     // Usuários: valor do banco -> texto na tela
-    setores: { "PCP": "PCP", "ENGENHARIA": "ENGENHARIA" },
-    funcoes: { "usuario": "USUÁRIO COMUM", "gestor": "GESTOR" },
+    setores: { "PCP": "PCP", "ENGENHARIA": "ENGENHARIA", "TI": "TI" },
+    funcoes: { "usuario": "USUÁRIO PADRÃO", "gestor": "GESTOR", "ti": "TI" },
 
     rotuloPrioridade(valor) {
         return this.prioridade.rotulo[valor] || "Médio";

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 import "./login.css";
@@ -40,7 +40,7 @@ export default function Login() {
         setCarregando(true);
         try {
             const dados = await Api.login(valorUsuario, senha);
-            entrar(dados.usuario);
+            entrar({ ...dados.usuario, token: dados.token });
             setTimeout(() => {
                 navigate("/");
             }, 1200);
@@ -95,6 +95,7 @@ export default function Login() {
 
                             <button type="submit">LOGIN</button>
                         </form>
+                        <Link to="/recuperar-senha" className="link-secundario">Esqueci minha senha</Link>
                     </div>
                 </section>
             </main>

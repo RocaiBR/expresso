@@ -3,7 +3,6 @@ const { getFirestore, FieldValue, Timestamp } = require('firebase-admin/firestor
 const { getStorage } = require('firebase-admin/storage');
 
 // Na Cloud Function o Firebase se configura sozinho. Rodando local (npm run dev),
-// o projeto, o bucket e o acesso vêm do .env.servidor (emulador ou chave de conta de serviço).
 initializeApp(process.env.PROJETO_FIREBASE
     ? { projectId: process.env.PROJETO_FIREBASE, storageBucket: process.env.BUCKET_FIREBASE }
     : undefined);
@@ -53,8 +52,8 @@ async function testarConexao() {
     }
 }
 
-// O Firestore não tem AUTO_INCREMENT: o último id de cada coleção fica em contadores/<colecao>.
-// Precisa rodar dentro de uma transação para dois cadastros simultâneos não pegarem o mesmo id.
+/* O Firestore não tem AUTO_INCREMENT: o último id de cada coleção fica em contadores/<colecao>.
+    Precisa rodar dentro de uma transação para dois cadastros simultâneos não pegarem o mesmo id. */
 async function proximoId(transacao, colecao) {
     const ref = db.collection('contadores').doc(colecao);
     const contador = await transacao.get(ref);
@@ -63,14 +62,12 @@ async function proximoId(transacao, colecao) {
     return id;
 }
 
-// Busca pelo id da URL; devolve null se não existir (ids são sempre números)
+// Busca pelo id da URL; devolve null se não existir
 async function buscarDoc(colecao, id) {
     if (!/^\d+$/.test(String(id))) return null;
     const doc = await db.collection(colecao).doc(String(id)).get();
     return doc.exists ? doc : null;
 }
-
-// Datas do Firestore viram texto ISO, igual ao que o MySQL devolvia ("2026-09-27T14:41:49.000Z")
 function paraJson(doc) {
     const dados = doc.data();
     for (const [campo, valor] of Object.entries(dados)) {
@@ -82,6 +79,7 @@ function paraJson(doc) {
 module.exports = {
     db,
     FieldValue,
+    Timestamp,
     bucket,
     urlDeDownload,
     descreverBanco,

@@ -1,11 +1,13 @@
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import { IconeHome, IconeAtividades, IconeRelatorios, IconeUsuarios } from "./Icones";
 
+// "somenteTI": o cadastro de usuários só aparece para o TI (a API também bloqueia)
 const LINKS = [
     { para: "/", rotulo: "Home", Icone: IconeHome, exato: true },
     { para: "/atividades", rotulo: "Atividades", Icone: IconeAtividades },
     { para: "/relatorios", rotulo: "Relatórios", Icone: IconeRelatorios },
-    { para: "/usuarios", rotulo: "Usuários", Icone: IconeUsuarios }
+    { para: "/usuarios", rotulo: "Usuários", Icone: IconeUsuarios, somenteTI: true }
 ];
 
 function classesDoLink({ isActive }) {
@@ -16,10 +18,13 @@ function classesDoLink({ isActive }) {
 }
 
 export default function Sidebar() {
+    const { usuario } = useAuth();
+    const links = LINKS.filter(link => !link.somenteTI || usuario?.funcao === "ti");
+
     return (
         <aside className="w-[200px] h-full bg-white border-r border-[#e2e2e7] p-3 py-5 shrink-0">
             <nav className="flex flex-col gap-[6px]">
-                {LINKS.map(({ para, rotulo, Icone, exato }) => (
+                {links.map(({ para, rotulo, Icone, exato }) => (
                     <NavLink key={para} to={para} end={exato} className={classesDoLink}>
                         <span className="flex items-center justify-center">
                             <Icone />

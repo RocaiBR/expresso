@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Api } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 
 const classesCampo =
     "h-[40px] bg-white border border-[#b9b9be] rounded-lg px-3 text-sm outline-none focus:border-[#6F0049] focus:ring-1 focus:ring-[#6F0049]";
@@ -13,6 +14,9 @@ export default function UsuarioForm() {
     const { id } = useParams();
     const editando = Boolean(id);
     const navigate = useNavigate();
+    const { usuario: logado } = useAuth();
+    // Ninguém exclui a própria conta (a API também bloqueia)
+    const podeExcluir = editando && String(logado?.id) !== String(id);
 
     const [dados, setDados] = useState({
         nome: "",
@@ -104,6 +108,33 @@ export default function UsuarioForm() {
         }
     }
 
+    async function excluir() {
+        setErro(null);
+        setSalvando(true);
+        try {
+            // Conta as atividades da pessoa para avisar antes (o TI enxerga todas)
+            const tarefas = await Api.listarTarefas();
+            const quantas = tarefas.filter(tarefa => String(tarefa.usuario_id) === String(id)).length;
+            const confirmou = confirm(
+                'Excluir o usuário "' + dados.nome + '"? Essa ação não pode ser desfeita.\n\n' +
+                (quantas > 0
+                    ? "Ele é responsável por " + quantas + " atividade(s). Elas continuam no sistema, com o nome dele, " +
+                      "e você pode passá-las para outra pessoa em Atividades > Selecionar.\n\n"
+                    : "") +
+                'Se a pessoa só vai ficar fora por um tempo, prefira mudar o Estado para "Inativo".'
+            );
+            if (!confirmou) {
+                setSalvando(false);
+                return;
+            }
+            await Api.excluirUsuario(id);
+            navigate("/usuarios", { state: { aviso: 'Usuário "' + dados.nome + '" excluído.' } });
+        } catch (erroApi) {
+            setErro(erroApi.message);
+            setSalvando(false);
+        }
+    }
+
     return (
         <div className="flex flex-col gap-5">
 
@@ -189,6 +220,7 @@ export default function UsuarioForm() {
                         <option value="" disabled>Selecione um setor</option>
                         <option value="PCP">PCP</option>
                         <option value="ENGENHARIA">ENGENHARIA</option>
+                        <option value="TI">TI</option>
                     </select>
                 </div>
 
@@ -201,8 +233,9 @@ export default function UsuarioForm() {
                         className={classesCampo + " cursor-pointer"}
                     >
                         <option value="" disabled>Selecione uma função</option>
-                        <option value="usuario">USUÁRIO COMUM</option>
+                        <option value="usuario">USUÁRIO PADRÃO</option>
                         <option value="gestor">GESTOR</option>
+                        <option value="ti">TI</option>
                     </select>
                 </div>
 
@@ -222,7 +255,17 @@ export default function UsuarioForm() {
                     </div>
                 )}
 
-                <div className={(editando ? "" : "md:col-span-2 ") + "flex justify-end items-end"}>
+                <div className={(editando ? "" : "md:col-span-2 ") + "flex justify-end items-end gap-3"}>
+                    {podeExcluir && (
+                        <button
+                            type="button"
+                            onClick={excluir}
+                            disabled={salvando || !carregouUsuario}
+                            className="border border-red-600 text-red-600 bg-white hover:bg-red-50 text-sm font-medium px-6 py-2.5 rounded-lg transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                            Excluir usuário
+                        </button>
+                    )}
                     <button
                         type="submit"
                         disabled={salvando || (editando && !carregouUsuario)}

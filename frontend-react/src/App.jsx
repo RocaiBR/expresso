@@ -1,8 +1,9 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
+import RecuperarSenha from "./pages/RecuperarSenha";
 import Home from "./pages/Home";
 import Atividades from "./pages/Atividades";
 import NovaAtividade from "./pages/NovaAtividade";
@@ -14,6 +15,12 @@ import UsuarioForm from "./pages/UsuarioForm";
 // Carregada só ao abrir a tela, para o Chart.js não pesar no resto do sistema
 const Relatorios = lazy(() => import("./pages/Relatorios"));
 
+// Telas do cadastro de usuários: quem não é TI volta para a Home
+function SomenteTI({ children }) {
+    const { usuario } = useAuth();
+    return usuario?.funcao === "ti" ? children : <Navigate to="/" replace />;
+}
+
 export default function App() {
     return (
         <AuthProvider>
@@ -21,6 +28,7 @@ export default function App() {
                 <Routes>
                     {/* PÚBLICA */}
                     <Route path="/login" element={<Login />} />
+                    <Route path="/recuperar-senha" element={<RecuperarSenha />} />
 
                     {/* PROTEGIDAS (navbar + sidebar) */}
                     <Route element={<Layout />}>
@@ -33,9 +41,9 @@ export default function App() {
                             path="/relatorios"
                             element={<Suspense fallback={null}><Relatorios /></Suspense>}
                         />
-                        <Route path="/usuarios" element={<Usuarios />} />
-                        <Route path="/usuarios/novo" element={<UsuarioForm />} />
-                        <Route path="/usuarios/:id" element={<UsuarioForm />} />
+                        <Route path="/usuarios" element={<SomenteTI><Usuarios /></SomenteTI>} />
+                        <Route path="/usuarios/novo" element={<SomenteTI><UsuarioForm /></SomenteTI>} />
+                        <Route path="/usuarios/:id" element={<SomenteTI><UsuarioForm /></SomenteTI>} />
                     </Route>
 
                     {/* QUALQUER OUTRA ROTA */}
