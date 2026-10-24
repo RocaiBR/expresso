@@ -11,7 +11,9 @@
     "dev": "nodemon server.js",
     "emuladores": "firebase emulators:start --project demo-expresso --import=../.emulador-dados --export-on-exit",
     "importar:csv": "node scripts/importarCsv.js",
+    "migrar:mysql": "node scripts/migrarMysql.js",
     "testar": "node testes/testar_gravacao.js",
+    "testar:tudo": "npm --prefix ../frontend-react run build && firebase emulators:exec --project demo-expresso \"node testes/rodarTodos.js\"",
     "logs": "firebase functions:log --only api"
   },
   "keywords": [
@@ -32,6 +34,8 @@
     "nodemailer": "10.0.10"
   },
   "devDependencies": {
-    "nodemon": "^3.1.4"
+    "mysql2": "3.24.5",
+    "nodemon": "^3.1.4",
+    "playwright-core": "1.63.0"
   }
 }

@@ -3,6 +3,10 @@ const { excluirArquivosDaTarefa } = require('./anexoController');
 const { avisarNovaAtividade, avisarTrocaDeResponsavel } = require('./notificacaoController');
 const { permissoesDaTarefa, tarefasVisiveis, carregarTarefa, validarResponsavel } = require('../utils/permissoes');
 const { aplicarRegraDoPrazo, verificarPrazos } = require('../utils/prazos');
+const {
+    STATUS_VALIDOS, PRIORIDADES_VALIDAS, STATUS_FINAIS, LIMITES_TAREFA: LIMITES,
+    vazioParaNulo, dataValida, conferirOrdemDasDatas,
+} = require('../utils/validacoes');
 
 const tarefas = db.collection('tarefas');
 
@@ -11,27 +15,12 @@ const CAMPOS_PERMITIDOS = [
     'status', 'prioridade', 'data_inicio', 'data_conclusao'
 ];
 
-const STATUS_VALIDOS = ['pendente', 'em andamento', 'concluido', 'cancelado'];
-const PRIORIDADES_VALIDAS = ['baixo', 'medio', 'alto', 'urgente'];
-
-// Status que encerram a tarefa: ao entrar em um deles, "finalizado_em" guarda o momento
-const STATUS_FINAIS = ['concluido', 'cancelado'];
-
-// Converte "" em null
-function vazioParaNulo(valor) {
-    if (valor === undefined || valor === null) return null;
-    if (typeof valor === 'string' && valor.trim() === '') return null;
-    return valor;
-}
-
-// Prepara o valor de um campo para gravar
 function valorDoCampo(campo, valor) {
-    if (campo === 'titulo') return valor;
+    if (campo === 'titulo') return typeof valor === 'string' ? valor.trim() : valor;
     const limpo = vazioParaNulo(valor);
     return campo === 'usuario_id' && limpo !== null ? Number(limpo) : limpo;
 }
 
-// Confere status, prioridade e datas; devolve a mensagem de erro ou null
 function validar(dados) {
     if (dados.status !== undefined && !STATUS_VALIDOS.includes(dados.status)) {
         return `Status inválido. Use: ${STATUS_VALIDOS.join(', ')}.`;
@@ -41,8 +30,19 @@ function validar(dados) {
     }
     for (const campo of ['data_inicio', 'data_conclusao']) {
         const valor = vazioParaNulo(dados[campo]);
-        if (valor !== null && !/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
-            return `O campo "${campo}" deve estar no formato AAAA-MM-DD.`;
+        if (valor !== null && !dataValida(valor)) {
+            return `O campo "${campo}" deve ser uma data válida no formato AAAA-MM-DD.`;
+        }
+    }
+    if (dados.titulo !== undefined && (typeof dados.titulo !== 'string' || dados.titulo.trim() === '')) {
+        return 'O título não pode ficar vazio.';
+    }
+    if (dados.descricao !== undefined && dados.descricao !== null && typeof dados.descricao !== 'string') {
+        return 'O campo "descricao" deve ser um texto.';
+    }
+    for (const [campo, limite] of Object.entries(LIMITES)) {
+        if (typeof dados[campo] === 'string' && dados[campo].trim().length > limite) {
+            return `O campo "${campo}" aceita até ${limite} caracteres.`;
         }
     }
     return null;
@@ -50,8 +50,6 @@ function validar(dados) {
 
 const MAXIMO_PARTICIPANTES = 20;
 
-/* Participantes só podem ser usuários existentes e ativos. Devolve os ids e os nomes
-(o campo "participantes" guarda os nomes, para a busca, os detalhes e os relatórios)*/
 async function validarParticipantes(lista) {
     if (lista === null || lista === undefined) return { ids: [], nomes: null };
     if (!Array.isArray(lista)) return { erro: 'Envie os participantes como uma lista de ids de usuários.' };
@@ -67,19 +65,16 @@ async function validarParticipantes(lista) {
     return { ids, nomes: docs.map((doc) => doc.data().nome).join(', ') };
 }
 
-// A tarefa vai para a tela junto com o que o usuário logado pode fazer com ela
 function paraJsonTarefa(doc, permissoes) {
     const { status, editar, excluir } = permissoes;
     return { ...paraJson(doc), permissoes: { status, editar, excluir } };
 }
 
-// GET /tarefas  (aceita ?status=pendente) — só as que o usuário logado pode ver
+// GET /tarefas  (aceita ?status=pendente)
 async function listarTarefas(req, res, next) {
     try {
         const { status } = req.query;
         const { docs, equipe } = await tarefasVisiveis(req.usuario);
-
-        // Filtra e ordena aqui (id DESC) para não precisar de índice composto no Firestore
         const lista = docs
             .filter((doc) => !status || doc.data().status === status)
             .map((doc) => paraJsonTarefa(doc, permissoesDaTarefa(req.usuario, doc.data(), equipe)))
@@ -93,7 +88,6 @@ async function listarTarefas(req, res, next) {
 // GET /tarefas/:id
 async function buscarTarefaPorId(req, res, next) {
     try {
-        // Quem não pode ver recebe 404, como se ela não existisse
         const tarefa = await carregarTarefa(req.usuario, req.params.id);
         if (!tarefa) {
             return res.status(404).json({ erro: 'Tarefa não encontrada.' });
@@ -113,13 +107,12 @@ async function criarTarefa(req, res, next) {
             status, prioridade, data_inicio, data_conclusao
         } = req.body;
 
-        if (!titulo || titulo.trim() === '') {
+        if (typeof titulo !== 'string' || titulo.trim() === '') {
             return res.status(400).json({ erro: 'O campo "titulo" é obrigatório.' });
         }
-        const erro = validar(req.body);
+        const erro = validar(req.body) || conferirOrdemDasDatas(vazioParaNulo(data_inicio), vazioParaNulo(data_conclusao));
         if (erro) return res.status(400).json({ erro });
 
-        // Sem responsável informado, a atividade é de quem está criando
         const alvo = await validarResponsavel(req.usuario, vazioParaNulo(usuario_id) ?? req.usuario.id);
         if (alvo.erro) return res.status(403).json({ erro: alvo.erro });
 
@@ -152,8 +145,6 @@ async function criarTarefa(req, res, next) {
         let doc = await buscarDoc('tarefas', id);
         console.log(`[TAREFAS] Tarefa #${id} gravada no Firestore por #${req.usuario.id}: "${titulo.trim()}"`);
         await avisarNovaAtividade(req.usuario, doc.data());
-      
-        // Criada com o prazo já vencido: já nasce urgente
         if (await aplicarRegraDoPrazo(doc, req.usuario)) doc = await buscarDoc('tarefas', id);
         res.status(201).json(paraJsonTarefa(doc, permissoesDaTarefa(req.usuario, doc.data())));
     } catch (error) {
@@ -186,7 +177,15 @@ async function atualizarTarefa(req, res, next) {
             return res.status(404).json({ erro: 'Tarefa não encontrada.' });
         }
 
-        // Mudar só o status pede a permissão "status"; qualquer outro campo pede "editar"
+        if (camposParaAtualizar.data_inicio !== undefined || camposParaAtualizar.data_conclusao !== undefined) {
+            const atual = tarefa.doc.data();
+            const erroDatas = conferirOrdemDasDatas(
+                camposParaAtualizar.data_inicio !== undefined ? camposParaAtualizar.data_inicio : atual.data_inicio,
+                camposParaAtualizar.data_conclusao !== undefined ? camposParaAtualizar.data_conclusao : atual.data_conclusao
+            );
+            if (erroDatas) return res.status(400).json({ erro: erroDatas });
+        }
+
         const soStatus = Object.keys(camposParaAtualizar).every((campo) => campo === 'status');
         if (!(soStatus ? tarefa.permissoes.status : tarefa.permissoes.editar)) {
             return res.status(403).json({
@@ -196,14 +195,12 @@ async function atualizarTarefa(req, res, next) {
             });
         }
 
-        // Trocar o responsável segue as mesmas regras de quem pode atribuir
         if (camposParaAtualizar.usuario_id !== undefined) {
             const alvo = await validarResponsavel(req.usuario, camposParaAtualizar.usuario_id);
             if (alvo.erro) return res.status(403).json({ erro: alvo.erro });
             camposParaAtualizar.responsavel = alvo.responsavel.nome;
         }
 
-        // Participantes: só usuários existentes; o nome de cada um vai para "participantes"
         if (camposParaAtualizar.participantes_ids !== undefined) {
             const participantes = await validarParticipantes(camposParaAtualizar.participantes_ids);
             if (participantes.erro) return res.status(400).json({ erro: participantes.erro });
@@ -211,7 +208,6 @@ async function atualizarTarefa(req, res, next) {
             camposParaAtualizar.participantes = participantes.nomes;
         }
 
-        // Concluir/cancelar registra o momento; reabrir apaga
         if (req.body.status !== undefined) {
             if (!STATUS_FINAIS.includes(req.body.status)) {
                 camposParaAtualizar.finalizado_em = null;
@@ -221,13 +217,9 @@ async function atualizarTarefa(req, res, next) {
         }
 
         await tarefa.doc.ref.update(camposParaAtualizar);
-        /* Prazo vencido vira urgente; prazo adiado volta à prioridade de antes
-            (se a pessoa escolheu a prioridade agora, a escolha dela vale) */
         await aplicarRegraDoPrazo(await buscarDoc('tarefas', id), req.usuario, req.body.prioridade !== undefined);
         const atualizada = await carregarTarefa(req.usuario, id);
         console.log(`[TAREFAS] Tarefa #${id} atualizada por #${req.usuario.id}: ${Object.keys(camposParaAtualizar).join(', ')}`);
-
-        // Se a tarefa saiu do alcance de quem editou (ex.: passou para outro setor), devolve o que foi gravado
         const doc = atualizada ? atualizada.doc : await buscarDoc('tarefas', id);
         if (camposParaAtualizar.usuario_id !== undefined) {
             await avisarTrocaDeResponsavel(req.usuario, doc.data(), tarefa.doc.data().usuario_id);
@@ -239,7 +231,7 @@ async function atualizarTarefa(req, res, next) {
     }
 }
 
-// POST /tarefas/verificar-prazos (só TI) — roda agora a mesma verificação da madrugada
+// POST /tarefas/verificar-prazos (só TI)
 async function verificarPrazosAgora(req, res, next) {
     try {
         res.status(200).json(await verificarPrazos());
@@ -260,7 +252,6 @@ async function excluirTarefa(req, res, next) {
             return res.status(403).json({ erro: 'Você não tem permissão para excluir esta atividade.' });
         }
 
-        // Apaga os arquivos no Storage e a tarefa junto com a subcoleção "anexos"
         await excluirArquivosDaTarefa(id);
         await db.recursiveDelete(tarefa.doc.ref);
         console.log(`[TAREFAS] Tarefa #${id} excluída por #${req.usuario.id}`);

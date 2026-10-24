@@ -5,36 +5,53 @@ const { excluirNotificacoesDoUsuario } = require('./notificacaoController');
 
 const usuarios = db.collection('usuarios');
 
-const SETORES_VALIDOS = ['PCP', 'ENGENHARIA', 'TI'];
+const {
+    SETORES_VALIDOS, TAMANHO_MINIMO_SENHA, LIMITES_USUARIO: LIMITES, FORMATO_EMAIL, FORMATO_LOGIN,
+    vazioParaNulo, normalizarEmail,
+} = require('../utils/validacoes');
+
 const FUNCOES_VALIDAS = FUNCOES;
 
-// "" vira null
-function vazioParaNulo(valor) {
-    if (valor === undefined || valor === null) return null;
-    if (typeof valor === 'string' && valor.trim() === '') return null;
-    return typeof valor === 'string' ? valor.trim() : valor;
-}
-
 function validar(dados) {
+    for (const campo of ['nome', 'usuario', 'email', 'setor']) {
+        if (dados[campo] !== undefined && dados[campo] !== null && typeof dados[campo] !== 'string') {
+            return `O campo "${campo}" deve ser um texto.`;
+        }
+    }
+    if (dados.ativo !== undefined && typeof dados.ativo !== 'boolean') {
+        return 'O campo "ativo" deve ser true ou false.';
+    }
     if (dados.setor !== undefined && dados.setor !== '' && !SETORES_VALIDOS.includes(dados.setor)) {
         return `Setor inválido. Use: ${SETORES_VALIDOS.join(', ')}.`;
     }
     if (dados.funcao !== undefined && !FUNCOES_VALIDAS.includes(dados.funcao)) {
         return `Função inválida. Use: ${FUNCOES_VALIDAS.join(', ')}.`;
     }
+    if (dados.nome !== undefined && String(dados.nome).trim() === '') {
+        return 'O nome não pode ficar vazio.';
+    }
+    for (const [campo, limite] of Object.entries(LIMITES)) {
+        if (typeof dados[campo] === 'string' && dados[campo].trim().length > limite) {
+            return `O campo "${campo}" aceita até ${limite} caracteres.`;
+        }
+    }
+    if (dados.email !== undefined && !FORMATO_EMAIL.test(String(dados.email).trim())) {
+        return 'Informe um e-mail válido (ex.: nome@empresa.com).';
+    }
+    if (dados.usuario && !FORMATO_LOGIN.test(String(dados.usuario).trim())) {
+        return 'O nome de usuário pode ter só letras, números, ponto, hífen e sublinhado (sem espaços).';
+    }
+    if (dados.senha !== undefined && dados.senha !== '' &&
+        (typeof dados.senha !== 'string' || dados.senha.length < TAMANHO_MINIMO_SENHA)) {
+        return `A senha deve ter pelo menos ${TAMANHO_MINIMO_SENHA} caracteres.`;
+    }
     return null;
 }
 
-// A senha nunca sai da API
 function semSenha(doc) {
     const { senha, ...usuario } = paraJson(doc);
     return usuario;
 }
-
-/* 
-    O Firestore não tem índice UNIQUE: confere e-mail e usuário antes de gravar.
-    Roda dentro da transação, então dois cadastros iguais ao mesmo tempo não passam.
- */
 async function mensagemDuplicado(transacao, dados, idAtual) {
     const unicos = [
         ['usuario', 'Já existe alguém com esse nome de usuário.'],
@@ -48,7 +65,6 @@ async function mensagemDuplicado(transacao, dados, idAtual) {
     return null;
 }
 
-// O sistema nunca pode ficar sem um TI ativo (senão ninguém mais administra os usuários)
 async function haOutroTIAtivo(idAtual) {
     const tis = await usuarios.where('funcao', '==', 'ti').get();
     return tis.docs.some((doc) => doc.id !== String(idAtual) && doc.data().ativo);
@@ -56,7 +72,7 @@ async function haOutroTIAtivo(idAtual) {
 
 const MENSAGEM_ULTIMO_TI = 'É preciso manter ao menos um usuário TI ativo. Promova outra pessoa a TI antes.';
 
-// GET /usuarios/atribuiveis — quem o usuário logado pode escolher como responsável
+// GET /usuarios/atribuiveis
 async function listarAtribuiveis(req, res, next) {
     try {
         res.status(200).json(await usuariosAtribuiveis(req.usuario));
@@ -65,10 +81,6 @@ async function listarAtribuiveis(req, res, next) {
     }
 }
 
-/*
-GET /usuarios/participantes — usuários ativos que podem ser marcados como participantes
-(qualquer setor: participante só informa quem está envolvido, não dá acesso à atividade)
-*/
 async function listarParticipantes(req, res, next) {
     try {
         const resultado = await usuarios.where('ativo', '==', true).get();
@@ -81,7 +93,7 @@ async function listarParticipantes(req, res, next) {
     }
 }
 
-// GET /usuarios (só TI)
+// GET /usuarios
 async function listarUsuarios(req, res, next) {
     try {
         const resultado = await usuarios.get();
@@ -92,7 +104,7 @@ async function listarUsuarios(req, res, next) {
     }
 }
 
-// GET /usuarios/:id (TI, ou a própria pessoa)
+// GET /usuarios/:id
 async function buscarUsuarioPorId(req, res, next) {
     try {
         if (req.usuario.funcao !== 'ti' && String(req.usuario.id) !== String(req.params.id)) {
@@ -122,7 +134,7 @@ async function criarUsuario(req, res, next) {
         const novo = {
             nome: nome.trim(),
             usuario: vazioParaNulo(usuario),
-            email: email.trim(),
+            email: normalizarEmail(email),
             senha,
             setor: vazioParaNulo(setor),
             funcao: funcao || 'usuario',
@@ -164,6 +176,7 @@ async function atualizarUsuario(req, res, next) {
                 camposParaAtualizar[campo] = vazioParaNulo(req.body[campo]);
             }
         });
+        if (camposParaAtualizar.email) camposParaAtualizar.email = normalizarEmail(camposParaAtualizar.email);
 
         if (req.body.senha) {
             camposParaAtualizar.senha = req.body.senha;
@@ -195,7 +208,6 @@ async function atualizarUsuario(req, res, next) {
             return res.status(409).json({ erro: duplicado });
         }
 
-        // Senha nova derruba os logins abertos 
         if (camposParaAtualizar.senha) await encerrarSessoesDoUsuario(id);
 
         const doc = await buscarDoc('usuarios', id);
@@ -221,7 +233,6 @@ async function excluirUsuario(req, res, next) {
         if (doc.data().funcao === 'ti' && !(await haOutroTIAtivo(id))) {
             return res.status(409).json({ erro: MENSAGEM_ULTIMO_TI });
         }
-        // As atividades da pessoa ficam (com o nome dela) para o histórico e os relatórios
         await doc.ref.delete();
         await encerrarSessoesDoUsuario(id);
         await db.collection('recuperacoes').doc(String(id)).delete();

@@ -1,9 +1,8 @@
 node_modules/
-
-# Configuração local e credenciais (nunca versionar)
 .env
 .env.*
 !.env.servidor.exemplo
+!.env.mysql.antigo.exemplo
 serviceAccountKey*.json
 .secret.local
 

@@ -18,7 +18,9 @@
         "*.local",
         ".env.*",
         "serviceAccountKey*.json",
-        "testes"
+        "testes",
+        "scripts",
+        "dados"
       ]
     }
   ],

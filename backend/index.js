@@ -1,7 +1,7 @@
 const { onRequest } = require('firebase-functions/https');
 const { onSchedule } = require('firebase-functions/scheduler');
 const app = require('./src/app');
-const { verificarPrazos } = require('./src/utils/prazos');
+const { executarRotinaDiaria } = require('./src/utils/manutencao');
 
 exports.api = onRequest(
     {
@@ -12,14 +12,13 @@ exports.api = onRequest(
     app
 );
 
-// Todo dia logo depois da meia-noite: atividades com o prazo vencido viram urgentes (src/utils/prazos.js)
-exports.verificarPrazos = onSchedule(
+exports.rotinaDiaria = onSchedule(
     {
         schedule: 'every day 00:05',
         timeZone: 'America/Sao_Paulo',
         region: 'southamerica-east1',
     },
     async () => {
-        await verificarPrazos();
+        await executarRotinaDiaria();
     }
 );

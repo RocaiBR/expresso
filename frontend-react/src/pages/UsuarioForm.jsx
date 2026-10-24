@@ -15,7 +15,6 @@ export default function UsuarioForm() {
     const editando = Boolean(id);
     const navigate = useNavigate();
     const { usuario: logado } = useAuth();
-    // Ninguém exclui a própria conta (a API também bloqueia)
     const podeExcluir = editando && String(logado?.id) !== String(id);
 
     const [dados, setDados] = useState({
@@ -65,6 +64,10 @@ export default function UsuarioForm() {
         if (!dados.nome.trim()) return "Preencha o nome completo.";
         if (!dados.email.trim() || !emailValido(dados.email.trim())) return "Informe um e-mail válido.";
         if (!editando && !dados.senha) return "Informe uma senha para o novo usuário.";
+        if (dados.senha && dados.senha.length < 6) return "A senha deve ter pelo menos 6 caracteres.";
+        if (dados.usuario.trim() && !/^[A-Za-z0-9._-]+$/.test(dados.usuario.trim())) {
+            return "O nome de usuário pode ter só letras, números, ponto, hífen e sublinhado (sem espaços).";
+        }
         if (!dados.setor) return "Selecione um setor.";
         if (!dados.funcao) return "Selecione uma função.";
         return null;
@@ -94,7 +97,7 @@ export default function UsuarioForm() {
             let aviso;
             if (editando) {
                 corpo.ativo = dados.ativo === "1";
-                if (!corpo.senha) delete corpo.senha; // em branco = mantém a senha atual
+                if (!corpo.senha) delete corpo.senha;
                 await Api.atualizarUsuario(id, corpo);
                 aviso = 'Usuário "' + corpo.nome + '" atualizado com sucesso.';
             } else {
@@ -112,7 +115,6 @@ export default function UsuarioForm() {
         setErro(null);
         setSalvando(true);
         try {
-            // Conta as atividades da pessoa para avisar antes (o TI enxerga todas)
             const tarefas = await Api.listarTarefas();
             const quantas = tarefas.filter(tarefa => String(tarefa.usuario_id) === String(id)).length;
             const confirmou = confirm(

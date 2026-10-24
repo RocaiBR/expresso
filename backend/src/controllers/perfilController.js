@@ -2,10 +2,10 @@ const { randomUUID } = require('crypto');
 const { bucket, urlDeDownload, buscarDoc } = require('../config/firebase');
 const { VERIFICACOES } = require('../utils/assinaturas');
 const { encerrarSessoesDoUsuario } = require('../middlewares/autenticacao');
+const { TAMANHO_MINIMO_SENHA } = require('../utils/validacoes');
 
 // "Meu perfil": cada pessoa (qualquer cargo) vê os próprios dados e troca a foto e a senha
 const TAMANHO_MAXIMO_FOTO = 512 * 1024; // o navegador manda 256x256, normalmente uns 30 KB
-const TAMANHO_MINIMO_SENHA = 6;
 const TEMAS = ['claro', 'escuro', 'profundo'];
 
 function dadosDoPerfil(dados) {

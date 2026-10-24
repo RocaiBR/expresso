@@ -32,7 +32,6 @@ export default function NovaAtividade() {
     const [prioridade, setPrioridade] = useState("Alta");
     const [arquivos, setArquivos] = useState([]);
     const [salvando, setSalvando] = useState(false);
-    // Envio dos anexos depois de criar a tarefa: { atual, total, progresso (0 a 1) }
     const [envio, setEnvio] = useState(null);
 
     const dataInicio = dataDeHoje();
@@ -63,7 +62,6 @@ export default function NovaAtividade() {
         evento.target.value = "";
     }
 
-    // Envia um arquivo por vez; devolve os nomes dos que falharam
     async function enviarArquivos(tarefaId) {
         const falhas = [];
         for (let indice = 0; indice < arquivos.length; indice++) {
@@ -86,7 +84,6 @@ export default function NovaAtividade() {
     async function salvar(evento) {
         evento.preventDefault();
 
-        /* MONTA A TAREFA NO FORMATO DO BANCO (tabela tarefas) */
         const novaTarefa = {
             titulo,
             descricao,
@@ -98,12 +95,9 @@ export default function NovaAtividade() {
             status: "pendente"
         };
 
-        /* ENVIA PARA A API -> Firestore */
         setSalvando(true);
         try {
             const salva = await Api.criarTarefa(novaTarefa);
-
-            /* ENVIA OS ARQUIVOS -> Storage (a tarefa já existe, então uma falha não desfaz o cadastro) */
             const falhas = await enviarArquivos(salva.id);
             if (falhas.length > 0) {
                 alert(
@@ -112,7 +106,6 @@ export default function NovaAtividade() {
                 );
             }
 
-            // A tela de confirmação só mostra o resumo do que foi gravado
             localStorage.setItem("ultima_atividade_criada", JSON.stringify({
                 id: salva.id,
                 codigo: Formato.codigo(salva.id),
@@ -322,6 +315,7 @@ export default function NovaAtividade() {
                                 <input
                                     type="date"
                                     id="dataVencimento"
+                                    min={dataInicio}
                                     value={dataVencimento}
                                     onChange={evento => setDataVencimento(evento.target.value)}
                                     className={classesCampo + " text-texto-2"}
