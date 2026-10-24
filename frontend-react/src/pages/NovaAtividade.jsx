@@ -4,6 +4,7 @@ import { Api } from "../services/api";
 import { Formato } from "../utils/formato";
 import { ACEITOS, validarArquivo } from "../utils/anexos";
 import { IconeClipe, IconeX } from "../components/Icones";
+import SeletorParticipantes from "../components/SeletorParticipantes";
 
 function dataDeHoje() {
     const hoje = new Date();
@@ -14,7 +15,7 @@ function dataDeHoje() {
 }
 
 const classesCampo =
-    "w-full border border-[#d1d1d6] rounded-lg p-2.5 text-xs xl:text-sm outline-none focus:border-[#6F0049] transition-colors bg-white";
+    "w-full border border-borda rounded-lg p-2.5 text-xs xl:text-sm outline-none focus:border-marca-texto transition-colors bg-superficie";
 
 export default function NovaAtividade() {
     const navigate = useNavigate();
@@ -24,12 +25,13 @@ export default function NovaAtividade() {
     // Quem pode ser responsável depende do cargo (a API devolve a lista; o primeiro é quem está logado)
     const [pessoas, setPessoas] = useState([]);
     const [responsavel, setResponsavel] = useState("");
-    const [participantes, setParticipantes] = useState("");
+    // Participantes: só usuários cadastrados (a API grava os nomes a partir dos ids)
+    const [usuariosParticipantes, setUsuariosParticipantes] = useState([]);
+    const [participantesIds, setParticipantesIds] = useState([]);
     const [dataVencimento, setDataVencimento] = useState("");
     const [prioridade, setPrioridade] = useState("Alta");
     const [arquivos, setArquivos] = useState([]);
     const [salvando, setSalvando] = useState(false);
-    // Envio dos anexos depois de criar a tarefa: { atual, total, progresso (0 a 1) }
     const [envio, setEnvio] = useState(null);
 
     const dataInicio = dataDeHoje();
@@ -43,6 +45,11 @@ export default function NovaAtividade() {
                 if (lista.length > 0) setResponsavel(String(lista[0].id));
             })
             .catch(erro => alert("Não foi possível carregar os responsáveis: " + erro.message));
+        Api.listarParticipantes()
+            .then(lista => {
+                if (ativo) setUsuariosParticipantes(lista);
+            })
+            .catch(erro => console.warn("Não foi possível carregar os participantes:", erro.message));
         return () => { ativo = false; };
     }, []);
 
@@ -55,7 +62,6 @@ export default function NovaAtividade() {
         evento.target.value = "";
     }
 
-    // Envia um arquivo por vez; devolve os nomes dos que falharam
     async function enviarArquivos(tarefaId) {
         const falhas = [];
         for (let indice = 0; indice < arquivos.length; indice++) {
@@ -78,24 +84,20 @@ export default function NovaAtividade() {
     async function salvar(evento) {
         evento.preventDefault();
 
-        /* MONTA A TAREFA NO FORMATO DO BANCO (tabela tarefas) */
         const novaTarefa = {
             titulo,
             descricao,
             usuario_id: Number(responsavel),
-            participantes,
+            participantes_ids: participantesIds,
             data_inicio: dataInicio,
             data_conclusao: dataVencimento,
             prioridade: Formato.prioridade.doFormulario[prioridade] || "medio",
             status: "pendente"
         };
 
-        /* ENVIA PARA A API -> Firestore */
         setSalvando(true);
         try {
             const salva = await Api.criarTarefa(novaTarefa);
-
-            /* ENVIA OS ARQUIVOS -> Storage (a tarefa já existe, então uma falha não desfaz o cadastro) */
             const falhas = await enviarArquivos(salva.id);
             if (falhas.length > 0) {
                 alert(
@@ -104,7 +106,6 @@ export default function NovaAtividade() {
                 );
             }
 
-            // A tela de confirmação só mostra o resumo do que foi gravado
             localStorage.setItem("ultima_atividade_criada", JSON.stringify({
                 id: salva.id,
                 codigo: Formato.codigo(salva.id),
@@ -138,7 +139,7 @@ export default function NovaAtividade() {
             <div>
                 <Link
                     to="/atividades"
-                    className="inline-flex items-center gap-1.5 text-[#6F0049] font-semibold text-sm hover:underline no-underline"
+                    className="inline-flex items-center gap-1.5 text-marca-texto font-semibold text-sm hover:underline no-underline"
                 >
                     <span>&lt; Voltar</span>
                 </Link>
@@ -146,8 +147,8 @@ export default function NovaAtividade() {
 
             {/* TÍTULO E SUBTÍTULO */}
             <div>
-                <h1 className="text-xl font-bold text-[#1c1c1e]">Nova Atividade</h1>
-                <p className="text-xs text-[#6e6e73] mt-0.5">
+                <h1 className="text-xl font-bold text-texto">Nova Atividade</h1>
+                <p className="text-xs text-texto-suave mt-0.5">
                     Preencha as informações para cadastrar uma nova atividade
                 </p>
             </div>
@@ -160,13 +161,13 @@ export default function NovaAtividade() {
                     <div className="flex flex-col gap-6">
 
                         {/* CARD 1: INFORMAÇÕES BÁSICAS */}
-                        <div className="bg-white border border-[#d1d1d6] rounded-xl p-5 shadow-sm flex flex-col gap-4">
-                            <h2 className="text-sm font-bold text-[#1c1c1e]">Informações básicas</h2>
+                        <div className="bg-superficie border border-borda rounded-xl p-5 shadow-sm flex flex-col gap-4">
+                            <h2 className="text-sm font-bold text-texto">Informações básicas</h2>
 
                             {/* TÍTULO */}
                             <div className="flex flex-col gap-1.5">
-                                <label htmlFor="titulo" className="text-xs font-semibold text-[#3a3a3c]">
-                                    Título da atividade <span className="text-red-500">*</span>
+                                <label htmlFor="titulo" className="text-xs font-semibold text-texto-2">
+                                    Título da atividade <span className="text-perigo">*</span>
                                 </label>
                                 <input
                                     type="text"
@@ -180,8 +181,8 @@ export default function NovaAtividade() {
 
                             {/* DESCRIÇÃO */}
                             <div className="flex flex-col gap-1.5">
-                                <label htmlFor="descricao" className="text-xs font-semibold text-[#3a3a3c]">
-                                    Descrição <span className="text-red-500">*</span>
+                                <label htmlFor="descricao" className="text-xs font-semibold text-texto-2">
+                                    Descrição <span className="text-perigo">*</span>
                                 </label>
                                 <textarea
                                     id="descricao"
@@ -195,12 +196,12 @@ export default function NovaAtividade() {
 
                             {/* ARQUIVOS */}
                             <div className="flex flex-col gap-2">
-                                <label className="text-xs font-semibold text-[#3a3a3c]">
-                                    Arquivos <span className="text-red-500">*</span>
+                                <label className="text-xs font-semibold text-texto-2">
+                                    Arquivos <span className="text-perigo">*</span>
                                 </label>
                                 <div className="flex flex-col gap-2.5">
                                     <div>
-                                        <label className="border border-[#d1d1d6] hover:bg-gray-50 text-[#3a3a3c] rounded-full px-4 py-2 text-xs font-medium inline-flex items-center gap-2 cursor-pointer transition-colors shadow-sm">
+                                        <label className="border border-borda hover:bg-superficie-hover text-texto-2 rounded-full px-4 py-2 text-xs font-medium inline-flex items-center gap-2 cursor-pointer transition-colors shadow-sm">
                                             <span>Adicionar arquivos</span>
                                             <IconeClipe />
                                             <input
@@ -218,7 +219,7 @@ export default function NovaAtividade() {
                                         {arquivos.map((arquivo, indice) => (
                                             <div
                                                 key={arquivo.name + indice}
-                                                className="flex items-center gap-2 bg-[#f2f2f4] border border-[#d1d1d6] text-[#1c1c1e] text-xs px-3 py-1.5 rounded-lg shadow-sm"
+                                                className="flex items-center gap-2 bg-fundo border border-borda text-texto text-xs px-3 py-1.5 rounded-lg shadow-sm"
                                             >
                                                 <span className="truncate max-w-[180px] font-medium">
                                                     {arquivo.name}
@@ -226,7 +227,7 @@ export default function NovaAtividade() {
                                                 <button
                                                     type="button"
                                                     onClick={() => removerArquivo(indice)}
-                                                    className="text-[#6e6e73] hover:text-red-600 transition-colors cursor-pointer flex items-center justify-center"
+                                                    className="text-texto-suave hover:text-perigo transition-colors cursor-pointer flex items-center justify-center"
                                                 >
                                                     <IconeX />
                                                 </button>
@@ -238,22 +239,26 @@ export default function NovaAtividade() {
                         </div>
 
                         {/* CARD 2: ATRIBUIÇÕES */}
-                        <div className="bg-white border border-[#d1d1d6] rounded-xl p-5 shadow-sm flex flex-col gap-4">
-                            <h2 className="text-sm font-bold text-[#1c1c1e]">Atribuições</h2>
+                        <div className="bg-superficie border border-borda rounded-xl p-5 shadow-sm flex flex-col gap-4">
+                            <h2 className="text-sm font-bold text-texto">Atribuições</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
                                 {/* RESPONSÁVEL */}
                                 <div className="flex flex-col gap-1.5">
-                                    <label htmlFor="responsavel" className="text-xs font-semibold text-[#3a3a3c]">
-                                        Responsável <span className="text-red-500">*</span>
+                                    <label htmlFor="responsavel" className="text-xs font-semibold text-texto-2">
+                                        Responsável <span className="text-perigo">*</span>
                                     </label>
                                     <select
                                         id="responsavel"
                                         required
                                         value={responsavel}
-                                        onChange={evento => setResponsavel(evento.target.value)}
+                                        onChange={evento => {
+                                            // Quem vira responsável deixa de ser participante
+                                            setResponsavel(evento.target.value);
+                                            setParticipantesIds(atuais => atuais.filter(id => id !== Number(evento.target.value)));
+                                        }}
                                         disabled={pessoas.length <= 1}
-                                        className={classesCampo + " text-[#3a3a3c] cursor-pointer disabled:bg-[#f2f2f4] disabled:cursor-not-allowed"}
+                                        className={classesCampo + " text-texto-2 cursor-pointer disabled:bg-fundo disabled:cursor-not-allowed"}
                                     >
                                         <option value="" disabled>Selecione um responsável</option>
                                         {pessoas.map((pessoa, indice) => (
@@ -266,16 +271,15 @@ export default function NovaAtividade() {
 
                                 {/* PARTICIPANTES */}
                                 <div className="flex flex-col gap-1.5">
-                                    <label htmlFor="participantes" className="text-xs font-semibold text-[#3a3a3c]">
+                                    <label htmlFor="participantes" className="text-xs font-semibold text-texto-2">
                                         Participantes
                                     </label>
-                                    <input
-                                        type="text"
+                                    <SeletorParticipantes
                                         id="participantes"
-                                        placeholder="Ex.: Maria, João (opcional)"
-                                        value={participantes}
-                                        onChange={evento => setParticipantes(evento.target.value)}
-                                        className={classesCampo + " text-[#3a3a3c]"}
+                                        opcoes={usuariosParticipantes}
+                                        selecionados={participantesIds}
+                                        aoMudar={setParticipantesIds}
+                                        excluirId={Number(responsavel)}
                                     />
                                 </div>
                             </div>
@@ -286,12 +290,12 @@ export default function NovaAtividade() {
                     <div className="flex flex-col gap-6">
 
                         {/* CARD 3: DATA E PRAZO */}
-                        <div className="bg-white border border-[#d1d1d6] rounded-xl p-5 shadow-sm flex flex-col gap-4">
-                            <h2 className="text-sm font-bold text-[#1c1c1e]">Data e prazo</h2>
+                        <div className="bg-superficie border border-borda rounded-xl p-5 shadow-sm flex flex-col gap-4">
+                            <h2 className="text-sm font-bold text-texto">Data e prazo</h2>
 
                             {/* DATA DE INÍCIO (HOJE) */}
                             <div className="flex flex-col gap-1.5">
-                                <label htmlFor="dataInicio" className="text-xs font-semibold text-[#3a3a3c]">
+                                <label htmlFor="dataInicio" className="text-xs font-semibold text-texto-2">
                                     Data de início
                                 </label>
                                 <input
@@ -299,32 +303,33 @@ export default function NovaAtividade() {
                                     id="dataInicio"
                                     readOnly
                                     value={dataInicio}
-                                    className="w-full border border-[#d1d1d6] rounded-lg p-2.5 text-xs xl:text-sm text-[#3a3a3c] outline-none bg-[#f2f2f4] cursor-not-allowed"
+                                    className="w-full border border-borda rounded-lg p-2.5 text-xs xl:text-sm text-texto-2 outline-none bg-fundo cursor-not-allowed"
                                 />
                             </div>
 
                             {/* DATA DE VENCIMENTO */}
                             <div className="flex flex-col gap-1.5">
-                                <label htmlFor="dataVencimento" className="text-xs font-semibold text-[#3a3a3c]">
+                                <label htmlFor="dataVencimento" className="text-xs font-semibold text-texto-2">
                                     Data de vencimento
                                 </label>
                                 <input
                                     type="date"
                                     id="dataVencimento"
+                                    min={dataInicio}
                                     value={dataVencimento}
                                     onChange={evento => setDataVencimento(evento.target.value)}
-                                    className={classesCampo + " text-[#3a3a3c]"}
+                                    className={classesCampo + " text-texto-2"}
                                 />
                             </div>
 
                             {/* PRIORIDADE */}
                             <div className="flex flex-col gap-2 pt-1">
-                                <label className="text-xs font-semibold text-[#3a3a3c]">Prioridade</label>
+                                <label className="text-xs font-semibold text-texto-2">Prioridade</label>
                                 <div className="flex flex-col gap-2">
                                     {["Alta", "Média", "Baixa"].map(opcao => (
                                         <label
                                             key={opcao}
-                                            className="inline-flex items-center gap-2.5 text-xs text-[#3a3a3c] cursor-pointer"
+                                            className="inline-flex items-center gap-2.5 text-xs text-texto-2 cursor-pointer"
                                         >
                                             <input
                                                 type="radio"
@@ -332,7 +337,7 @@ export default function NovaAtividade() {
                                                 value={opcao}
                                                 checked={prioridade === opcao}
                                                 onChange={() => setPrioridade(opcao)}
-                                                className="w-4 h-4 accent-[#6F0049] cursor-pointer"
+                                                className="w-4 h-4 accent-marca-texto cursor-pointer"
                                             />
                                             <span>{opcao}</span>
                                         </label>
@@ -345,14 +350,14 @@ export default function NovaAtividade() {
                         <div className="flex items-center justify-end gap-3 mt-2">
                             <Link
                                 to="/atividades"
-                                className="border border-[#6F0049] text-[#6F0049] hover:bg-[#6F0049]/5 font-medium text-xs xl:text-sm px-6 py-2.5 rounded-lg transition-colors no-underline"
+                                className="border border-marca-texto text-marca-texto hover:bg-marca-texto/10 font-medium text-xs xl:text-sm px-6 py-2.5 rounded-lg transition-colors no-underline"
                             >
                                 Cancelar
                             </Link>
                             <button
                                 type="submit"
                                 disabled={salvando}
-                                className="bg-[#6F0049] hover:bg-[#560039] text-white font-medium text-xs xl:text-sm px-6 py-2.5 rounded-lg shadow-sm transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="bg-marca hover:bg-marca-escura text-white font-medium text-xs xl:text-sm px-6 py-2.5 rounded-lg shadow-sm transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 {textoDoBotao()}
                             </button>

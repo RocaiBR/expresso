@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Api } from "../services/api";
+import { useAuth } from "../context/AuthContext";
 import { useTarefas } from "../hooks/useTarefas";
 import { Formato } from "../utils/formato";
 import { filtrarTarefas, pesquisarTarefas } from "../utils/tarefas";
@@ -43,7 +44,9 @@ function resumo(feitas, verbo, ignoradas, erros) {
 }
 
 export default function Atividades() {
+    const { usuario } = useAuth();
     const { tarefas, carregando, erro, recarregar } = useTarefas();
+    const [verificandoPrazos, setVerificandoPrazos] = useState(false);
     const [filtro, setFiltro] = useState("todas");
     const [pesquisa, setPesquisa] = useState("");
 
@@ -109,6 +112,24 @@ export default function Atividades() {
             "passada(s) para " + (pessoa ? pessoa.nome : "o novo responsável"));
     }
 
+    // Só TI: a mesma verificação que roda sozinha toda madrugada
+    async function verificarPrazos() {
+        setVerificandoPrazos(true);
+        try {
+            const resultado = await Api.verificarPrazos();
+            alert(
+                "Prazos verificados (" + resultado.abertas + " atividade(s) em aberto).\n" +
+                resultado.viraram_urgentes + " passaram do prazo e viraram Urgente.\n" +
+                resultado.voltaram_ao_normal + " tiveram o prazo adiado e voltaram à prioridade de antes."
+            );
+            recarregar();
+        } catch (erroApi) {
+            alert("Não foi possível verificar os prazos: " + erroApi.message);
+        } finally {
+            setVerificandoPrazos(false);
+        }
+    }
+
     function excluirSelecionadas() {
         const alvos = selecionadas.filter(tarefa => tarefa.permissoes?.excluir);
         if (!confirm("Excluir " + alvos.length + " atividade(s) e todos os arquivos delas? Essa ação não pode ser desfeita.")) return;
@@ -128,22 +149,33 @@ export default function Atividades() {
 
             {/* TÍTULO E BOTÃO */}
             <div className="w-full flex items-center justify-between mt-1">
-                <h1 className="text-lg xl:text-xl font-bold text-[#1c1c1e]">
+                <h1 className="text-lg xl:text-xl font-bold text-texto">
                     Atividades
                 </h1>
                 <div className="flex items-center gap-2">
+                    {usuario?.funcao === "ti" && (
+                        <button
+                            type="button"
+                            onClick={verificarPrazos}
+                            disabled={verificandoPrazos}
+                            title="Atividades com o prazo vencido viram Urgente (isso também roda sozinho toda madrugada)"
+                            className="border border-borda text-texto-2 hover:bg-superficie-hover text-xs xl:text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer bg-superficie disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                            {verificandoPrazos ? "Verificando..." : "Verificar prazos"}
+                        </button>
+                    )}
                     {!modoSelecao && (
                         <button
                             type="button"
                             onClick={entrarNoModoSelecao}
-                            className="border border-[#6F0049] text-[#6F0049] hover:bg-[#6F0049]/5 text-xs xl:text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer bg-white"
+                            className="border border-marca-texto text-marca-texto hover:bg-marca-texto/10 text-xs xl:text-sm font-medium px-4 py-2 rounded-lg transition-colors cursor-pointer bg-superficie"
                         >
                             Selecionar
                         </button>
                     )}
                     <Link
                         to="/atividades/nova"
-                        className="bg-[#6F0049] hover:bg-[#560039] text-white text-xs xl:text-sm font-medium px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm transition-colors cursor-pointer no-underline"
+                        className="bg-marca hover:bg-marca-escura text-white text-xs xl:text-sm font-medium px-4 py-2 rounded-lg flex items-center gap-2 shadow-sm transition-colors cursor-pointer no-underline"
                     >
                         <IconeMais />
                         <span>Nova Atividade</span>
@@ -171,10 +203,10 @@ export default function Atividades() {
                 <Abas abas={ABAS} filtroAtivo={filtro} aoSelecionar={aba => setFiltro(aba.filtro)} />
 
                 {/* TABELA */}
-                <div className="w-full bg-white border border-[#d1d1d6] border-t-0 rounded-b-xl divide-y divide-gray-100 shadow-sm">
+                <div className="w-full bg-superficie border border-borda border-t-0 rounded-b-xl divide-y divide-borda-suave shadow-sm">
 
                     {/* CABEÇALHO */}
-                    <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr] items-center p-3 px-5 text-xs font-semibold text-[#6e6e73] bg-[#f9f9fb] border-b border-gray-200">
+                    <div className="grid grid-cols-[2fr_1.5fr_1fr_1fr] items-center p-3 px-5 text-xs font-semibold text-texto-suave bg-superficie-2 border-b border-borda-suave">
                         <div className="flex items-center gap-3">
                             {modoSelecao ? (
                                 <input
@@ -183,13 +215,13 @@ export default function Atividades() {
                                     checked={todasMarcadas}
                                     onChange={alternarTodas}
                                     title="Selecionar todas as atividades visíveis"
-                                    className="w-4 h-4 rounded border-gray-300 accent-[#6F0049] cursor-pointer"
+                                    className="w-4 h-4 rounded border-borda accent-marca-texto cursor-pointer"
                                 />
                             ) : (
                                 <input
                                     type="checkbox"
                                     readOnly
-                                    className="w-4 h-4 rounded border-gray-300 text-[#6F0049] focus:ring-[#6F0049] cursor-pointer invisible"
+                                    className="w-4 h-4 rounded border-borda text-marca-texto focus:ring-marca-texto cursor-pointer invisible"
                                 />
                             )}
                             <span>Atividade</span>
@@ -200,7 +232,7 @@ export default function Atividades() {
                     </div>
 
                     {/* LINHAS */}
-                    <div className="divide-y divide-gray-100">
+                    <div className="divide-y divide-borda-suave">
                         {carregando && <MensagemTabela>Carregando atividades...</MensagemTabela>}
                         {!carregando && erro && tarefas.length === 0 && (
                             <MensagemTabela>{erro}</MensagemTabela>

@@ -25,6 +25,15 @@ export function AuthProvider({ children }) {
         setUsuario(dadosUsuario);
     }
 
+    // Atualiza dados do usuário logado (ex.: foto nova) sem precisar entrar de novo
+    function atualizarSessao(campos) {
+        setUsuario(atual => {
+            const novo = { ...atual, ...campos };
+            sessionStorage.setItem(CHAVE_SESSAO, JSON.stringify(novo));
+            return novo;
+        });
+    }
+
     function sair() {
         // Encerra a sessão na API sem fazer a tela esperar; se falhar, ela expira sozinha
         Api.sair().catch(function () {});
@@ -33,7 +42,7 @@ export function AuthProvider({ children }) {
     }
 
     return (
-        <AuthContext.Provider value={{ usuario, entrar, sair }}>
+        <AuthContext.Provider value={{ usuario, entrar, sair, atualizarSessao }}>
             {children}
         </AuthContext.Provider>
     );

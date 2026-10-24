@@ -1,5 +1,154 @@
 @import "tailwindcss";
 
+/* TEMAS
+   As telas usam cores com significado (bg-superficie, text-texto, border-borda...)
+   em vez de valores fixos. Cada tema só troca o valor das variáveis abaixo.
+   O tema fica em <html data-tema="..."> (ver src/utils/tema.js e index.html). */
+
+@theme inline {
+    --color-fundo: var(--cor-fundo);
+    --color-superficie: var(--cor-superficie);
+    --color-superficie-2: var(--cor-superficie-2);
+    --color-superficie-hover: var(--cor-superficie-hover);
+    --color-texto: var(--cor-texto);
+    --color-texto-2: var(--cor-texto-2);
+    --color-texto-suave: var(--cor-texto-suave);
+    --color-texto-fraco: var(--cor-texto-fraco);
+    --color-borda: var(--cor-borda);
+    --color-borda-forte: var(--cor-borda-forte);
+    --color-borda-suave: var(--cor-borda-suave);
+    --color-marca: var(--cor-marca);
+    --color-marca-escura: var(--cor-marca-escura);
+    --color-marca-texto: var(--cor-marca-texto);
+    --color-realce-suave: var(--cor-realce-suave);
+    --color-realce: var(--cor-realce);
+    --color-realce-forte: var(--cor-realce-forte);
+    --color-realce-forte-hover: var(--cor-realce-forte-hover);
+    --color-neutro: var(--cor-neutro);
+    --color-cinza: var(--cor-cinza);
+    --color-cinza-claro: var(--cor-cinza-claro);
+    --color-cinza-texto: var(--cor-cinza-texto);
+    --color-barra: var(--cor-barra);
+    --color-barra-borda: var(--cor-barra-borda);
+    --color-perigo: var(--cor-perigo);
+    --color-perigo-fundo: var(--cor-perigo-fundo);
+    --color-perigo-borda: var(--cor-perigo-borda);
+    --color-sucesso: var(--cor-sucesso);
+    --color-sucesso-fundo: var(--cor-sucesso-fundo);
+    --color-sucesso-borda: var(--cor-sucesso-borda);
+}
+
+/* CLARO (o visual original do sistema) */
+:root,
+[data-tema="claro"] {
+    color-scheme: light;
+    --cor-fundo: #f2f2f4;
+    --cor-superficie: #ffffff;
+    --cor-superficie-2: #f8f8fa;
+    --cor-superficie-hover: #f9fafb;
+    --cor-texto: #1c1c1e;
+    --cor-texto-2: #3a3a3c;
+    --cor-texto-suave: #6e6e73;
+    --cor-texto-fraco: #8e8e93;
+    --cor-borda: #d1d1d6;
+    --cor-borda-forte: #b9b9be;
+    --cor-borda-suave: #e5e5e7;
+    --cor-marca: #6F0049;
+    --cor-marca-escura: #560039;
+    --cor-marca-texto: #6F0049;
+    --cor-realce-suave: #f9f1f6;
+    --cor-realce: #f4e8f0;
+    --cor-realce-forte: #e8d0e0;
+    --cor-realce-forte-hover: #e1c4d7;
+    --cor-neutro: #e7e7e9;
+    --cor-cinza: #54565B;
+    --cor-cinza-claro: #AEB0B7;
+    --cor-cinza-texto: #54565B;
+    --cor-grade: #ececef;
+    --cor-barra: #6F0049;
+    --cor-barra-borda: transparent;
+    --cor-perigo: #dc2626;
+    --cor-perigo-fundo: #fef2f2;
+    --cor-perigo-borda: #fecaca;
+    --cor-sucesso: #15803d;
+    --cor-sucesso-fundo: #f0fdf4;
+    --cor-sucesso-borda: #bbf7d0;
+}
+
+/* ESCURO (cinza grafite, como o tema escuro do Discord) */
+[data-tema="escuro"] {
+    color-scheme: dark;
+    --cor-fundo: #1e1f22;
+    --cor-superficie: #2b2d31;
+    --cor-superficie-2: #313338;
+    --cor-superficie-hover: #35373c;
+    --cor-texto: #f2f3f5;
+    --cor-texto-2: #dbdee1;
+    --cor-texto-suave: #b5bac1;
+    --cor-texto-fraco: #949ba4;
+    --cor-borda: #45474d;
+    --cor-borda-forte: #55585e;
+    --cor-borda-suave: #3a3c41;
+    --cor-marca: #8e1d66;
+    --cor-marca-escura: #a3287a;
+    --cor-marca-texto: #e892c6;
+    --cor-realce-suave: #33262f;
+    --cor-realce: #3d2a37;
+    --cor-realce-forte: #4f3045;
+    --cor-realce-forte-hover: #5c3651;
+    --cor-neutro: #3f4147;
+    --cor-cinza: #6b6e76;
+    --cor-cinza-claro: #4b4e54;
+    --cor-cinza-texto: #b5bac1;
+    --cor-grade: #3a3c41;
+    --cor-barra: #3b0d2c;
+    --cor-barra-borda: transparent;
+    --cor-perigo: #f87171;
+    --cor-perigo-fundo: #3a2023;
+    --cor-perigo-borda: #7f2a2f;
+    --cor-sucesso: #4ade80;
+    --cor-sucesso-fundo: #1d3326;
+    --cor-sucesso-borda: #2f6b45;
+}
+
+/* ESCURO PROFUNDO (preto de verdade, como o modo AMOLED do Discord) */
+[data-tema="profundo"] {
+    color-scheme: dark;
+    --cor-fundo: #000000;
+    --cor-superficie: #0e0e10;
+    --cor-superficie-2: #151517;
+    --cor-superficie-hover: #1b1b1e;
+    --cor-texto: #f2f3f5;
+    --cor-texto-2: #d4d6da;
+    --cor-texto-suave: #a0a4ab;
+    --cor-texto-fraco: #7c8088;
+    --cor-borda: #2a2b2f;
+    --cor-borda-forte: #36383c;
+    --cor-borda-suave: #1e1f22;
+    --cor-marca: #8e1d66;
+    --cor-marca-escura: #a3287a;
+    --cor-marca-texto: #e892c6;
+    --cor-realce-suave: #1b1018;
+    --cor-realce: #24141f;
+    --cor-realce-forte: #33192b;
+    --cor-realce-forte-hover: #3f2036;
+    --cor-neutro: #222326;
+    --cor-cinza: #5f6268;
+    --cor-cinza-claro: #3d3f44;
+    --cor-cinza-texto: #a0a4ab;
+    --cor-grade: #1e1f22;
+    --cor-barra: #000000;
+    --cor-barra-borda: #1e1f22;
+    --cor-perigo: #f87171;
+    --cor-perigo-fundo: #2a1214;
+    --cor-perigo-borda: #5c1e22;
+    --cor-sucesso: #4ade80;
+    --cor-sucesso-fundo: #0f2418;
+    --cor-sucesso-borda: #1f5235;
+}
+
 body {
     margin: 0;
+    background-color: var(--cor-fundo);
+    color: var(--cor-texto);
 }

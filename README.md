@@ -10,10 +10,17 @@ O Expresso permite:
 - Três **cargos** (usuário padrão, gestor e TI), com as permissões aplicadas pela API (veja [Cargos e permissões](#cargos-e-permissões));
 - Cadastro, edição, listagem e exclusão de **usuários** (só o TI);
 - Cadastro, edição, listagem e exclusão de **tarefas** (com filtro por status), incluindo **seleção de várias** para mover de etapa, trocar o responsável ou excluir;
-- **Anexos** nas tarefas (PDF, imagens, Word, Excel, PowerPoint, vídeos e áudios, até 200 MB cada), guardados no Cloud Storage;
+- **Participantes** escolhidos entre os usuários cadastrados;
+- **Urgência automática por prazo**: a atividade aberta que passa do dia de entrega vira *Urgente* sozinha (e volta à prioridade de antes se o prazo for adiado);
+- **Notificações** no sino para nova atividade, troca de responsável e prazo vencido;
+- **Meu perfil**: foto, troca da própria senha e e-mail; **temas** Claro, Escuro e Escuro profundo;
+- **Anexos** nas tarefas (PDF, imagens, Word, Excel, PowerPoint, vídeos e áudios, até 200 MB cada), guardados no Cloud Storage, com conferência da assinatura do arquivo;
 - Consulta de **feriados nacionais** por ano, via integração com a [BrasilAPI](https://brasilapi.com.br/);
-- Importação de tarefas iniciais a partir de um arquivo CSV;
+- Importação de tarefas a partir de planilha CSV (com validação linha a linha) e o script de migração do banco MySQL antigo;
+- **Verificação de consistência** dos dados e rotina diária de manutenção (00:05);
 - **Relatórios** com evolução do backlog, tempo médio para conclusão, resumo do período (com dias úteis descontando feriados), filtros e exportação em CSV — tudo calculado a partir das tarefas do banco.
+
+Como os dados são validados, transformados e integrados entre as fontes (com diagramas, dicionário de dados e regras de negócio): **[docs/dados-e-integracao.md](docs/dados-e-integracao.md)**. Evidências dos testes: **[docs/evidencias/relatorio-de-testes.md](docs/evidencias/relatorio-de-testes.md)**.
 
 > Este é um Projeto Integrador acadêmico (UNIFEOB) e está em desenvolvimento.
 
@@ -39,7 +46,9 @@ O Expresso permite:
 - [Cloud Functions for Firebase](https://firebase.google.com/docs/functions) (a API roda na nuvem como a função `api`)
 - [dotenv](https://www.npmjs.com/package/dotenv)
 - [CORS](https://www.npmjs.com/package/cors)
+- [Nodemailer](https://nodemailer.com/) (e-mail da recuperação de senha, pelo Gmail)
 - [Nodemon](https://www.npmjs.com/package/nodemon) (ambiente de desenvolvimento)
+- [playwright-core](https://playwright.dev/) (testes de tela, usando o Edge ou o Chrome instalados) e [mysql2](https://www.npmjs.com/package/mysql2) (migração do banco antigo), só em desenvolvimento
 
 **Frontend**
 - [React 19](https://react.dev/) + [Vite](https://vite.dev/)
@@ -49,9 +58,10 @@ O Expresso permite:
 - Consumo da API via `fetch`
 
 **Nuvem (Firebase)**
-- **Cloud Firestore**: banco de dados (coleções `tarefas`, `usuarios` e `contadores`)
-- **Cloud Storage**: guarda os arquivos anexados às tarefas (`tarefas/<id>/...`)
-- **Cloud Functions**: executa a API Node.js (região `southamerica-east1`, São Paulo)
+- **Cloud Firestore**: banco de dados (coleções `tarefas` com a subcoleção `anexos`, `usuarios`, `contadores`, `sessoes`, `recuperacoes` e `notificacoes`; o dicionário de dados está em [docs/dados-e-integracao.md](docs/dados-e-integracao.md#3-dicionário-de-dados))
+- **Cloud Storage**: guarda os arquivos anexados às tarefas (`tarefas/<id>/...`) e as fotos de perfil (`usuarios/<id>/...`)
+- **Cloud Functions**: executa a API Node.js (função `api`) e a rotina diária (função `rotinaDiaria`, agendada pelo **Cloud Scheduler** para 00:05), na região `southamerica-east1` (São Paulo)
+- **Secret Manager**: guarda a conta do Gmail que envia os códigos de recuperação
 - **Hosting**: publica o frontend e encaminha `/api/**` para a função
 - **Emulator Suite**: roda tudo isso localmente, sem custo, para desenvolvimento e testes
 
@@ -62,11 +72,15 @@ expresso/
 ├── firebase.json                      # serviços do Firebase (Firestore, Functions, Hosting, emuladores)
 ├── firestore.rules                    # bloqueia acesso direto do navegador ao banco
 ├── storage.rules                      # idem para os arquivos (o acesso passa pela API)
+├── docs/
+│   ├── dados-e-integracao.md          # fluxo entre as fontes, dicionário de dados, validações e regras
+│   └── evidencias/                    # relatório dos testes automatizados e prints (gerados pelo testar:tudo)
 ├── backend/                           # também é a pasta da Cloud Function
 │   ├── dados/
 │   │   └── tarefas_iniciais.csv       # dados de exemplo para importação
 │   ├── scripts/
-│   │   └── importarCsv.js             # script de importação de tarefas via CSV
+│   │   ├── importarCsv.js             # importação de tarefas via CSV, com validação linha a linha
+│   │   └── migrarMysql.js             # migração do banco MySQL antigo para o Firestore
 │   ├── src/
 │   │   ├── app.js                     # monta o Express (rotas, middlewares, log de requisições)
 │   │   ├── config/
@@ -76,25 +90,29 @@ expresso/
 │   │   │   ├── anexoController.js     # arquivos das tarefas (tipos aceitos e limite de tamanho)
 │   │   │   ├── authController.js      # login, logout e recuperação de senha
 │   │   │   ├── feriadoController.js
+│   │   │   ├── notificacaoController.js # avisos do sino
+│   │   │   ├── perfilController.js    # "Meu perfil": foto, senha e tema
 │   │   │   ├── tarefaController.js
 │   │   │   └── usuarioController.js
 │   │   ├── middlewares/
 │   │   │   ├── autenticacao.js        # sessão de login (token) e bloqueio "só TI"
 │   │   │   └── errorHandler.js        # 404 e tratamento de erros
-│   │   ├── routes/
-│   │   │   ├── authRoutes.js
-│   │   │   ├── feriadoRoutes.js
-│   │   │   ├── tarefaRoutes.js
-│   │   │   └── usuarioRoutes.js
+│   │   ├── routes/                    # uma por grupo de rotas (auth, tarefas, usuarios, perfil, manutencao...)
 │   │   └── utils/
 │   │       ├── assinaturas.js         # confere se o conteúdo do anexo bate com a extensão
-│   │       └── permissoes.js          # regras de cada cargo (usuário padrão, gestor, TI)
+│   │       ├── manutencao.js          # rotina diária e verificação de consistência
+│   │       ├── permissoes.js          # regras de cada cargo (usuário padrão, gestor, TI)
+│   │       ├── prazos.js              # urgência automática por prazo vencido
+│   │       └── validacoes.js          # regras de formato dos dados (API, CSV e migração)
 │   ├── testes/
+│   │   ├── suites/                    # testes automatizados, um arquivo por assunto
+│   │   ├── rodarTodos.js              # roda as suítes e escreve o relatório (npm run testar:tudo)
+│   │   ├── apoio.js, amostras.js      # peças comuns e arquivos de exemplo dos testes
 │   │   ├── PI-api.insomnia_collection.json
 │   │   ├── PI-api.postman_collection.json
 │   │   └── testar_gravacao.js
 │   ├── .env.servidor.exemplo          # modelo do .env.servidor (o real não é versionado)
-│   ├── index.js                       # ponto de entrada na nuvem (Cloud Function "api")
+│   ├── index.js                       # ponto de entrada na nuvem (funções "api" e "rotinaDiaria")
 │   ├── package.json
 │   └── server.js                      # ponto de entrada local (npm run dev)
 │
@@ -148,7 +166,7 @@ PROJETO_FIREBASE=demo-expresso
 BUCKET_FIREBASE=demo-expresso.appspot.com
 ```
 
-> Não crie um `backend/.env`: a pasta `backend/` também é a pasta da Cloud Function, e o Firebase CLI envia as variáveis desse arquivo para a nuvem (e recusa `PORT`). O `.env.servidor` só é lido pelo `npm run dev` e pelo `npm run importar:csv`.
+> Não crie um `backend/.env`: a pasta `backend/` também é a pasta da Cloud Function, e o Firebase CLI envia as variáveis desse arquivo para a nuvem (e recusa `PORT`). O `.env.servidor` só é lido pelo `npm run dev`, pelo `npm run importar:csv` e pelo `npm run migrar:mysql`.
 
 Para o servidor local usar o **Firestore de verdade** em vez do emulador, troque para a opção B do arquivo de exemplo: baixe a chave em *Console do Firebase > Configurações do projeto > Contas de serviço > Gerar nova chave privada*, salve como `backend/serviceAccountKey.json` (já está no `.gitignore`) e aponte `GOOGLE_APPLICATION_CREDENTIALS` para ela.
 
@@ -169,8 +187,14 @@ Para entrar no sistema é preciso ter um usuário **TI**, o único cargo que cad
 O arquivo `backend/dados/tarefas_iniciais.csv` contém tarefas de exemplo que podem ser inseridas no banco configurado no `.env.servidor`:
 
 ```bash
-npm run importar:csv
+npm run importar:csv                              # dados/tarefas_iniciais.csv
+npm run importar:csv -- planilha.csv              # outro arquivo
+npm run importar:csv -- planilha.csv --simular    # só confere e mostra o relatório, sem gravar
 ```
+
+Colunas: `titulo` (obrigatória), `descricao`, `responsavel`, `status`, `prioridade`, `data_inicio`, `data_conclusao`. Aceita o CSV do Excel em português (ponto e vírgula, Windows-1252) ou UTF-8, datas `DD/MM/AAAA` ou `AAAA-MM-DD` e textos como "Concluída" ou "Alta". Cada linha passa pelas mesmas validações da API: a inválida é recusada com o número da linha e o motivo, o responsável é ligado ao usuário de mesmo nome e importar o mesmo arquivo de novo não duplica as atividades.
+
+**Migração do MySQL antigo.** Os dados do backend antigo (banco `pi_db`) foram trazidos para o Firestore com `npm run migrar:mysql`, que lê as credenciais do MySQL de `backend/.env.mysql.antigo` (não versionado; o modelo é o `backend/.env.mysql.antigo.exemplo`). Sem `-- --aplicar`, só mostra o plano, os avisos e os erros; com ele, grava tudo num lote só (tudo ou nada), mantendo ids, senhas e datas. Detalhes em [docs/dados-e-integracao.md](docs/dados-e-integracao.md).
 
 ### 6. Rodar a API
 
@@ -236,7 +260,7 @@ Sem o plano Blaze ainda dá para publicar o banco e o site (`firebase deploy --o
 
 ### Logs
 
-Cada requisição gera uma linha `[HTTP] MÉTODO /rota -> status (tempo)`, e as gravações geram `[TAREFAS]`/`[USUARIOS]`/`[ANEXOS]`/`[RECUPERACAO]`. Elas aparecem:
+Cada requisição gera uma linha `[HTTP] MÉTODO /rota -> status (tempo)`, e as gravações geram `[TAREFAS]`/`[USUARIOS]`/`[ANEXOS]`/`[NOTIFICACOES]`/`[PERFIL]`/`[RECUPERACAO]`. A rotina diária gera `[PRAZOS]` e `[MANUTENCAO]`, e erros inesperados, `[ERRO]`. Elas aparecem:
 
 - no terminal do `npm run dev`;
 - no **Emulator UI** (`http://127.0.0.1:4000/logs`) ao usar os emuladores;
@@ -284,6 +308,7 @@ A tela fica em `/recuperar-senha` (link "Esqueci minha senha" no login). O códi
 | Método | Rota                    | Descrição                         |
 |--------|-------------------------|-------------------------------------|
 | GET    | `/usuarios/atribuiveis` | Quem o usuário logado pode escolher como responsável (qualquer cargo) |
+| GET    | `/usuarios/participantes` | Usuários ativos que podem ser participantes (só id, nome e setor) |
 | GET    | `/usuarios`             | Lista todos os usuários (só TI)     |
 | GET    | `/usuarios/:id`         | Busca um usuário pelo ID (TI, ou a própria pessoa) |
 | POST   | `/usuarios`             | Cria um novo usuário (só TI)        |
@@ -296,9 +321,35 @@ A tela fica em `/recuperar-senha` (link "Esqueci minha senha" no login). O códi
 |--------|----------------|-----------------------------------------------------|
 | GET    | `/tarefas`     | Lista as tarefas que o cargo pode ver (aceita `?status=` como filtro) |
 | GET    | `/tarefas/:id` | Busca uma tarefa pelo ID                            |
-| POST   | `/tarefas`     | Cria uma nova tarefa; o responsável vem de `usuario_id` (sem ele, é quem criou) |
+| POST   | `/tarefas`     | Cria uma nova tarefa; o responsável vem de `usuario_id` (sem ele, é quem criou) e os participantes de `participantes_ids` |
 | PUT    | `/tarefas/:id` | Atualiza campos de uma tarefa existente             |
 | DELETE | `/tarefas/:id` | Remove uma tarefa (e os arquivos dela no Storage)   |
+| POST   | `/tarefas/verificar-prazos` | Roda agora a verificação de prazos vencidos (só TI) |
+
+Campos aceitos: `titulo` (obrigatório, até 150), `descricao` (até 2000), `usuario_id`, `participantes_ids` (até 20 usuários ativos), `status` (`pendente`, `em andamento`, `concluido`, `cancelado`), `prioridade` (`baixo`, `medio`, `alto`, `urgente`), `data_inicio` e `data_conclusao` (`AAAA-MM-DD`, vencimento não antes do início). Os outros campos (`responsavel`, `participantes`, `criado_por`, `finalizado_em`, `atrasada`...) são preenchidos pela API.
+
+**Prazos.** Quando o dia de `data_conclusao` termina (horário de Brasília) e a atividade ainda está pendente ou em andamento, ela vira `urgente`, ganha `atrasada: true`, `atrasada_desde` e guarda a prioridade de antes em `prioridade_original`; o responsável e quem criou recebem um aviso. Se o prazo for adiado, a prioridade volta. A conferência roda ao criar/alterar a atividade e todo dia às 00:05 (`backend/src/utils/prazos.js`).
+
+### Notificações e perfil
+
+| Método | Rota                       | Descrição                                        |
+|--------|----------------------------|--------------------------------------------------|
+| GET    | `/notificacoes`            | Os 30 avisos mais recentes de quem está logado   |
+| GET    | `/notificacoes/contagem`   | Quantos não foram lidos (o número do sino)       |
+| POST   | `/notificacoes/:id/lida`   | Marca um aviso como lido                         |
+| POST   | `/notificacoes/lidas`      | Marca todos como lidos                           |
+| GET    | `/perfil`                  | Dados de quem está logado (sem a senha)          |
+| PUT    | `/perfil/foto`             | Troca a foto (`{ imagem }`: JPEG em base64, até 512 KB) |
+| DELETE | `/perfil/foto`             | Remove a foto                                    |
+| PUT    | `/perfil/senha`            | Troca a própria senha (`{ senha_atual, nova_senha }`); encerra os logins em outros aparelhos |
+| PUT    | `/perfil/tema`             | Guarda o tema (`claro`, `escuro` ou `profundo`)  |
+
+### Manutenção (só TI)
+
+| Método | Rota                          | Descrição                                        |
+|--------|-------------------------------|--------------------------------------------------|
+| GET    | `/manutencao/consistencia`    | Confere o banco inteiro (13 verificações, ex.: e-mail repetido, responsável excluído, contador de ids atrasado) e devolve quantidade, exemplos e o que fazer. Não altera nada |
+| POST   | `/manutencao/rotina-diaria`   | Roda agora a rotina das 00:05: corrige contadores, aplica os prazos e apaga envios de anexo abandonados, sessões e códigos vencidos |
 
 ### Anexos
 
@@ -323,12 +374,24 @@ Ao confirmar, a API lê só o começo do arquivo no Storage e confere a **assina
 
 ##  Testando a API
 
-A pasta `backend/testes/` contém coleções prontas para importar em:
+### Bateria completa (com relatório de evidências)
 
-- **Postman** — `PI-api.postman_collection.json`
-- **Insomnia** — `PI-api.insomnia_collection.json`
+Na pasta `backend`:
 
-Nas coleções, faça primeiro o `POST /auth/login` e use o `token` devolvido no cabeçalho `Authorization: Bearer <token>` das outras chamadas.
+```bash
+npm run testar:tudo
+```
+
+Compila o site, sobe os emuladores (sem tocar na nuvem), roda os testes de [backend/testes/suites](backend/testes/suites) contra a API e o site de verdade e grava o resultado de cada checagem, com prints das telas, em [docs/evidencias/relatorio-de-testes.md](docs/evidencias/relatorio-de-testes.md). Termina com erro se alguma checagem falhar. Os testes de tela usam o Microsoft Edge ou o Google Chrome instalados; sem eles, essa parte é pulada e o relatório avisa. Feche o `npm run emuladores` antes, porque as portas são as mesmas. Para os testes de recuperação de senha, não configure o Gmail nos emuladores (`backend/.secret.local`): o código precisa ficar na "caixa de entrada" local.
+
+### Coleções e roteiro manual
+
+A coleção do **Postman** fica em `backend/testes/PI-api.postman_collection.json` (o Insomnia também importa esse arquivo: *Import → From File*). Ela tem 73 requisições, em 12 pastas: status, login, usuários, atividades, anexos (inclusive o envio direto ao Storage e um arquivo disfarçado), notificações, perfil, feriados, manutenção, validações e permissões, recuperação de senha e limpeza.
+
+1. Importe em *File → Import*.
+2. Na aba *Variables* da coleção, preencha `usuario` e `senha` de um usuário **TI**. O `baseUrl` já vem com o endereço dos emuladores; para a nuvem, use `https://pi-expresso.web.app/api`.
+3. Rode *2. Login*: o token é guardado sozinho e vai no cabeçalho `Authorization: Bearer` das outras requisições.
+4. Para rodar tudo de uma vez, use o *Runner* (*Run collection*) na ordem das pastas. A coleção cria um usuário e uma atividade de teste e apaga os dois no fim. Cada requisição tem testes (aba *Tests*) que conferem o código HTTP e os dados devolvidos, então o Runner mostra o que passou e o que falhou.
 
 Há também um script auxiliar, `testar_gravacao.js` (`npm run testar`), para testes de gravação diretos.
 
@@ -342,5 +405,7 @@ Há também um script auxiliar, `testar_gravacao.js` (`npm run testar`), para te
 | Nova atividade / Detalhes | `/atividades/nova`, `/atividades/:id` | ✅ Implementadas |
 | Usuários                  | `/usuarios`               | ✅ Implementada   |
 | Relatórios                | `/relatorios`             | ✅ Implementada   |
+| Meu perfil                | `/perfil`                 | ✅ Implementada   |
+| Recuperar senha           | `/recuperar-senha`        | ✅ Implementada   |
 
 > O frontend original em HTML/CSS/JS puro foi convertido para React. A versão antiga pode ser consultada no histórico do git (commit `Expresso 1.5v`).

@@ -3,8 +3,8 @@ import { IconePesquisa } from "./Icones";
 /* Campo de pesquisa (Esc limpa o texto) */
 export default function CampoPesquisa({ valor, aoMudar, className = "" }) {
     return (
-        <div className={"h-[40px] bg-white border border-[#d1d1d6] rounded-[10px] flex items-center px-3.5 gap-2.5 shadow-sm " + className}>
-            <span className="text-gray-500">
+        <div className={"h-[40px] bg-superficie border border-borda rounded-[10px] flex items-center px-3.5 gap-2.5 shadow-sm " + className}>
+            <span className="text-texto-fraco">
                 <IconePesquisa />
             </span>
             <input

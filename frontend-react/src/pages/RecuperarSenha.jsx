@@ -5,10 +5,14 @@ import "./login.css";
 
 import imgFundo from "../assets/fundo.png";
 import imgLogo from "../assets/logo.png";
+import imgLogoBranca from "../assets/logobranca.png";
+import { useTema } from "../utils/tema";
 
 const TAMANHO_MINIMO_SENHA = 6;
 
 export default function RecuperarSenha() {
+    // Nos temas escuros o logo cinza some; usa o branco
+    const tema = useTema();
     // "email": pede o código | "codigo": digita o código e a nova senha | "concluido"
     const [etapa, setEtapa] = useState("email");
     const [email, setEmail] = useState("");
@@ -87,7 +91,7 @@ export default function RecuperarSenha() {
                 {/* LADO DIREITO */}
                 <section className="lado-direito">
                     <div className="login-box caixa-recuperacao">
-                        <img src={imgLogo} className="logo" alt="Pinhalense" />
+                        <img src={tema === "claro" ? imgLogo : imgLogoBranca} className="logo" alt="Pinhalense" />
                         <h1 className="titulo-caixa">Recuperar senha</h1>
 
                         {/* 1. PEDIR O CÓDIGO */}

@@ -1,235 +1,2612 @@
 {
   "info": {
-    "name": "PI API - Projeto de Extensao",
-    "description": "Colecao de testes da API do Projeto Integrador (Node.js + Express + MySQL). Atividade de 01/09/2026 - Prof. Nivaldo. Importe em File > Import e rode as requisicoes na ordem.",
+    "name": "Expresso API",
+    "description": "Coleção da API do Expresso (Node.js + Express + Firebase).\n\nCOMO USAR\n1. Importe em File > Import.\n2. Na aba Variables da coleção, preencha:\n   - baseUrl: o endereço da API. Já vem com o dos emuladores (npm run emuladores).\n     Na nuvem: https://pi-expresso.web.app/api\n   - usuario e senha: um usuário com função TI (login ou e-mail).\n3. Rode a pasta \"1. Status\" e depois \"2. Login\" (guarda o token sozinho).\n   As outras requisições usam esse token (Authorization: Bearer).\n4. Para rodar tudo de uma vez, use o Runner (Run collection) na ordem das pastas.\n   A coleção cria um usuário e uma atividade de teste e apaga os dois na pasta\n   \"12. Limpeza\". Cada requisição tem testes (aba Tests) que conferem o código HTTP\n   e os dados devolvidos, então o Runner mostra o que passou e o que falhou.\n\nAs regras conferidas aqui estão em docs/dados-e-integracao.md.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
   },
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:3000",
+      "value": "http://127.0.0.1:5001/demo-expresso/southamerica-east1/api",
+      "type": "string",
+      "description": "Emuladores. Nuvem: https://pi-expresso.web.app/api"
+    },
+    {
+      "key": "usuario",
+      "value": "",
+      "type": "string",
+      "description": "Login ou e-mail de um usuário TI"
+    },
+    {
+      "key": "senha",
+      "value": "",
+      "type": "string",
+      "description": "Senha desse usuário"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "Preenchido pelo \"Entrar (TI)\""
+    },
+    {
+      "key": "meuId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "meuNome",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "emailTeste",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "emailTesteMaiusculas",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "loginTeste",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "senhaTeste",
+      "value": "senha123",
+      "type": "string"
+    },
+    {
+      "key": "usuarioId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tokenTeste",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "hoje",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "daquiUmaSemana",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tarefaId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "conteudoAnexo",
+      "value": "Arquivo de teste enviado pelo Postman.",
+      "type": "string"
+    },
+    {
+      "key": "anexoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "urlEnvio",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "anexoFalsoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "urlEnvioFalso",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "notificacaoId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "tamanhoAnexo",
+      "value": "",
       "type": "string"
     }
   ],
   "item": [
     {
-      "name": "00 - Status da API",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/",
-          "host": ["{{baseUrl}}"],
-          "path": [""]
+      "name": "1. Status",
+      "description": "Rotas públicas: não precisam de login.",
+      "item": [
+        {
+          "name": "Informações da API",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/",
+            "auth": {
+              "type": "noauth"
+            }
+          }
         },
-        "description": "Verifica se o servidor Express esta no ar. Esperado: 200."
-      },
-      "response": []
-    },
-    {
-      "name": "01 - Health (testa o banco)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/health",
-          "host": ["{{baseUrl}}"],
-          "path": ["health"]
-        },
-        "description": "Prova que a API conectou no MySQL. Esperado: 200 com banco: conectado."
-      },
-      "response": []
-    },
-    {
-      "name": "02 - Criar usuario (POST)",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"nome\": \"Icaro\",\n  \"email\": \"icaro@pi.com\",\n  \"senha\": \"123456\"\n}",
-          "options": { "raw": { "language": "json" } }
-        },
-        "url": {
-          "raw": "{{baseUrl}}/usuarios",
-          "host": ["{{baseUrl}}"],
-          "path": ["usuarios"]
-        },
-        "description": "Esperado: 201 Created."
-      },
-      "response": []
-    },
-    {
-      "name": "03 - Listar usuarios (GET)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/usuarios",
-          "host": ["{{baseUrl}}"],
-          "path": ["usuarios"]
+        {
+          "name": "Saúde da API e do banco",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Banco conectado', () => pm.expect(pm.response.json().banco).to.eql('conectado'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health",
+            "auth": {
+              "type": "noauth"
+            }
+          }
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "04 - Buscar usuario por id (GET)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/usuarios/1",
-          "host": ["{{baseUrl}}"],
-          "path": ["usuarios", "1"]
+      "name": "2. Login",
+      "description": "Entra com o usuário TI das variáveis e guarda o token.",
+      "item": [
+        {
+          "name": "Entrar (TI)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const r = pm.response.json();",
+                  "pm.collectionVariables.set('token', r.token);",
+                  "pm.collectionVariables.set('meuId', r.usuario.id);",
+                  "pm.collectionVariables.set('meuNome', r.usuario.nome);",
+                  "pm.test('Devolve o token e o usuário, sem a senha', () => {",
+                  "    pm.expect(r.token).to.be.a('string');",
+                  "    pm.expect(r.usuario).to.not.have.property('senha');",
+                  "});",
+                  "pm.test('O usuário é TI (necessário para as pastas de usuários e manutenção)', () => pm.expect(r.usuario.funcao).to.eql('ti'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"{{usuario}}\",\n  \"senha\": \"{{senha}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "05 - Criar tarefa (POST)",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"titulo\": \"Levantamento de requisitos\",\n  \"descricao\": \"Mapear fontes de dados do sistema\",\n  \"responsavel\": \"Icaro\",\n  \"usuario_id\": 1,\n  \"status\": \"em andamento\"\n}",
-          "options": { "raw": { "language": "json" } }
+      "name": "3. Usuários (TI)",
+      "description": "Cadastro de usuários: só o TI. Cria o usuário de teste usado nas próximas pastas.",
+      "item": [
+        {
+          "name": "Quem posso escolher como responsável",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios/atribuiveis"
+          }
         },
-        "url": {
-          "raw": "{{baseUrl}}/tarefas",
-          "host": ["{{baseUrl}}"],
-          "path": ["tarefas"]
+        {
+          "name": "Usuários para participantes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Só id, nome e setor (sem e-mail)', () => {",
+                  "    pm.response.json().forEach((p) => pm.expect(Object.keys(p).sort()).to.eql(['id', 'nome', 'setor']));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios/participantes"
+          }
         },
-        "description": "Esperado: 201 Created com o id gerado pelo MySQL."
-      },
-      "response": []
-    },
-    {
-      "name": "06 - Listar tarefas (GET)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/tarefas",
-          "host": ["{{baseUrl}}"],
-          "path": ["tarefas"]
+        {
+          "name": "Listar usuários",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Nenhum usuário volta com a senha', () => {",
+                  "    pm.response.json().forEach((u) => pm.expect(u).to.not.have.property('senha'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios"
+          }
+        },
+        {
+          "name": "Criar usuário de teste (e-mail é padronizado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 201', () => {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "const u = pm.response.json();",
+                  "pm.collectionVariables.set('usuarioId', u.id);",
+                  "pm.test('Nome e e-mail sem espaços, e-mail em minúsculas', () => {",
+                  "    pm.expect(u.nome).to.eql('Usuário do Postman');",
+                  "    pm.expect(u.email).to.eql(pm.collectionVariables.get('emailTeste'));",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const marca = Date.now();",
+                  "pm.collectionVariables.set('emailTeste', 'postman.' + marca + '@exemplo.com');",
+                  "pm.collectionVariables.set('loginTeste', 'postman.' + marca);",
+                  "pm.collectionVariables.set('emailTesteMaiusculas', 'POSTMAN.' + marca + '@Exemplo.COM');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios",
+            "description": "O e-mail vai com espaços e maiúsculas; a API grava em minúsculas.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"  Usuário do Postman  \",\n  \"usuario\": \"{{loginTeste}}\",\n  \"email\": \"  {{emailTeste}}  \",\n  \"senha\": \"{{senhaTeste}}\",\n  \"setor\": \"PCP\",\n  \"funcao\": \"usuario\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Buscar o usuário de teste",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios/{{usuarioId}}"
+          }
+        },
+        {
+          "name": "Alterar o usuário de teste",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Setor alterado', () => pm.expect(pm.response.json().usuario.setor).to.eql('ENGENHARIA'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios/{{usuarioId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"setor\": \"ENGENHARIA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Entrar como o usuário de teste",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.collectionVariables.set('tokenTeste', pm.response.json().token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "description": "Login pelo e-mail com outras maiúsculas: funciona igual.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"{{emailTesteMaiusculas}}\",\n  \"senha\": \"{{senhaTeste}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "07 - Filtrar tarefas por status (GET)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/tarefas?status=pendente",
-          "host": ["{{baseUrl}}"],
-          "path": ["tarefas"],
-          "query": [{ "key": "status", "value": "pendente" }]
+      "name": "4. Atividades",
+      "description": "Cria uma atividade para o usuário de teste e passa pelas etapas.",
+      "item": [
+        {
+          "name": "Criar atividade (dados padronizados pela API)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 201', () => {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "const t = pm.response.json();",
+                  "pm.collectionVariables.set('tarefaId', t.id);",
+                  "pm.test('Título sem espaços nas pontas; descrição vazia vira null', () => {",
+                  "    pm.expect(t.titulo).to.eql('Atividade criada pelo Postman');",
+                  "    pm.expect(t.descricao).to.eql(null);",
+                  "});",
+                  "pm.test('Responsável e participantes preenchidos pela API a partir dos ids', () => {",
+                  "    pm.expect(t.responsavel).to.eql('Usuário do Postman');",
+                  "    pm.expect(t.participantes).to.eql(pm.collectionVariables.get('meuNome'));",
+                  "});",
+                  "pm.test('criado_por enviado pelo cliente é ignorado', () => pm.expect(t.criado_por).to.eql(Number(pm.collectionVariables.get('meuId'))));",
+                  "pm.test('Começa pendente', () => pm.expect(t.status).to.eql('pendente'));"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Dia em Brasília (UTC-3, sem horário de verão desde 2019), daqui a \"d\" dias",
+                  "const dia = (d) => new Date(Date.now() - 3 * 3600000 + d * 86400000).toISOString().slice(0, 10);",
+                  "pm.collectionVariables.set('hoje', dia(0));",
+                  "pm.collectionVariables.set('daquiUmaSemana', dia(7));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"  Atividade criada pelo Postman  \",\n  \"descricao\": \"\",\n  \"usuario_id\": {{usuarioId}},\n  \"participantes_ids\": [{{meuId}}],\n  \"prioridade\": \"alto\",\n  \"data_inicio\": \"{{hoje}}\",\n  \"data_conclusao\": \"{{daquiUmaSemana}}\",\n  \"criado_por\": 999\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Listar atividades",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const lista = pm.response.json();",
+                  "pm.test('A atividade criada está na lista, com as permissões de quem está logado', () => {",
+                  "    const t = lista.find((x) => x.id === Number(pm.collectionVariables.get('tarefaId')));",
+                  "    pm.expect(t).to.be.an('object');",
+                  "    pm.expect(t.permissoes).to.have.keys('status', 'editar', 'excluir');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/tarefas"
+          }
+        },
+        {
+          "name": "Filtrar por status",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Só pendentes', () => pm.response.json().forEach((t) => pm.expect(t.status).to.eql('pendente')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/tarefas?status=pendente"
+          }
+        },
+        {
+          "name": "Buscar a atividade",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/tarefas/{{tarefaId}}"
+          }
+        },
+        {
+          "name": "Mudar para \"em andamento\"",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Status gravado', () => pm.expect(pm.response.json().tarefa.status).to.eql('em andamento'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas/{{tarefaId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"em andamento\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Concluir (grava a data de fim)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('finalizado_em preenchido', () => pm.expect(pm.response.json().tarefa.finalizado_em).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas/{{tarefaId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"concluido\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Verificar prazos agora (TI)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/tarefas/verificar-prazos"
+          }
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "08 - Buscar tarefa por id (GET)",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/tarefas/1",
-          "host": ["{{baseUrl}}"],
-          "path": ["tarefas", "1"]
+      "name": "5. Anexos",
+      "description": "O arquivo vai direto para o Storage (url_envio); a API confere a assinatura ao concluir.",
+      "item": [
+        {
+          "name": "Pedir envio de um .txt",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 201', () => {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "const r = pm.response.json();",
+                  "pm.collectionVariables.set('anexoId', r.anexo.id);",
+                  "pm.collectionVariables.set('urlEnvio', r.url_envio);",
+                  "pm.test('Começa como \"enviando\"', () => pm.expect(r.anexo.status).to.eql('enviando'));"
+                ]
+              }
+            },
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('tamanhoAnexo', pm.collectionVariables.get('conteudoAnexo').length);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas/{{tarefaId}}/anexos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"teste-postman.txt\",\n  \"tamanho\": {{tamanhoAnexo}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Enviar o arquivo ao Storage",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Storage aceitou', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/plain"
+              }
+            ],
+            "url": "{{urlEnvio}}",
+            "description": "Vai direto para o endereço temporário do Storage, sem passar pela API (por isso sem token).",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{{conteudoAnexo}}",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Concluir o anexo (confere a assinatura)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const a = pm.response.json();",
+                  "pm.test('Pronto, com o tamanho real e o link de download', () => {",
+                  "    pm.expect(a.status).to.eql('pronto');",
+                  "    pm.expect(a.tamanho).to.eql(pm.collectionVariables.get('conteudoAnexo').length);",
+                  "    pm.expect(a.url).to.be.a('string');",
+                  "    pm.expect(a).to.not.have.property('token');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/tarefas/{{tarefaId}}/anexos/{{anexoId}}/concluir"
+          }
+        },
+        {
+          "name": "Listar anexos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('O anexo aparece', () => pm.expect(pm.response.json().map((a) => a.id)).to.include(pm.collectionVariables.get('anexoId')));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/tarefas/{{tarefaId}}/anexos"
+          }
+        },
+        {
+          "name": "Recusar tipo não permitido (.exe)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"não permitido\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"não permitido\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas/{{tarefaId}}/anexos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"programa.exe\",\n  \"tamanho\": 1024\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Recusar tamanho acima de 200 MB",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"200 MB\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"200 MB\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas/{{tarefaId}}/anexos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"video.mp4\",\n  \"tamanho\": 209715201\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Arquivo disfarçado: pedir envio de um \"PDF\"",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 201', () => {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.collectionVariables.set('anexoFalsoId', pm.response.json().anexo.id);",
+                  "pm.collectionVariables.set('urlEnvioFalso', pm.response.json().url_envio);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas/{{tarefaId}}/anexos",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"contrato.pdf\",\n  \"tamanho\": 30\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Arquivo disfarçado: enviar texto no lugar do PDF",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Storage aceitou (a conferência é no passo seguinte)', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/plain"
+              }
+            ],
+            "url": "{{urlEnvioFalso}}",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "isto não é um PDF de verdade",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Arquivo disfarçado: concluir é recusado e o arquivo apagado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"não corresponde\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"não corresponde\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/tarefas/{{tarefaId}}/anexos/{{anexoFalsoId}}/concluir"
+          }
+        },
+        {
+          "name": "Excluir o anexo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/tarefas/{{tarefaId}}/anexos/{{anexoId}}"
+          }
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "09 - Atualizar tarefa (PUT)",
-      "request": {
-        "method": "PUT",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"status\": \"concluido\"\n}",
-          "options": { "raw": { "language": "json" } }
+      "name": "6. Notificações (usuário de teste)",
+      "description": "Avisos do sino de quem recebeu a atividade (o usuário de teste).",
+      "item": [
+        {
+          "name": "Quantas não lidas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Pelo menos 1 (a atividade atribuída a ele)', () => pm.expect(pm.response.json().nao_lidas).to.be.at.least(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/notificacoes/contagem",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTeste}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
         },
-        "url": {
-          "raw": "{{baseUrl}}/tarefas/1",
-          "host": ["{{baseUrl}}"],
-          "path": ["tarefas", "1"]
+        {
+          "name": "Listar notificações",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const lista = pm.response.json();",
+                  "const aviso = lista.find((n) => n.tipo === 'atribuida');",
+                  "pm.test('Aviso de atividade atribuída, com quem fez', () => {",
+                  "    pm.expect(aviso).to.be.an('object');",
+                  "    pm.expect(aviso.autor_nome).to.eql(pm.collectionVariables.get('meuNome'));",
+                  "});",
+                  "if (aviso) pm.collectionVariables.set('notificacaoId', aviso.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/notificacoes",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTeste}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
         },
-        "description": "Atualizacao parcial: basta enviar o campo que mudou."
-      },
-      "response": []
-    },
-    {
-      "name": "10 - Excluir tarefa (DELETE)",
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/tarefas/1",
-          "host": ["{{baseUrl}}"],
-          "path": ["tarefas", "1"]
+        {
+          "name": "Marcar uma como lida",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/notificacoes/{{notificacaoId}}/lida",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTeste}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Marcar todas como lidas",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/notificacoes/lidas",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTeste}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "11 - ERRO 400: tarefa sem titulo",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"descricao\": \"tarefa sem titulo\"\n}",
-          "options": { "raw": { "language": "json" } }
+      "name": "7. Meu perfil (usuário de teste)",
+      "description": "Usa o usuário de teste para não mexer no perfil do TI.",
+      "item": [
+        {
+          "name": "Ver o próprio perfil",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const p = pm.response.json();",
+                  "pm.test('Dados do próprio usuário, sem a senha', () => {",
+                  "    pm.expect(p.email).to.eql(pm.collectionVariables.get('emailTeste'));",
+                  "    pm.expect(p).to.not.have.property('senha');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/perfil",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTeste}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
         },
-        "url": {
-          "raw": "{{baseUrl}}/tarefas",
-          "host": ["{{baseUrl}}"],
-          "path": ["tarefas"]
+        {
+          "name": "Trocar o tema",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/perfil/tema",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTeste}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tema\": \"escuro\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
         },
-        "description": "Testa a validacao. Esperado: 400 Bad Request."
-      },
-      "response": []
+        {
+          "name": "Recusar tema inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"Tema inválido\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"Tema inválido\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/perfil/tema",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTeste}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tema\": \"roxo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Trocar a foto (JPEG)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Devolve o link da foto', () => pm.expect(pm.response.json().foto_url).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/perfil/foto",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTeste}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"imagem\": \"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCABAAEADASIAAhEBAxEB/8QAGwABAAMBAAMAAAAAAAAAAAAAAAYHCAUBAgT/xAA1EAABAgUCBAQEAwkAAAAAAAABAgMABAUGEQcTEhQhMQgVUWEWIkGiFyOBQmJxkaGxw+Pw/8QAGgEAAgMBAQAAAAAAAAAAAAAAAAMBBAUCBv/EACMRAAICAQQBBQEAAAAAAAAAAAECAAMRBBIhMQUTIlFhkYH/2gAMAwEAAhEDEQA/AKMhCEas9zEIQghEIQghEIQghEWppJpJ+IVFnJ/zvy7l5jY2+U3uL5QrOeNOO/aKrjUnhSSV2HXkpGVKnVAD32kwq1iq5Ep6+16aS6HB4nJPhlOOl2gn3pv+2KtunTWp2ze9Lt+pvN7VRfbal5xtJUlSVLCSrhOOoyMpz+v1iYad6Rag0u7KfOLY8oZZeQt17nG1cSAcqThCiTkZGD06xYevdQlFXnp9TwtKp5NVaeKR3SjcQOvpk/2hYdg2M5lNdTYloT1A4IPQHH5IRdnh6doVt1Kqy9xGdck2VPcuJDgLgSMkA7hx09jFbaXWS7ftzeUtzfJoSyp5x/a3OEDA7ZHckfWNq1KbaVWZakP4KJ6VfPCfrwlAP9FGKW0SoPwRJ39WJ5KkCQcclUFf1Q0CrI/jlMcra2057iqNfaaXLH3cY/vEgGqujnwFbjdV895/jfSztcntYyCc541enpFRxrPxQq49MpNR/am2j9qoyZDqWLLkzQ8fc91O6w5OYjUnhSUUWHXlJOFJnVEH32kxluJTal/XNadPmJKgVLlJWYXuOI2GnOJWAM5WkkdAO0TYpdcCd6yhr6ii9zuq1r1BUkg3AcH0k5cf444Vr1Odq+pNBnapNPTc27U5YrddUVKP5qf+xEWj6JCbfp8/LTkovbmZdxLzS8A8K0kEHB6HqB3idoHQjPQRQQigZ+pr3VSu+SanaeKUrgZeefacV6hYQgD+agf0jz4h59qhaYVNuW4W3qpMJaP7xUcr+1JjL9z31cd0TkhNVypGZfkSVS6wy23tkkEn5EjPVI7+ke1239c13ysvLXFUzOMML3G0bDbeFYxn5EjPT1hIpI2/Uza/GsprJI9vf7kTQ/iYUVaVU5R7mZZP2GMoRK7k1Cui5aQzS63U+akWlJUhvYaRgpGB1SkHt7xFIbUhRcGXdFQ2nr2N8xCEIZLcQhCCEQhCCEQhCCE//9k=\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Recusar HTML disfarçado de JPEG",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"não é uma imagem JPEG válida\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"não é uma imagem JPEG válida\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/perfil/foto",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTeste}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"imagem\": \"data:image/jpeg;base64,PGh0bWw+PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0PjwvaHRtbD4=\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Remover a foto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/perfil/foto",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTeste}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Recusar troca de senha com a senha atual errada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"senha atual está incorreta\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"senha atual está incorreta\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/perfil/senha",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTeste}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"senha_atual\": \"errada\",\n  \"nova_senha\": \"novaSenha123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Trocar a própria senha",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/perfil/senha",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTeste}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"senha_atual\": \"{{senhaTeste}}\",\n  \"nova_senha\": \"novaSenha123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
     },
     {
-      "name": "12 - ERRO 404: tarefa inexistente",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/tarefas/9999",
-          "host": ["{{baseUrl}}"],
-          "path": ["tarefas", "9999"]
+      "name": "8. Feriados (BrasilAPI)",
+      "description": "A API consulta a BrasilAPI.",
+      "item": [
+        {
+          "name": "Feriados de 2026",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Lista com datas', () => pm.expect(pm.response.json()[0]).to.have.property('date'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/feriados/2026"
+          }
         },
-        "description": "Esperado: 404 Not Found."
-      },
-      "response": []
+        {
+          "name": "Recusar ano inválido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"ano válido\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"ano válido\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/feriados/abc"
+          }
+        }
+      ]
     },
     {
-      "name": "13 - API externa: feriados",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{baseUrl}}/feriados/2026",
-          "host": ["{{baseUrl}}"],
-          "path": ["feriados", "2026"]
+      "name": "9. Manutenção (TI)",
+      "description": "Verificação de consistência e rotina diária (a mesma das 00:05).",
+      "item": [
+        {
+          "name": "Verificação de consistência",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "const r = pm.response.json();",
+                  "pm.test('13 conferências, cada uma com quantidade e exemplos', () => {",
+                  "    pm.expect(r.verificacoes).to.have.lengthOf(13);",
+                  "    r.verificacoes.forEach((v) => pm.expect(v).to.include.keys('codigo', 'gravidade', 'quantidade', 'exemplos'));",
+                  "});",
+                  "console.log('Problemas encontrados:', r.problemas, r.verificacoes.filter((v) => v.quantidade > 0).map((v) => v.codigo + ': ' + v.quantidade));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/manutencao/consistencia"
+          }
         },
-        "description": "Integracao com a BrasilAPI (fonte de dados externa)."
-      },
-      "response": []
+        {
+          "name": "Rodar a rotina diária agora",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Todas as etapas rodaram', () => pm.expect(pm.response.json()).to.include.keys('contadores', 'prazos', 'anexos_abandonados', 'sessoes_vencidas', 'codigos_vencidos'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/manutencao/rotina-diaria"
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Validações e permissões",
+      "description": "Dados fora do formato e acessos sem permissão: a API recusa com o código e a mensagem certos.",
+      "item": [
+        {
+          "name": "Sem login → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 401', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/tarefas",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Token inventado → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 401', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/tarefas",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "token-inventado",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Usuário padrão não lista usuários → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 403', () => {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTeste}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Usuário padrão não roda a manutenção → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 403', () => {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/manutencao/consistencia",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTeste}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Usuário padrão não atribui a outra pessoa → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 403 com a mensagem \"a si mesmo\"', () => {",
+                  "    pm.response.to.have.status(403);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"a si mesmo\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTeste}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Para outra pessoa\",\n  \"usuario_id\": {{meuId}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Atividade sem título → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"obrigatório\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"obrigatório\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descricao\": \"sem título\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Título que não é texto → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"obrigatório\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"obrigatório\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": 42\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Título com mais de 150 caracteres → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"até 150\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"até 150\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Status fora da lista → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"Status inválido\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"Status inválido\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"x\",\n  \"status\": \"feito\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Prioridade fora da lista → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"Prioridade inválida\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"Prioridade inválida\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"x\",\n  \"prioridade\": \"altíssima\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Data que não existe (30/02) → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"data válida\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"data válida\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"x\",\n  \"data_inicio\": \"2026-02-30\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Vencimento antes do início → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"antes da data de início\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"antes da data de início\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"x\",\n  \"data_inicio\": \"2026-10-10\",\n  \"data_conclusao\": \"2026-10-01\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Responsável que não existe → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 403 com a mensagem \"não encontrado\"', () => {",
+                  "    pm.response.to.have.status(403);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"não encontrado\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"x\",\n  \"usuario_id\": 999999\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Participante que não existe → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"não existe\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"não existe\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"x\",\n  \"participantes_ids\": [\n    999999\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Alteração só com campos protegidos → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"ao menos um campo\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"ao menos um campo\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/tarefas/{{tarefaId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": 1,\n  \"criado_por\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "E-mail inválido → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"e-mail válido\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"e-mail válido\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Teste\",\n  \"email\": \"sem-arroba.com\",\n  \"senha\": \"senha123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Senha com menos de 6 caracteres → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"pelo menos 6\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"pelo menos 6\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Teste\",\n  \"email\": \"senha.curta@exemplo.com\",\n  \"senha\": \"123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Login com espaço → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"sem espaços\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"sem espaços\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Teste\",\n  \"usuario\": \"joão silva\",\n  \"email\": \"joao@exemplo.com\",\n  \"senha\": \"senha123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "E-mail repetido (com outras maiúsculas) → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 409 com a mensagem \"esse e-mail\"', () => {",
+                  "    pm.response.to.have.status(409);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"esse e-mail\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Repetido\",\n  \"email\": \"{{emailTesteMaiusculas}}\",\n  \"senha\": \"senha123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "\"ativo\" como texto → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"true ou false\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"true ou false\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/usuarios/{{usuarioId}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ativo\": \"false\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Atividade que não existe → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 404', () => {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/tarefas/999999"
+          }
+        },
+        {
+          "name": "Rota que não existe → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 404 com a mensagem \"Rota não encontrada\"', () => {",
+                  "    pm.response.to.have.status(404);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"Rota não encontrada\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/rota-inexistente"
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Recuperação de senha",
+      "description": "Rotas públicas. Usa um e-mail que não existe: nenhum e-mail é enviado.",
+      "item": [
+        {
+          "name": "Pedir código (mesma resposta exista o e-mail ou não)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Mensagem genérica', () => pm.expect(pm.response.json().mensagem).to.include('Se o e-mail estiver cadastrado'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/recuperar-senha",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ninguem.postman@exemplo.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Código errado → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"Código inválido\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"Código inválido\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/redefinir-senha",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ninguem.postman@exemplo.com\",\n  \"codigo\": \"000000\",\n  \"nova_senha\": \"novaSenha123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Código que não tem 6 dígitos → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400 com a mensagem \"6 dígitos\"', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    pm.expect(pm.response.json().erro).to.include(\"6 dígitos\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/redefinir-senha",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"ninguem.postman@exemplo.com\",\n  \"codigo\": \"12ab\",\n  \"nova_senha\": \"novaSenha123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. Limpeza",
+      "description": "Apaga o que a coleção criou e encerra a sessão.",
+      "item": [
+        {
+          "name": "Excluir a atividade de teste",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/tarefas/{{tarefaId}}"
+          }
+        },
+        {
+          "name": "Excluir o usuário de teste",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{baseUrl}}/usuarios/{{usuarioId}}"
+          }
+        },
+        {
+          "name": "Sessão do usuário excluído deixou de valer → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 401', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/perfil",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTeste}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Sair",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 200', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseUrl}}/auth/sair"
+          }
+        },
+        {
+          "name": "Token depois de sair → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 401', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/tarefas"
+          }
+        }
+      ]
     }
   ]
 }

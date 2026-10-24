@@ -18,10 +18,10 @@ export const Formato = {
         // valor do banco -> texto na tela
         rotulo: { baixo: "Baixo", medio: "Médio", alto: "Alto", urgente: "Urgente" },
         cor: {
-            baixo: "bg-[#AEB0B7]",
-            medio: "bg-[#54565B]",
-            alto: "bg-[#6F0049]",
-            urgente: "bg-[#6F0049]"
+            baixo: "bg-cinza-claro",
+            medio: "bg-cinza",
+            alto: "bg-marca",
+            urgente: "bg-marca"
         },
         // texto do formulário -> valor do banco
         doFormulario: { "Baixa": "baixo", "Média": "medio", "Alta": "alto", "Urgente": "urgente" }
@@ -44,7 +44,7 @@ export const Formato = {
         return this.prioridade.rotulo[valor] || "Médio";
     },
     corPrioridade(valor) {
-        return this.prioridade.cor[valor] || "bg-[#54565B]";
+        return this.prioridade.cor[valor] || "bg-cinza";
     },
     rotuloStatus(valor) {
         return this.status.rotulo[valor] || "Pendente";

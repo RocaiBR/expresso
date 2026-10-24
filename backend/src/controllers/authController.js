@@ -2,19 +2,19 @@ const crypto = require('crypto');
 const { db, Timestamp } = require('../config/firebase');
 const { enviarEmail, emailConfigurado, emModoLocal } = require('../config/email');
 const { criarSessao, encerrarSessao, encerrarSessoesDoUsuario } = require('../middlewares/autenticacao');
+const { TAMANHO_MINIMO_SENHA } = require('../utils/validacoes');
 
 // Recuperação de senha por código enviado ao e-mail
 const VALIDADE_CODIGO_MIN = 15;
 const INTERVALO_REENVIO_MS = 60 * 1000;
 const MAX_TENTATIVAS = 5;
-const TAMANHO_MINIMO_SENHA = 6;
 const MENSAGEM_ENVIO = 'Se o e-mail estiver cadastrado, você vai receber um código para criar uma nova senha.';
 const MENSAGEM_CODIGO_INVALIDO = 'Código inválido ou expirado. Peça um novo código.';
 
-// Aceita entrar com e-mail, nome de usuário ou nome (nessa ordem)
 async function buscarPorLogin(valor) {
     for (const campo of ['email', 'usuario', 'nome']) {
-        const resultado = await db.collection('usuarios').where(campo, '==', valor).limit(1).get();
+        const procurado = campo === 'email' ? valor.toLowerCase() : valor;
+        const resultado = await db.collection('usuarios').where(campo, '==', procurado).limit(1).get();
         if (!resultado.empty) return resultado.docs[0].data();
     }
     return null;
@@ -36,7 +36,6 @@ async function login(req, res, next) {
             return res.status(403).json({ erro: 'Este usuário está inativo. Fale com o TI.' });
         }
 
-        // O token identifica a pessoa nas próximas chamadas (Authorization: Bearer <token>)
         const token = await criarSessao(encontrado.id);
         console.log(`[AUTH] Login do usuário #${encontrado.id} (${encontrado.funcao || 'usuario'})`);
         res.status(200).json({
@@ -49,6 +48,8 @@ async function login(req, res, next) {
                 email: encontrado.email,
                 setor: encontrado.setor,
                 funcao: encontrado.funcao || 'usuario',
+                foto_url: encontrado.foto_url || null,
+                tema: encontrado.tema || null,
             },
         });
     } catch (error) {
@@ -71,11 +72,11 @@ function textoDoCorpo(valor) {
 }
 
 async function buscarPorEmail(email) {
-    const resultado = await db.collection('usuarios').where('email', '==', email).limit(1).get();
+    const resultado = await db.collection('usuarios').where('email', '==', email.toLowerCase()).limit(1).get();
     return resultado.empty ? null : resultado.docs[0];
 }
 
-// O código nunca é salvo: fica só o hash (com um "sal" aleatório), como se faz com senhas
+// O código nunca é salvo: fica só o hash, como se faz com senhas
 function hashDoCodigo(codigo, sal) {
     return crypto.createHash('sha256').update(sal + codigo).digest('hex');
 }

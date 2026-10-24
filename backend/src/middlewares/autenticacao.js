@@ -23,10 +23,10 @@ async function encerrarSessao(token) {
     await sessoes.doc(hashDoToken(token)).delete();
 }
 
-// Ao trocar a senha ou excluir o usuário, derruba os logins abertos dele
-async function encerrarSessoesDoUsuario(usuarioId) {
+async function encerrarSessoesDoUsuario(usuarioId, tokenMantido = null) {
     const abertas = await sessoes.where('usuario_id', '==', Number(usuarioId)).get();
-    await Promise.all(abertas.docs.map((doc) => doc.ref.delete()));
+    const manter = tokenMantido ? hashDoToken(tokenMantido) : null;
+    await Promise.all(abertas.docs.filter((doc) => doc.id !== manter).map((doc) => doc.ref.delete()));
 }
 
 function tokenDaRequisicao(req) {

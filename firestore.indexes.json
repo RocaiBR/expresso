@@ -1,0 +1,24 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "notificacoes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "usuario_id", "order": "ASCENDING" },
+        { "fieldPath": "criada_em", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": [
+    {
+      "collectionGroup": "anexos",
+      "fieldPath": "status",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "DESCENDING", "queryScope": "COLLECTION" },
+        { "arrayConfig": "CONTAINS", "queryScope": "COLLECTION" },
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    }
+  ]
+}

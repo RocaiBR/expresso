@@ -11,6 +11,7 @@ import Confirmacao from "./pages/Confirmacao";
 import DetalhesAtividade from "./pages/DetalhesAtividade";
 import Usuarios from "./pages/Usuarios";
 import UsuarioForm from "./pages/UsuarioForm";
+import Perfil from "./pages/Perfil";
 
 // Carregada só ao abrir a tela, para o Chart.js não pesar no resto do sistema
 const Relatorios = lazy(() => import("./pages/Relatorios"));
@@ -41,6 +42,7 @@ export default function App() {
                             path="/relatorios"
                             element={<Suspense fallback={null}><Relatorios /></Suspense>}
                         />
+                        <Route path="/perfil" element={<Perfil />} />
                         <Route path="/usuarios" element={<SomenteTI><Usuarios /></SomenteTI>} />
                         <Route path="/usuarios/novo" element={<SomenteTI><UsuarioForm /></SomenteTI>} />
                         <Route path="/usuarios/:id" element={<SomenteTI><UsuarioForm /></SomenteTI>} />

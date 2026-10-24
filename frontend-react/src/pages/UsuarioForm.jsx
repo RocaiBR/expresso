@@ -4,7 +4,7 @@ import { Api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
 const classesCampo =
-    "h-[40px] bg-white border border-[#b9b9be] rounded-lg px-3 text-sm outline-none focus:border-[#6F0049] focus:ring-1 focus:ring-[#6F0049]";
+    "h-[40px] bg-superficie border border-borda-forte rounded-lg px-3 text-sm outline-none focus:border-marca-texto focus:ring-1 focus:ring-marca-texto";
 
 function emailValido(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -15,7 +15,6 @@ export default function UsuarioForm() {
     const editando = Boolean(id);
     const navigate = useNavigate();
     const { usuario: logado } = useAuth();
-    // Ninguém exclui a própria conta (a API também bloqueia)
     const podeExcluir = editando && String(logado?.id) !== String(id);
 
     const [dados, setDados] = useState({
@@ -65,6 +64,10 @@ export default function UsuarioForm() {
         if (!dados.nome.trim()) return "Preencha o nome completo.";
         if (!dados.email.trim() || !emailValido(dados.email.trim())) return "Informe um e-mail válido.";
         if (!editando && !dados.senha) return "Informe uma senha para o novo usuário.";
+        if (dados.senha && dados.senha.length < 6) return "A senha deve ter pelo menos 6 caracteres.";
+        if (dados.usuario.trim() && !/^[A-Za-z0-9._-]+$/.test(dados.usuario.trim())) {
+            return "O nome de usuário pode ter só letras, números, ponto, hífen e sublinhado (sem espaços).";
+        }
         if (!dados.setor) return "Selecione um setor.";
         if (!dados.funcao) return "Selecione uma função.";
         return null;
@@ -94,7 +97,7 @@ export default function UsuarioForm() {
             let aviso;
             if (editando) {
                 corpo.ativo = dados.ativo === "1";
-                if (!corpo.senha) delete corpo.senha; // em branco = mantém a senha atual
+                if (!corpo.senha) delete corpo.senha;
                 await Api.atualizarUsuario(id, corpo);
                 aviso = 'Usuário "' + corpo.nome + '" atualizado com sucesso.';
             } else {
@@ -112,7 +115,6 @@ export default function UsuarioForm() {
         setErro(null);
         setSalvando(true);
         try {
-            // Conta as atividades da pessoa para avisar antes (o TI enxerga todas)
             const tarefas = await Api.listarTarefas();
             const quantas = tarefas.filter(tarefa => String(tarefa.usuario_id) === String(id)).length;
             const confirmou = confirm(
@@ -139,18 +141,18 @@ export default function UsuarioForm() {
         <div className="flex flex-col gap-5">
 
             {/* VOLTAR */}
-            <Link to="/usuarios" className="text-[#6F0049] text-sm font-semibold no-underline hover:underline w-fit">
+            <Link to="/usuarios" className="text-marca-texto text-sm font-semibold no-underline hover:underline w-fit">
                 &lt; Voltar
             </Link>
 
             {/* TÍTULO */}
-            <h1 className="bg-[#6F0049] text-white text-sm font-medium px-8 py-2 rounded-lg shadow-sm w-fit">
+            <h1 className="bg-marca text-white text-sm font-medium px-8 py-2 rounded-lg shadow-sm w-fit">
                 {editando ? "Usuário" : "Novo usuário"}
             </h1>
 
             {/* AVISO */}
             {erro && (
-                <div className="w-full rounded-lg px-4 py-3 text-sm bg-red-50 text-red-700 border border-red-200">
+                <div className="w-full rounded-lg px-4 py-3 text-sm bg-perigo-fundo text-perigo border border-perigo-borda">
                     {erro}
                 </div>
             )}
@@ -161,7 +163,7 @@ export default function UsuarioForm() {
                 className="w-full max-w-[900px] grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5"
             >
                 <div className="flex flex-col gap-1.5">
-                    <label htmlFor="nome" className="text-sm text-[#1c1c1e]">Nome completo</label>
+                    <label htmlFor="nome" className="text-sm text-texto">Nome completo</label>
                     <input
                         id="nome"
                         type="text"
@@ -173,7 +175,7 @@ export default function UsuarioForm() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                    <label htmlFor="usuario" className="text-sm text-[#1c1c1e]">Usuário</label>
+                    <label htmlFor="usuario" className="text-sm text-texto">Usuário</label>
                     <input
                         id="usuario"
                         type="text"
@@ -185,7 +187,7 @@ export default function UsuarioForm() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                    <label htmlFor="email" className="text-sm text-[#1c1c1e]">Email</label>
+                    <label htmlFor="email" className="text-sm text-texto">Email</label>
                     <input
                         id="email"
                         type="email"
@@ -197,7 +199,7 @@ export default function UsuarioForm() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                    <label htmlFor="senha" className="text-sm text-[#1c1c1e]">Senha</label>
+                    <label htmlFor="senha" className="text-sm text-texto">Senha</label>
                     <input
                         id="senha"
                         type="password"
@@ -210,7 +212,7 @@ export default function UsuarioForm() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                    <label htmlFor="setor" className="text-sm text-[#1c1c1e]">Setor</label>
+                    <label htmlFor="setor" className="text-sm text-texto">Setor</label>
                     <select
                         id="setor"
                         value={dados.setor}
@@ -225,7 +227,7 @@ export default function UsuarioForm() {
                 </div>
 
                 <div className="flex flex-col gap-1.5">
-                    <label htmlFor="funcao" className="text-sm text-[#1c1c1e]">Função</label>
+                    <label htmlFor="funcao" className="text-sm text-texto">Função</label>
                     <select
                         id="funcao"
                         value={dados.funcao}
@@ -242,7 +244,7 @@ export default function UsuarioForm() {
                 {/* ESTADO: só aparece na edição */}
                 {editando && (
                     <div className="flex flex-col gap-1.5">
-                        <label htmlFor="ativo" className="text-sm text-[#1c1c1e]">Estado</label>
+                        <label htmlFor="ativo" className="text-sm text-texto">Estado</label>
                         <select
                             id="ativo"
                             value={dados.ativo}
@@ -261,7 +263,7 @@ export default function UsuarioForm() {
                             type="button"
                             onClick={excluir}
                             disabled={salvando || !carregouUsuario}
-                            className="border border-red-600 text-red-600 bg-white hover:bg-red-50 text-sm font-medium px-6 py-2.5 rounded-lg transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="border border-perigo text-perigo bg-superficie hover:bg-perigo-fundo text-sm font-medium px-6 py-2.5 rounded-lg transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             Excluir usuário
                         </button>
@@ -269,7 +271,7 @@ export default function UsuarioForm() {
                     <button
                         type="submit"
                         disabled={salvando || (editando && !carregouUsuario)}
-                        className="bg-[#6F0049] hover:bg-[#560039] text-white text-sm font-medium px-12 py-2.5 rounded-lg shadow-sm transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                        className="bg-marca hover:bg-marca-escura text-white text-sm font-medium px-12 py-2.5 rounded-lg shadow-sm transition-colors cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                         {editando ? "Editar" : "Adicionar"}
                     </button>

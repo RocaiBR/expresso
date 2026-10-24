@@ -2,11 +2,6 @@ import { Formato } from "./formato";
 
 /* Relatórios: cálculos dos gráficos e do resumo a partir das tarefas do banco */
 
-export const CORES = {
-    vinho: "#6F0049",
-    grade: "#ececef"
-};
-
 // Status que encerram a tarefa (o banco guarda quando isso aconteceu em "finalizado_em")
 export const STATUS_FINAIS = ["concluido", "cancelado"];
 

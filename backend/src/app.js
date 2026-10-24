@@ -9,14 +9,25 @@ const tarefaRoutes = require('./routes/tarefaRoutes');
 const usuarioRoutes = require('./routes/usuarioRoutes');
 const feriadoRoutes = require('./routes/feriadoRoutes');
 const authRouters = require('./routes/authRoutes');
+const notificacaoRoutes = require('./routes/notificacaoRoutes');
+const perfilRoutes = require('./routes/perfilRoutes');
+const manutencaoRoutes = require('./routes/manutencaoRoutes');
 
 const app = express();
 
 // ------------ 1. MIDDLEWARES ------------
 app.use(cors());
-app.use(express.json());
 
-// Uma linha de log por requisição (aparece no terminal, no Emulator UI e no Cloud Logging)
+const LIMITE_CORPO = 1024 * 1024;
+app.use((req, res, next) => {
+    const tamanho = req.rawBody ? req.rawBody.length : Number(req.get('content-length') || 0);
+    if (tamanho > LIMITE_CORPO) {
+        return res.status(413).json({ erro: 'A requisição passou do limite de 1 MB.' });
+    }
+    next();
+});
+app.use(express.json({ limit: LIMITE_CORPO }));
+
 app.use((req, res, next) => {
     const inicio = Date.now();
     res.on('finish', () => {
@@ -49,13 +60,14 @@ rotas.get('/health', async (req, res) => {
     }
 });
 
-// Tudo exige login, menos o login e a recuperação de senha (em /auth)
 rotas.use('/tarefas', autenticar, tarefaRoutes);
 rotas.use('/usuarios', autenticar, usuarioRoutes);
 rotas.use('/feriados', autenticar, feriadoRoutes);
+rotas.use('/notificacoes', autenticar, notificacaoRoutes);
+rotas.use('/perfil', autenticar, perfilRoutes);
+rotas.use('/manutencao', autenticar, manutencaoRoutes);
 rotas.use('/auth', authRouters);
 
-// No Firebase Hosting as chamadas chegam com o prefixo /api (ver firebase.json)
 app.use('/api', rotas);
 app.use(rotas);
 

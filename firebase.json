@@ -1,6 +1,7 @@
 {
   "firestore": {
-    "rules": "firestore.rules"
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   },
   "storage": {
     "rules": "storage.rules"
@@ -17,7 +18,9 @@
         "*.local",
         ".env.*",
         "serviceAccountKey*.json",
-        "testes"
+        "testes",
+        "scripts",
+        "dados"
       ]
     }
   ],

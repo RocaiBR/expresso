@@ -1,7 +1,7 @@
 import { Formato } from "../utils/formato";
 
 const classesSelect =
-    "h-[32px] border border-[#d1d1d6] rounded-lg px-2 text-xs bg-white text-[#3a3a3c] cursor-pointer outline-none focus:border-[#6F0049] disabled:opacity-50 disabled:cursor-not-allowed";
+    "h-[32px] border border-borda rounded-lg px-2 text-xs bg-superficie text-texto-2 cursor-pointer outline-none focus:border-marca-texto disabled:opacity-50 disabled:cursor-not-allowed";
 
 /* Ações em várias atividades de uma vez. Cada ação vale só para as selecionadas em que
    o cargo permite (o número entre parênteses); as outras são ignoradas. */
@@ -12,8 +12,8 @@ export default function BarraSelecao({ selecionadas, pessoas, ocupado, aoMover, 
     const nada = selecionadas.length === 0 || ocupado;
 
     return (
-        <div className="w-full bg-white border border-[#d1d1d6] rounded-xl shadow-sm px-4 py-2.5 flex flex-wrap items-center gap-3 text-xs">
-            <span className="font-semibold text-[#1c1c1e] min-w-[110px]">
+        <div className="w-full bg-superficie border border-borda rounded-xl shadow-sm px-4 py-2.5 flex flex-wrap items-center gap-3 text-xs">
+            <span className="font-semibold text-texto min-w-[110px]">
                 {ocupado ? "Aplicando..." : selecionadas.length + " selecionada(s)"}
             </span>
 
@@ -52,7 +52,7 @@ export default function BarraSelecao({ selecionadas, pessoas, ocupado, aoMover, 
                 type="button"
                 onClick={aoExcluir}
                 disabled={nada || podemExcluir === 0}
-                className="h-[32px] px-3 rounded-lg border border-red-600 bg-white text-red-600 font-medium hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                className="h-[32px] px-3 rounded-lg border border-perigo bg-superficie text-perigo font-medium hover:bg-perigo-fundo transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
             >
                 Excluir ({podemExcluir})
             </button>
@@ -61,7 +61,7 @@ export default function BarraSelecao({ selecionadas, pessoas, ocupado, aoMover, 
                 type="button"
                 onClick={aoCancelar}
                 disabled={ocupado}
-                className="ml-auto h-[32px] px-3 rounded-lg text-[#6e6e73] hover:bg-gray-100 transition-colors cursor-pointer disabled:opacity-40"
+                className="ml-auto h-[32px] px-3 rounded-lg text-texto-suave hover:bg-superficie-hover transition-colors cursor-pointer disabled:opacity-40"
             >
                 Cancelar seleção
             </button>
