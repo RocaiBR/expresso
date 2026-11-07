@@ -330,9 +330,10 @@ projeto `demo-expresso`, sem tocar na nuvem), roda os 14 grupos de testes em
 
 Cada grupo começa com o banco vazio. Os testes usam a API e o site de verdade, rodando nos emuladores.
 
-**Postman.** A coleção [backend/testes/PI-api.postman_collection.json](../backend/testes/PI-api.postman_collection.json)
+**Postman e Insomnia.** A coleção [backend/testes/PI-api.postman_collection.json](../backend/testes/PI-api.postman_collection.json)
+(e a mesma para o Insomnia, [PI-api.insomnia_collection.json](../backend/testes/PI-api.insomnia_collection.json))
 repete as principais validações e regras contra qualquer ambiente (emuladores ou nuvem), com testes em cada
-requisição: no *Runner* do Postman, as 73 requisições e as 99 verificações mostram o que passou e o que falhou.
+requisição: no *Runner* do Postman ou no *Collection Runner* do Insomnia, as 73 requisições e as 99 verificações mostram o que passou e o que falhou.
 
 **Logs.** Toda requisição gera uma linha `[HTTP] MÉTODO /rota -> status (ms)`. As gravações e os
 tratamentos têm prefixos próprios: `[TAREFAS]`, `[USUARIOS]`, `[ANEXOS]` (inclusive arquivo recusado),

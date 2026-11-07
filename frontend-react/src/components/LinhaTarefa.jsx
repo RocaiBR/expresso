@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Api } from "../services/api";
+import { TarefaApi } from "../services/tarefaApi";
 import { Formato } from "../utils/formato";
 import { estaAtrasada } from "../utils/tarefas";
 
@@ -21,7 +21,7 @@ export default function LinhaTarefa({ tarefa, clicavel = false, aoAlterar, selec
         const novoStatus = marcado ? "concluido" : "pendente";
         setConcluida(marcado);
         try {
-            await Api.atualizarTarefa(tarefa.id, { status: novoStatus });
+            await TarefaApi.atualizarTarefa(tarefa.id, { status: novoStatus });
             if (aoAlterar) aoAlterar();
         } catch (erro) {
             setConcluida(!marcado);

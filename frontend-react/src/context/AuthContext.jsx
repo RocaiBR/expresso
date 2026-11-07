@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from "react";
-import { Api, CHAVE_SESSAO } from "../services/api";
+import { AuthApi } from "../services/authApi";
+import { CHAVE_SESSAO } from "../services/requisicao";
 
 const AuthContext = createContext(null);
 
@@ -36,7 +37,7 @@ export function AuthProvider({ children }) {
 
     function sair() {
         // Encerra a sessão na API sem fazer a tela esperar; se falhar, ela expira sozinha
-        Api.sair().catch(function () {});
+        AuthApi.sair().catch(function () {});
         sessionStorage.removeItem(CHAVE_SESSAO);
         setUsuario(null);
     }

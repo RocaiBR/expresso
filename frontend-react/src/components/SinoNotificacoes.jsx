@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Api } from "../services/api";
+import { NotificacaoApi } from "../services/notificacaoApi";
 import { useFecharAoClicarFora } from "../hooks/useFecharAoClicarFora";
 import { abreAtividade, tempoRelativo, textoDaNotificacao } from "../utils/notificacoes";
 import { IconeSino } from "./Icones";
@@ -20,7 +20,7 @@ export default function SinoNotificacoes() {
 
     const atualizarContagem = useCallback(async function () {
         try {
-            const resposta = await Api.contarNotificacoes();
+            const resposta = await NotificacaoApi.contarNotificacoes();
             setNaoLidas(resposta.nao_lidas);
         } catch (erroApi) {
             console.warn("Não foi possível consultar as notificações:", erroApi.message);
@@ -51,7 +51,7 @@ export default function SinoNotificacoes() {
         setAberto(true);
         setErro(null);
         try {
-            const notificacoes = await Api.listarNotificacoes();
+            const notificacoes = await NotificacaoApi.listarNotificacoes();
             setLista(notificacoes);
             setNaoLidas(notificacoes.filter(item => !item.lida).length);
         } catch (erroApi) {
@@ -63,7 +63,7 @@ export default function SinoNotificacoes() {
         if (!notificacao.lida) {
             setLista(atual => atual.map(item => (item.id === notificacao.id ? { ...item, lida: true } : item)));
             setNaoLidas(atual => Math.max(0, atual - 1));
-            Api.marcarNotificacaoLida(notificacao.id).catch(() => atualizarContagem());
+            NotificacaoApi.marcarNotificacaoLida(notificacao.id).catch(() => atualizarContagem());
         }
         if (abreAtividade(notificacao)) {
             setAberto(false);
@@ -75,7 +75,7 @@ export default function SinoNotificacoes() {
         setLista(atual => atual.map(item => ({ ...item, lida: true })));
         setNaoLidas(0);
         try {
-            await Api.marcarTodasNotificacoesLidas();
+            await NotificacaoApi.marcarTodasNotificacoesLidas();
         } catch (erroApi) {
             setErro(erroApi.message);
             atualizarContagem();

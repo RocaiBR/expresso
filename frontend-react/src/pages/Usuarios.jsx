@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Api } from "../services/api";
+import { UsuarioApi } from "../services/usuarioApi";
 import { IconeEditar } from "../components/Icones";
 
 export default function Usuarios() {
@@ -15,7 +15,7 @@ export default function Usuarios() {
         let ativo = true;
         async function carregar() {
             try {
-                const lista = await Api.listarUsuarios();
+                const lista = await UsuarioApi.listarUsuarios();
                 if (ativo) setUsuarios(lista);
             } catch (erro) {
                 if (ativo) {

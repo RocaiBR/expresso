@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Api } from "../services/api";
+import { AnexoApi } from "../services/anexoApi";
 import { useAuth } from "../context/AuthContext";
 import { ACEITOS, validarArquivo, formatarTamanho } from "../utils/anexos";
 import { IconeClipe, IconeX } from "./Icones";
@@ -18,7 +18,7 @@ export default function Anexos({ tarefaId, podeAnexar = false, podeRemoverTodos 
         let ativo = true;
         async function carregar() {
             try {
-                const lista = await Api.listarAnexos(tarefaId);
+                const lista = await AnexoApi.listarAnexos(tarefaId);
                 if (ativo) setAnexos(lista);
             } catch (erroApi) {
                 if (ativo) setErro(erroApi.message);
@@ -40,7 +40,7 @@ export default function Anexos({ tarefaId, podeAnexar = false, podeRemoverTodos 
         for (const arquivo of escolhidos.filter(arquivo => !validarArquivo(arquivo))) {
             setEnvio({ nome: arquivo.name, progresso: 0 });
             try {
-                const anexo = await Api.anexarArquivo(tarefaId, arquivo, progresso => {
+                const anexo = await AnexoApi.anexarArquivo(tarefaId, arquivo, progresso => {
                     setEnvio({ nome: arquivo.name, progresso });
                 });
                 setAnexos(atuais => [...atuais, anexo]);
@@ -54,7 +54,7 @@ export default function Anexos({ tarefaId, podeAnexar = false, podeRemoverTodos 
     async function remover(anexo) {
         if (!confirm('Remover o arquivo "' + anexo.nome + '"?')) return;
         try {
-            await Api.excluirAnexo(tarefaId, anexo.id);
+            await AnexoApi.excluirAnexo(tarefaId, anexo.id);
             setAnexos(atuais => atuais.filter(item => item.id !== anexo.id));
         } catch (erroApi) {
             alert("Não foi possível remover: " + erroApi.message);

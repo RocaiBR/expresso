@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Api } from "../services/api";
+import { TarefaApi } from "../services/tarefaApi";
 import { Formato } from "../utils/formato";
 import { estaAtrasada } from "../utils/tarefas";
 import Anexos from "../components/Anexos";
@@ -34,7 +34,7 @@ export default function DetalhesAtividade() {
         let ativo = true;
         async function carregar() {
             try {
-                const dados = await Api.buscarTarefa(id);
+                const dados = await TarefaApi.buscarTarefa(id);
                 if (ativo) setTarefa(dados);
             } catch (erroApi) {
                 if (ativo) setErro(erroApi.message);
@@ -48,7 +48,7 @@ export default function DetalhesAtividade() {
         if (!tarefa) return;
         setAtualizando(true);
         try {
-            const resposta = await Api.atualizarTarefa(tarefa.id, { status: novoStatus });
+            const resposta = await TarefaApi.atualizarTarefa(tarefa.id, { status: novoStatus });
             setTarefa(resposta.tarefa);
             alert(mensagemSucesso);
         } catch (erroApi) {
@@ -71,7 +71,7 @@ export default function DetalhesAtividade() {
         if (!confirm("Excluir esta atividade e todos os arquivos dela? Essa ação não pode ser desfeita.")) return;
         setAtualizando(true);
         try {
-            await Api.excluirTarefa(tarefa.id);
+            await TarefaApi.excluirTarefa(tarefa.id);
             navigate("/atividades");
         } catch (erroApi) {
             alert("Não foi possível excluir: " + erroApi.message);

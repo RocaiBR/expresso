@@ -1,247 +1,2401 @@
 {
   "_type": "export",
   "__export_format": 4,
-  "__export_date": "2026-09-01T12:00:00.000Z",
-  "__export_source": "insomnia.desktop.app:v8.0.0",
+  "__export_date": "2026-11-05T01:13:08.773Z",
+  "__export_source": "insomnia.desktop.app:v13.4.0",
   "resources": [
     {
-      "_id": "wrk_piapi",
+      "_id": "wrk_expresso_api",
       "_type": "workspace",
       "parentId": null,
-      "name": "PI API - Projeto de Extensao",
-      "description": "Testes da API do Projeto Integrador (Node.js + Express + MySQL).",
+      "name": "Expresso API",
+      "description": "Coleção da API do Expresso para o Insomnia (Node.js + Express + Firebase).\n\nCOMO USAR\n1. Importe em Import > From File (ou arraste o arquivo para o Insomnia).\n2. No seletor de ambiente, escolha \"Emuladores\" (npm run emuladores) ou \"Nuvem\" (https://pi-expresso.web.app/api).\n3. Em Base Environment, preencha \"usuario\" e \"senha\" de um usuário com função TI (login ou e-mail).\n4. Rode a pasta \"1. Status\" e depois \"2. Login\" (guarda o token sozinho).\n   As outras requisições usam esse token (Auth > Bearer Token).\n5. Para rodar tudo de uma vez, use o Collection Runner (Run, no menu da coleção) na ordem das pastas.\n   A coleção cria um usuário e uma atividade de teste e apaga os dois na pasta \"12. Limpeza\".\n   Cada requisição tem testes (aba Scripts > After-response) que conferem o código HTTP\n   e os dados devolvidos, então o Runner mostra o que passou e o que falhou.\n\nAs regras conferidas aqui estão em docs/dados-e-integracao.md.",
       "scope": "collection"
     },
     {
-      "_id": "env_piapi",
+      "_id": "env_expresso_base",
       "_type": "environment",
-      "parentId": "wrk_piapi",
+      "parentId": "wrk_expresso_api",
       "name": "Base Environment",
       "data": {
-        "baseUrl": "http://localhost:3000"
+        "baseUrl": "http://127.0.0.1:5001/demo-expresso/southamerica-east1/api",
+        "usuario": "",
+        "senha": "",
+        "token": "",
+        "meuId": "",
+        "meuNome": "",
+        "emailTeste": "",
+        "emailTesteMaiusculas": "",
+        "loginTeste": "",
+        "senhaTeste": "senha123",
+        "usuarioId": "",
+        "tokenTeste": "",
+        "hoje": "",
+        "daquiUmaSemana": "",
+        "tarefaId": "",
+        "conteudoAnexo": "Arquivo de teste enviado pelo Postman.",
+        "anexoId": "",
+        "urlEnvio": "",
+        "anexoFalsoId": "",
+        "urlEnvioFalso": "",
+        "notificacaoId": "",
+        "tamanhoAnexo": ""
       },
       "dataPropertyOrder": {
-        "&": ["baseUrl"]
+        "&": [
+          "baseUrl",
+          "usuario",
+          "senha",
+          "token",
+          "meuId",
+          "meuNome",
+          "emailTeste",
+          "emailTesteMaiusculas",
+          "loginTeste",
+          "senhaTeste",
+          "usuarioId",
+          "tokenTeste",
+          "hoje",
+          "daquiUmaSemana",
+          "tarefaId",
+          "conteudoAnexo",
+          "anexoId",
+          "urlEnvio",
+          "anexoFalsoId",
+          "urlEnvioFalso",
+          "notificacaoId",
+          "tamanhoAnexo"
+        ]
       },
-      "metaSortKey": 1,
-      "isPrivate": false
+      "color": null,
+      "isPrivate": false,
+      "metaSortKey": 0
     },
     {
-      "_id": "fld_status",
+      "_id": "env_expresso_emuladores",
+      "_type": "environment",
+      "parentId": "env_expresso_base",
+      "name": "Emuladores",
+      "data": {
+        "baseUrl": "http://127.0.0.1:5001/demo-expresso/southamerica-east1/api"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "baseUrl"
+        ]
+      },
+      "color": "#5e9cf0",
+      "isPrivate": false,
+      "metaSortKey": 100
+    },
+    {
+      "_id": "env_expresso_nuvem",
+      "_type": "environment",
+      "parentId": "env_expresso_base",
+      "name": "Nuvem",
+      "data": {
+        "baseUrl": "https://pi-expresso.web.app/api"
+      },
+      "dataPropertyOrder": {
+        "&": [
+          "baseUrl"
+        ]
+      },
+      "color": "#a75ad6",
+      "isPrivate": false,
+      "metaSortKey": 200
+    },
+    {
+      "_id": "fld_expresso_01",
       "_type": "request_group",
-      "parentId": "wrk_piapi",
-      "name": "00 - Status",
-      "metaSortKey": -100
+      "parentId": "wrk_expresso_api",
+      "name": "1. Status",
+      "description": "Rotas públicas: não precisam de login.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 100
     },
     {
-      "_id": "fld_usuarios",
-      "_type": "request_group",
-      "parentId": "wrk_piapi",
-      "name": "01 - Usuarios",
-      "metaSortKey": -90
-    },
-    {
-      "_id": "fld_tarefas",
-      "_type": "request_group",
-      "parentId": "wrk_piapi",
-      "name": "02 - Tarefas",
-      "metaSortKey": -80
-    },
-    {
-      "_id": "fld_erros",
-      "_type": "request_group",
-      "parentId": "wrk_piapi",
-      "name": "03 - Casos de erro",
-      "metaSortKey": -70
-    },
-    {
-      "_id": "req_raiz",
+      "_id": "req_expresso_01_01",
       "_type": "request",
-      "parentId": "fld_status",
-      "name": "GET / (API no ar)",
+      "parentId": "fld_expresso_01",
+      "name": "Informações da API",
+      "description": "",
       "method": "GET",
       "url": "{{ _.baseUrl }}/",
       "body": {},
+      "parameters": [],
       "headers": [],
-      "metaSortKey": -100
+      "authentication": {},
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});",
+      "metaSortKey": 100,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
     },
     {
-      "_id": "req_health",
+      "_id": "req_expresso_01_02",
       "_type": "request",
-      "parentId": "fld_status",
-      "name": "GET /health (testa o banco)",
+      "parentId": "fld_expresso_01",
+      "name": "Saúde da API e do banco",
+      "description": "",
       "method": "GET",
       "url": "{{ _.baseUrl }}/health",
       "body": {},
+      "parameters": [],
       "headers": [],
-      "description": "Esperado 200 com banco: conectado.",
-      "metaSortKey": -99
+      "authentication": {},
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('Banco conectado', () => insomnia.expect(insomnia.response.json().banco).to.eql('conectado'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 200,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
     },
     {
-      "_id": "req_usu_post",
+      "_id": "fld_expresso_02",
+      "_type": "request_group",
+      "parentId": "wrk_expresso_api",
+      "name": "2. Login",
+      "description": "Entra com o usuário TI das variáveis e guarda o token.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 200
+    },
+    {
+      "_id": "req_expresso_02_01",
       "_type": "request",
-      "parentId": "fld_usuarios",
-      "name": "POST /usuarios",
+      "parentId": "fld_expresso_02",
+      "name": "Entrar (TI)",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"usuario\": \"{{ _.usuario }}\",\n  \"senha\": \"{{ _.senha }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    const r = insomnia.response.json();\n    if (!r.token) {\n        insomnia.test('Login recusado: \"' + (r.erro || 'a API não devolveu o token') + '\". Confira \"usuario\" e \"senha\" (de um usuário TI) nas variáveis', () => {\n            throw new Error(r.erro || 'sem token');\n        });\n    } else {\n        insomnia.collectionVariables.set('token', r.token);\n        insomnia.collectionVariables.set('meuId', r.usuario.id);\n        insomnia.collectionVariables.set('meuNome', r.usuario.nome);\n        insomnia.test('Devolve o token e o usuário, sem a senha', () => {\n            insomnia.expect(r.token).to.be.a('string');\n            insomnia.expect(r.usuario).to.not.have.property('senha');\n        });\n        insomnia.test('O usuário é TI (necessário para as pastas de usuários e manutenção)', () => insomnia.expect(r.usuario.funcao).to.eql('ti'));\n    }\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 100,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "fld_expresso_03",
+      "_type": "request_group",
+      "parentId": "wrk_expresso_api",
+      "name": "3. Usuários (TI)",
+      "description": "Cadastro de usuários: só o TI. Cria o usuário de teste usado nas próximas pastas.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 300
+    },
+    {
+      "_id": "req_expresso_03_01",
+      "_type": "request",
+      "parentId": "fld_expresso_03",
+      "name": "Quem posso escolher como responsável",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/usuarios/atribuiveis",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});",
+      "metaSortKey": 100,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_03_02",
+      "_type": "request",
+      "parentId": "fld_expresso_03",
+      "name": "Usuários para participantes",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/usuarios/participantes",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('Só id, nome e setor (sem e-mail)', () => {\n        insomnia.response.json().forEach((p) => insomnia.expect(Object.keys(p).sort()).to.eql(['id', 'nome', 'setor']));\n    });\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 200,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_03_03",
+      "_type": "request",
+      "parentId": "fld_expresso_03",
+      "name": "Listar usuários",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/usuarios",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('Nenhum usuário volta com a senha', () => {\n        insomnia.response.json().forEach((u) => insomnia.expect(u).to.not.have.property('senha'));\n    });\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 300,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_03_04",
+      "_type": "request",
+      "parentId": "fld_expresso_03",
+      "name": "Criar usuário de teste (e-mail é padronizado)",
+      "description": "O e-mail vai com espaços e maiúsculas; a API grava em minúsculas.",
       "method": "POST",
       "url": "{{ _.baseUrl }}/usuarios",
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"nome\": \"Icaro\",\n  \"email\": \"icaro@pi.com\",\n  \"senha\": \"123456\"\n}"
+        "text": "{\n  \"nome\": \"  Usuário do Postman  \",\n  \"usuario\": \"{{ _.loginTeste }}\",\n  \"email\": \"  {{ _.emailTeste }}  \",\n  \"senha\": \"{{ _.senhaTeste }}\",\n  \"setor\": \"PCP\",\n  \"funcao\": \"usuario\"\n}"
       },
+      "parameters": [],
       "headers": [
-        { "name": "Content-Type", "value": "application/json" }
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
       ],
-      "metaSortKey": -90
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "const marca = Date.now();\ninsomnia.collectionVariables.set('emailTeste', 'postman.' + marca + '@exemplo.com');\ninsomnia.collectionVariables.set('loginTeste', 'postman.' + marca);\ninsomnia.collectionVariables.set('emailTesteMaiusculas', 'POSTMAN.' + marca + '@Exemplo.COM');",
+      "afterResponseScript": "insomnia.test('Responde 201', () => {\n    insomnia.response.to.have.status(201);\n});\ntry {\n    const u = insomnia.response.json();\n    insomnia.collectionVariables.set('usuarioId', u.id);\n    insomnia.test('Nome e e-mail sem espaços, e-mail em minúsculas', () => {\n        insomnia.expect(u.nome).to.eql('Usuário do Postman');\n        insomnia.expect(u.email).to.eql(insomnia.collectionVariables.get('emailTeste'));\n    });\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 400,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
     },
     {
-      "_id": "req_usu_list",
+      "_id": "req_expresso_03_05",
       "_type": "request",
-      "parentId": "fld_usuarios",
-      "name": "GET /usuarios",
+      "parentId": "fld_expresso_03",
+      "name": "Buscar o usuário de teste",
+      "description": "",
       "method": "GET",
-      "url": "{{ _.baseUrl }}/usuarios",
+      "url": "{{ _.baseUrl }}/usuarios/{{ _.usuarioId }}",
       "body": {},
+      "parameters": [],
       "headers": [],
-      "metaSortKey": -89
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});",
+      "metaSortKey": 500,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
     },
     {
-      "_id": "req_usu_id",
+      "_id": "req_expresso_03_06",
       "_type": "request",
-      "parentId": "fld_usuarios",
-      "name": "GET /usuarios/1",
-      "method": "GET",
-      "url": "{{ _.baseUrl }}/usuarios/1",
-      "body": {},
-      "headers": [],
-      "metaSortKey": -88
+      "parentId": "fld_expresso_03",
+      "name": "Alterar o usuário de teste",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/usuarios/{{ _.usuarioId }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"setor\": \"ENGENHARIA\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('Setor alterado', () => insomnia.expect(insomnia.response.json().usuario.setor).to.eql('ENGENHARIA'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 600,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
     },
     {
-      "_id": "req_tar_post",
+      "_id": "req_expresso_03_07",
       "_type": "request",
-      "parentId": "fld_tarefas",
-      "name": "POST /tarefas",
+      "parentId": "fld_expresso_03",
+      "name": "Entrar como o usuário de teste",
+      "description": "Login pelo e-mail com outras maiúsculas: funciona igual.",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"usuario\": \"{{ _.emailTesteMaiusculas }}\",\n  \"senha\": \"{{ _.senhaTeste }}\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.collectionVariables.set('tokenTeste', insomnia.response.json().token);\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 700,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "fld_expresso_04",
+      "_type": "request_group",
+      "parentId": "wrk_expresso_api",
+      "name": "4. Atividades",
+      "description": "Cria uma atividade para o usuário de teste e passa pelas etapas.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 400
+    },
+    {
+      "_id": "req_expresso_04_01",
+      "_type": "request",
+      "parentId": "fld_expresso_04",
+      "name": "Criar atividade (dados padronizados pela API)",
+      "description": "",
       "method": "POST",
       "url": "{{ _.baseUrl }}/tarefas",
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"titulo\": \"Levantamento de requisitos\",\n  \"descricao\": \"Mapear fontes de dados do sistema\",\n  \"responsavel\": \"Icaro\",\n  \"usuario_id\": 1,\n  \"status\": \"em andamento\"\n}"
+        "text": "{\n  \"titulo\": \"  Atividade criada pelo Postman  \",\n  \"descricao\": \"\",\n  \"usuario_id\": {{ _.usuarioId }},\n  \"participantes_ids\": [{{ _.meuId }}],\n  \"prioridade\": \"alto\",\n  \"data_inicio\": \"{{ _.hoje }}\",\n  \"data_conclusao\": \"{{ _.daquiUmaSemana }}\",\n  \"criado_por\": 999\n}"
       },
+      "parameters": [],
       "headers": [
-        { "name": "Content-Type", "value": "application/json" }
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
       ],
-      "metaSortKey": -80
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "// Dia em Brasília (UTC-3, sem horário de verão desde 2019), daqui a \"d\" dias\nconst dia = (d) => new Date(Date.now() - 3 * 3600000 + d * 86400000).toISOString().slice(0, 10);\ninsomnia.collectionVariables.set('hoje', dia(0));\ninsomnia.collectionVariables.set('daquiUmaSemana', dia(7));",
+      "afterResponseScript": "insomnia.test('Responde 201', () => {\n    insomnia.response.to.have.status(201);\n});\ntry {\n    const t = insomnia.response.json();\n    insomnia.collectionVariables.set('tarefaId', t.id);\n    insomnia.test('Título sem espaços nas pontas; descrição vazia vira null', () => {\n        insomnia.expect(t.titulo).to.eql('Atividade criada pelo Postman');\n        insomnia.expect(t.descricao).to.eql(null);\n    });\n    insomnia.test('Responsável e participantes preenchidos pela API a partir dos ids', () => {\n        insomnia.expect(t.responsavel).to.eql('Usuário do Postman');\n        insomnia.expect(t.participantes).to.eql(insomnia.collectionVariables.get('meuNome'));\n    });\n    insomnia.test('criado_por enviado pelo cliente é ignorado', () => insomnia.expect(t.criado_por).to.eql(Number(insomnia.collectionVariables.get('meuId'))));\n    insomnia.test('Começa pendente', () => insomnia.expect(t.status).to.eql('pendente'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 100,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
     },
     {
-      "_id": "req_tar_list",
+      "_id": "req_expresso_04_02",
       "_type": "request",
-      "parentId": "fld_tarefas",
-      "name": "GET /tarefas",
+      "parentId": "fld_expresso_04",
+      "name": "Listar atividades",
+      "description": "",
       "method": "GET",
       "url": "{{ _.baseUrl }}/tarefas",
       "body": {},
+      "parameters": [],
       "headers": [],
-      "metaSortKey": -79
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    const lista = insomnia.response.json();\n    insomnia.test('A atividade criada está na lista, com as permissões de quem está logado', () => {\n        const t = lista.find((x) => x.id === Number(insomnia.collectionVariables.get('tarefaId')));\n        insomnia.expect(t).to.be.an('object');\n        insomnia.expect(t.permissoes).to.have.keys('status', 'editar', 'excluir');\n    });\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 200,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
     },
     {
-      "_id": "req_tar_filtro",
+      "_id": "req_expresso_04_03",
       "_type": "request",
-      "parentId": "fld_tarefas",
-      "name": "GET /tarefas?status=pendente",
+      "parentId": "fld_expresso_04",
+      "name": "Filtrar por status",
+      "description": "",
       "method": "GET",
       "url": "{{ _.baseUrl }}/tarefas?status=pendente",
       "body": {},
+      "parameters": [],
       "headers": [],
-      "parameters": [
-        { "name": "status", "value": "pendente" }
-      ],
-      "metaSortKey": -78
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('Só pendentes', () => insomnia.response.json().forEach((t) => insomnia.expect(t.status).to.eql('pendente')));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 300,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
     },
     {
-      "_id": "req_tar_id",
+      "_id": "req_expresso_04_04",
       "_type": "request",
-      "parentId": "fld_tarefas",
-      "name": "GET /tarefas/1",
+      "parentId": "fld_expresso_04",
+      "name": "Buscar a atividade",
+      "description": "",
       "method": "GET",
-      "url": "{{ _.baseUrl }}/tarefas/1",
+      "url": "{{ _.baseUrl }}/tarefas/{{ _.tarefaId }}",
       "body": {},
+      "parameters": [],
       "headers": [],
-      "metaSortKey": -77
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});",
+      "metaSortKey": 400,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
     },
     {
-      "_id": "req_tar_put",
+      "_id": "req_expresso_04_05",
       "_type": "request",
-      "parentId": "fld_tarefas",
-      "name": "PUT /tarefas/1",
+      "parentId": "fld_expresso_04",
+      "name": "Mudar para \"em andamento\"",
+      "description": "",
       "method": "PUT",
-      "url": "{{ _.baseUrl }}/tarefas/1",
+      "url": "{{ _.baseUrl }}/tarefas/{{ _.tarefaId }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"status\": \"em andamento\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('Status gravado', () => insomnia.expect(insomnia.response.json().tarefa.status).to.eql('em andamento'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 500,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_04_06",
+      "_type": "request",
+      "parentId": "fld_expresso_04",
+      "name": "Concluir (grava a data de fim)",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/tarefas/{{ _.tarefaId }}",
       "body": {
         "mimeType": "application/json",
         "text": "{\n  \"status\": \"concluido\"\n}"
       },
+      "parameters": [],
       "headers": [
-        { "name": "Content-Type", "value": "application/json" }
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
       ],
-      "metaSortKey": -76
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('finalizado_em preenchido', () => insomnia.expect(insomnia.response.json().tarefa.finalizado_em).to.be.a('string'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 600,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
     },
     {
-      "_id": "req_tar_del",
+      "_id": "req_expresso_04_07",
       "_type": "request",
-      "parentId": "fld_tarefas",
-      "name": "DELETE /tarefas/1",
-      "method": "DELETE",
-      "url": "{{ _.baseUrl }}/tarefas/1",
+      "parentId": "fld_expresso_04",
+      "name": "Verificar prazos agora (TI)",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas/verificar-prazos",
       "body": {},
+      "parameters": [],
       "headers": [],
-      "metaSortKey": -75
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});",
+      "metaSortKey": 700,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
     },
     {
-      "_id": "req_feriados",
+      "_id": "fld_expresso_05",
+      "_type": "request_group",
+      "parentId": "wrk_expresso_api",
+      "name": "5. Anexos",
+      "description": "O arquivo vai direto para o Storage (url_envio); a API confere a assinatura ao concluir.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 500
+    },
+    {
+      "_id": "req_expresso_05_01",
       "_type": "request",
-      "parentId": "fld_tarefas",
-      "name": "GET /feriados/2026 (API externa)",
+      "parentId": "fld_expresso_05",
+      "name": "Pedir envio de um .txt",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas/{{ _.tarefaId }}/anexos",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"teste-postman.txt\",\n  \"tamanho\": {{ _.tamanhoAnexo }}\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "insomnia.collectionVariables.set('tamanhoAnexo', insomnia.collectionVariables.get('conteudoAnexo').length);",
+      "afterResponseScript": "insomnia.test('Responde 201', () => {\n    insomnia.response.to.have.status(201);\n});\ntry {\n    const r = insomnia.response.json();\n    insomnia.collectionVariables.set('anexoId', r.anexo.id);\n    insomnia.collectionVariables.set('urlEnvio', r.url_envio);\n    insomnia.test('Começa como \"enviando\"', () => insomnia.expect(r.anexo.status).to.eql('enviando'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 100,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_05_02",
+      "_type": "request",
+      "parentId": "fld_expresso_05",
+      "name": "Enviar o arquivo ao Storage",
+      "description": "Vai direto para o endereço temporário do Storage, sem passar pela API (por isso sem token).",
+      "method": "PUT",
+      "url": "{{ _.urlEnvio }}",
+      "body": {
+        "mimeType": "text/plain",
+        "text": "{{ _.conteudoAnexo }}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "text/plain"
+        }
+      ],
+      "authentication": {},
+      "preRequestScript": "",
+      "afterResponseScript": "try {\n    insomnia.test('Storage aceitou', () => insomnia.expect(insomnia.response.code).to.be.oneOf([200, 201]));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 200,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_05_03",
+      "_type": "request",
+      "parentId": "fld_expresso_05",
+      "name": "Concluir o anexo (confere a assinatura)",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas/{{ _.tarefaId }}/anexos/{{ _.anexoId }}/concluir",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    const a = insomnia.response.json();\n    insomnia.test('Pronto, com o tamanho real e o link de download', () => {\n        insomnia.expect(a.status).to.eql('pronto');\n        insomnia.expect(a.tamanho).to.eql(insomnia.collectionVariables.get('conteudoAnexo').length);\n        insomnia.expect(a.url).to.be.a('string');\n        insomnia.expect(a).to.not.have.property('token');\n    });\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 300,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_05_04",
+      "_type": "request",
+      "parentId": "fld_expresso_05",
+      "name": "Listar anexos",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/tarefas/{{ _.tarefaId }}/anexos",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('O anexo aparece', () => insomnia.expect(insomnia.response.json().map((a) => a.id)).to.include(insomnia.collectionVariables.get('anexoId')));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 400,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_05_05",
+      "_type": "request",
+      "parentId": "fld_expresso_05",
+      "name": "Recusar tipo não permitido (.exe)",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas/{{ _.tarefaId }}/anexos",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"programa.exe\",\n  \"tamanho\": 1024\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"não permitido\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"não permitido\");\n});",
+      "metaSortKey": 500,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_05_06",
+      "_type": "request",
+      "parentId": "fld_expresso_05",
+      "name": "Recusar tamanho acima de 200 MB",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas/{{ _.tarefaId }}/anexos",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"video.mp4\",\n  \"tamanho\": 209715201\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"200 MB\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"200 MB\");\n});",
+      "metaSortKey": 600,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_05_07",
+      "_type": "request",
+      "parentId": "fld_expresso_05",
+      "name": "Arquivo disfarçado: pedir envio de um \"PDF\"",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas/{{ _.tarefaId }}/anexos",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"contrato.pdf\",\n  \"tamanho\": 30\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 201', () => {\n    insomnia.response.to.have.status(201);\n});\ntry {\n    insomnia.collectionVariables.set('anexoFalsoId', insomnia.response.json().anexo.id);\n    insomnia.collectionVariables.set('urlEnvioFalso', insomnia.response.json().url_envio);\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 700,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_05_08",
+      "_type": "request",
+      "parentId": "fld_expresso_05",
+      "name": "Arquivo disfarçado: enviar texto no lugar do PDF",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.urlEnvioFalso }}",
+      "body": {
+        "mimeType": "text/plain",
+        "text": "isto não é um PDF de verdade"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "text/plain"
+        }
+      ],
+      "authentication": {},
+      "preRequestScript": "",
+      "afterResponseScript": "try {\n    insomnia.test('Storage aceitou (a conferência é no passo seguinte)', () => insomnia.expect(insomnia.response.code).to.be.oneOf([200, 201]));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 800,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_05_09",
+      "_type": "request",
+      "parentId": "fld_expresso_05",
+      "name": "Arquivo disfarçado: concluir é recusado e o arquivo apagado",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas/{{ _.tarefaId }}/anexos/{{ _.anexoFalsoId }}/concluir",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"não corresponde\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"não corresponde\");\n});",
+      "metaSortKey": 900,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_05_10",
+      "_type": "request",
+      "parentId": "fld_expresso_05",
+      "name": "Excluir o anexo",
+      "description": "",
+      "method": "DELETE",
+      "url": "{{ _.baseUrl }}/tarefas/{{ _.tarefaId }}/anexos/{{ _.anexoId }}",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});",
+      "metaSortKey": 1000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "fld_expresso_06",
+      "_type": "request_group",
+      "parentId": "wrk_expresso_api",
+      "name": "6. Notificações (usuário de teste)",
+      "description": "Avisos do sino de quem recebeu a atividade (o usuário de teste).",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 600
+    },
+    {
+      "_id": "req_expresso_06_01",
+      "_type": "request",
+      "parentId": "fld_expresso_06",
+      "name": "Quantas não lidas",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/notificacoes/contagem",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.tokenTeste }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('Pelo menos 1 (a atividade atribuída a ele)', () => insomnia.expect(insomnia.response.json().nao_lidas).to.be.at.least(1));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 100,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_06_02",
+      "_type": "request",
+      "parentId": "fld_expresso_06",
+      "name": "Listar notificações",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/notificacoes",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.tokenTeste }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    const lista = insomnia.response.json();\n    const aviso = lista.find((n) => n.tipo === 'atribuida');\n    insomnia.test('Aviso de atividade atribuída, com quem fez', () => {\n        insomnia.expect(aviso).to.be.an('object');\n        insomnia.expect(aviso.autor_nome).to.eql(insomnia.collectionVariables.get('meuNome'));\n    });\n    if (aviso) insomnia.collectionVariables.set('notificacaoId', aviso.id);\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 200,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_06_03",
+      "_type": "request",
+      "parentId": "fld_expresso_06",
+      "name": "Marcar uma como lida",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/notificacoes/{{ _.notificacaoId }}/lida",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.tokenTeste }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});",
+      "metaSortKey": 300,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_06_04",
+      "_type": "request",
+      "parentId": "fld_expresso_06",
+      "name": "Marcar todas como lidas",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/notificacoes/lidas",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.tokenTeste }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});",
+      "metaSortKey": 400,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "fld_expresso_07",
+      "_type": "request_group",
+      "parentId": "wrk_expresso_api",
+      "name": "7. Meu perfil (usuário de teste)",
+      "description": "Usa o usuário de teste para não mexer no perfil do TI.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 700
+    },
+    {
+      "_id": "req_expresso_07_01",
+      "_type": "request",
+      "parentId": "fld_expresso_07",
+      "name": "Ver o próprio perfil",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/perfil",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.tokenTeste }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    const p = insomnia.response.json();\n    insomnia.test('Dados do próprio usuário, sem a senha', () => {\n        insomnia.expect(p.email).to.eql(insomnia.collectionVariables.get('emailTeste'));\n        insomnia.expect(p).to.not.have.property('senha');\n    });\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 100,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_07_02",
+      "_type": "request",
+      "parentId": "fld_expresso_07",
+      "name": "Trocar o tema",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/perfil/tema",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"tema\": \"escuro\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.tokenTeste }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});",
+      "metaSortKey": 200,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_07_03",
+      "_type": "request",
+      "parentId": "fld_expresso_07",
+      "name": "Recusar tema inválido",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/perfil/tema",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"tema\": \"roxo\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.tokenTeste }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"Tema inválido\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"Tema inválido\");\n});",
+      "metaSortKey": 300,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_07_04",
+      "_type": "request",
+      "parentId": "fld_expresso_07",
+      "name": "Trocar a foto (JPEG)",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/perfil/foto",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"imagem\": \"data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCABAAEADASIAAhEBAxEB/8QAGwABAAMBAAMAAAAAAAAAAAAAAAYHCAUBAgT/xAA1EAABAgUCBAQEAwkAAAAAAAABAgMABAUGEQcTEhQhMQgVUWEWIkGiFyOBQmJxkaGxw+Pw/8QAGgEAAgMBAQAAAAAAAAAAAAAAAAMBBAUCBv/EACMRAAICAQQBBQEAAAAAAAAAAAECAAMRBBIhMQUTIlFhkYH/2gAMAwEAAhEDEQA/AKMhCEas9zEIQghEIQghEIQghEWppJpJ+IVFnJ/zvy7l5jY2+U3uL5QrOeNOO/aKrjUnhSSV2HXkpGVKnVAD32kwq1iq5Ep6+16aS6HB4nJPhlOOl2gn3pv+2KtunTWp2ze9Lt+pvN7VRfbal5xtJUlSVLCSrhOOoyMpz+v1iYad6Rag0u7KfOLY8oZZeQt17nG1cSAcqThCiTkZGD06xYevdQlFXnp9TwtKp5NVaeKR3SjcQOvpk/2hYdg2M5lNdTYloT1A4IPQHH5IRdnh6doVt1Kqy9xGdck2VPcuJDgLgSMkA7hx09jFbaXWS7ftzeUtzfJoSyp5x/a3OEDA7ZHckfWNq1KbaVWZakP4KJ6VfPCfrwlAP9FGKW0SoPwRJ39WJ5KkCQcclUFf1Q0CrI/jlMcra2057iqNfaaXLH3cY/vEgGqujnwFbjdV895/jfSztcntYyCc541enpFRxrPxQq49MpNR/am2j9qoyZDqWLLkzQ8fc91O6w5OYjUnhSUUWHXlJOFJnVEH32kxluJTal/XNadPmJKgVLlJWYXuOI2GnOJWAM5WkkdAO0TYpdcCd6yhr6ii9zuq1r1BUkg3AcH0k5cf444Vr1Odq+pNBnapNPTc27U5YrddUVKP5qf+xEWj6JCbfp8/LTkovbmZdxLzS8A8K0kEHB6HqB3idoHQjPQRQQigZ+pr3VSu+SanaeKUrgZeefacV6hYQgD+agf0jz4h59qhaYVNuW4W3qpMJaP7xUcr+1JjL9z31cd0TkhNVypGZfkSVS6wy23tkkEn5EjPVI7+ke1239c13ysvLXFUzOMML3G0bDbeFYxn5EjPT1hIpI2/Uza/GsprJI9vf7kTQ/iYUVaVU5R7mZZP2GMoRK7k1Cui5aQzS63U+akWlJUhvYaRgpGB1SkHt7xFIbUhRcGXdFQ2nr2N8xCEIZLcQhCCEQhCCEQhCCE//9k=\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.tokenTeste }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('Devolve o link da foto', () => insomnia.expect(insomnia.response.json().foto_url).to.be.a('string'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 400,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_07_05",
+      "_type": "request",
+      "parentId": "fld_expresso_07",
+      "name": "Recusar HTML disfarçado de JPEG",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/perfil/foto",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"imagem\": \"data:image/jpeg;base64,PGh0bWw+PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0PjwvaHRtbD4=\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.tokenTeste }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"não é uma imagem JPEG válida\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"não é uma imagem JPEG válida\");\n});",
+      "metaSortKey": 500,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_07_06",
+      "_type": "request",
+      "parentId": "fld_expresso_07",
+      "name": "Remover a foto",
+      "description": "",
+      "method": "DELETE",
+      "url": "{{ _.baseUrl }}/perfil/foto",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.tokenTeste }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});",
+      "metaSortKey": 600,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_07_07",
+      "_type": "request",
+      "parentId": "fld_expresso_07",
+      "name": "Recusar troca de senha com a senha atual errada",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/perfil/senha",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"senha_atual\": \"errada\",\n  \"nova_senha\": \"novaSenha123\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.tokenTeste }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"senha atual está incorreta\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"senha atual está incorreta\");\n});",
+      "metaSortKey": 700,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_07_08",
+      "_type": "request",
+      "parentId": "fld_expresso_07",
+      "name": "Trocar a própria senha",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/perfil/senha",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"senha_atual\": \"{{ _.senhaTeste }}\",\n  \"nova_senha\": \"novaSenha123\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.tokenTeste }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});",
+      "metaSortKey": 800,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "fld_expresso_08",
+      "_type": "request_group",
+      "parentId": "wrk_expresso_api",
+      "name": "8. Feriados (BrasilAPI)",
+      "description": "A API consulta a BrasilAPI.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 800
+    },
+    {
+      "_id": "req_expresso_08_01",
+      "_type": "request",
+      "parentId": "fld_expresso_08",
+      "name": "Feriados de 2026",
+      "description": "",
       "method": "GET",
       "url": "{{ _.baseUrl }}/feriados/2026",
       "body": {},
+      "parameters": [],
       "headers": [],
-      "metaSortKey": -74
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('Lista com datas', () => insomnia.expect(insomnia.response.json()[0]).to.have.property('date'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 100,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
     },
     {
-      "_id": "req_erro_400",
+      "_id": "req_expresso_08_02",
       "_type": "request",
-      "parentId": "fld_erros",
-      "name": "POST /tarefas sem titulo (400)",
+      "parentId": "fld_expresso_08",
+      "name": "Recusar ano inválido",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/feriados/abc",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"ano válido\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"ano válido\");\n});",
+      "metaSortKey": 200,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "fld_expresso_09",
+      "_type": "request_group",
+      "parentId": "wrk_expresso_api",
+      "name": "9. Manutenção (TI)",
+      "description": "Verificação de consistência e rotina diária (a mesma das 00:05).",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 900
+    },
+    {
+      "_id": "req_expresso_09_01",
+      "_type": "request",
+      "parentId": "fld_expresso_09",
+      "name": "Verificação de consistência",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/manutencao/consistencia",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    const r = insomnia.response.json();\n    insomnia.test('13 conferências, cada uma com quantidade e exemplos', () => {\n        insomnia.expect(r.verificacoes).to.have.lengthOf(13);\n        r.verificacoes.forEach((v) => insomnia.expect(v).to.include.keys('codigo', 'gravidade', 'quantidade', 'exemplos'));\n    });\n    console.log('Problemas encontrados:', r.problemas, r.verificacoes.filter((v) => v.quantidade > 0).map((v) => v.codigo + ': ' + v.quantidade));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 100,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_09_02",
+      "_type": "request",
+      "parentId": "fld_expresso_09",
+      "name": "Rodar a rotina diária agora",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/manutencao/rotina-diaria",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('Todas as etapas rodaram', () => insomnia.expect(insomnia.response.json()).to.include.keys('contadores', 'prazos', 'anexos_abandonados', 'sessoes_vencidas', 'codigos_vencidos'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 200,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "fld_expresso_10",
+      "_type": "request_group",
+      "parentId": "wrk_expresso_api",
+      "name": "10. Validações e permissões",
+      "description": "Dados fora do formato e acessos sem permissão: a API recusa com o código e a mensagem certos.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 1000
+    },
+    {
+      "_id": "req_expresso_10_01",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "Sem login → 401",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/tarefas",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 401', () => {\n    insomnia.response.to.have.status(401);\n});",
+      "metaSortKey": 100,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_02",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "Token inventado → 401",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/tarefas",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "token-inventado"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 401', () => {\n    insomnia.response.to.have.status(401);\n});",
+      "metaSortKey": 200,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_03",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "Usuário padrão não lista usuários → 403",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/usuarios",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.tokenTeste }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 403', () => {\n    insomnia.response.to.have.status(403);\n});",
+      "metaSortKey": 300,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_04",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "Usuário padrão não roda a manutenção → 403",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/manutencao/consistencia",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.tokenTeste }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 403', () => {\n    insomnia.response.to.have.status(403);\n});",
+      "metaSortKey": 400,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_05",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "Usuário padrão não atribui a outra pessoa → 403",
+      "description": "",
       "method": "POST",
       "url": "{{ _.baseUrl }}/tarefas",
       "body": {
         "mimeType": "application/json",
-        "text": "{\n  \"descricao\": \"tarefa sem titulo\"\n}"
+        "text": "{\n  \"titulo\": \"Para outra pessoa\",\n  \"usuario_id\": {{ _.meuId }}\n}"
       },
+      "parameters": [],
       "headers": [
-        { "name": "Content-Type", "value": "application/json" }
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
       ],
-      "metaSortKey": -70
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.tokenTeste }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 403 com a mensagem \"a si mesmo\"', () => {\n    insomnia.response.to.have.status(403);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"a si mesmo\");\n});",
+      "metaSortKey": 500,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
     },
     {
-      "_id": "req_erro_404",
+      "_id": "req_expresso_10_06",
       "_type": "request",
-      "parentId": "fld_erros",
-      "name": "GET /tarefas/9999 (404)",
+      "parentId": "fld_expresso_10",
+      "name": "Atividade sem título → 400",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"descricao\": \"sem título\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"obrigatório\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"obrigatório\");\n});",
+      "metaSortKey": 600,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_07",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "Título que não é texto → 400",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": 42\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"obrigatório\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"obrigatório\");\n});",
+      "metaSortKey": 700,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_08",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "Título com mais de 150 caracteres → 400",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"até 150\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"até 150\");\n});",
+      "metaSortKey": 800,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_09",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "Status fora da lista → 400",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"x\",\n  \"status\": \"feito\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"Status inválido\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"Status inválido\");\n});",
+      "metaSortKey": 900,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_10",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "Prioridade fora da lista → 400",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"x\",\n  \"prioridade\": \"altíssima\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"Prioridade inválida\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"Prioridade inválida\");\n});",
+      "metaSortKey": 1000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_11",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "Data que não existe (30/02) → 400",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"x\",\n  \"data_inicio\": \"2026-02-30\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"data válida\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"data válida\");\n});",
+      "metaSortKey": 1100,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_12",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "Vencimento antes do início → 400",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"x\",\n  \"data_inicio\": \"2026-10-10\",\n  \"data_conclusao\": \"2026-10-01\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"antes da data de início\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"antes da data de início\");\n});",
+      "metaSortKey": 1200,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_13",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "Responsável que não existe → 403",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"x\",\n  \"usuario_id\": 999999\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 403 com a mensagem \"não encontrado\"', () => {\n    insomnia.response.to.have.status(403);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"não encontrado\");\n});",
+      "metaSortKey": 1300,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_14",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "Participante que não existe → 400",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/tarefas",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"titulo\": \"x\",\n  \"participantes_ids\": [\n    999999\n  ]\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"não existe\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"não existe\");\n});",
+      "metaSortKey": 1400,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_15",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "Alteração só com campos protegidos → 400",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/tarefas/{{ _.tarefaId }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"id\": 1,\n  \"criado_por\": 1\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"ao menos um campo\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"ao menos um campo\");\n});",
+      "metaSortKey": 1500,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_16",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "E-mail inválido → 400",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/usuarios",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Teste\",\n  \"email\": \"sem-arroba.com\",\n  \"senha\": \"senha123\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"e-mail válido\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"e-mail válido\");\n});",
+      "metaSortKey": 1600,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_17",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "Senha com menos de 6 caracteres → 400",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/usuarios",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Teste\",\n  \"email\": \"senha.curta@exemplo.com\",\n  \"senha\": \"123\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"pelo menos 6\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"pelo menos 6\");\n});",
+      "metaSortKey": 1700,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_18",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "Login com espaço → 400",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/usuarios",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Teste\",\n  \"usuario\": \"joão silva\",\n  \"email\": \"joao@exemplo.com\",\n  \"senha\": \"senha123\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"sem espaços\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"sem espaços\");\n});",
+      "metaSortKey": 1800,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_19",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "E-mail repetido (com outras maiúsculas) → 409",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/usuarios",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"nome\": \"Repetido\",\n  \"email\": \"{{ _.emailTesteMaiusculas }}\",\n  \"senha\": \"senha123\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 409 com a mensagem \"esse e-mail\"', () => {\n    insomnia.response.to.have.status(409);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"esse e-mail\");\n});",
+      "metaSortKey": 1900,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_20",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "\"ativo\" como texto → 400",
+      "description": "",
+      "method": "PUT",
+      "url": "{{ _.baseUrl }}/usuarios/{{ _.usuarioId }}",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"ativo\": \"false\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"true ou false\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"true ou false\");\n});",
+      "metaSortKey": 2000,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_10_21",
+      "_type": "request",
+      "parentId": "fld_expresso_10",
+      "name": "Atividade que não existe → 404",
+      "description": "",
       "method": "GET",
-      "url": "{{ _.baseUrl }}/tarefas/9999",
+      "url": "{{ _.baseUrl }}/tarefas/999999",
       "body": {},
+      "parameters": [],
       "headers": [],
-      "metaSortKey": -69
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 404', () => {\n    insomnia.response.to.have.status(404);\n});",
+      "metaSortKey": 2100,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
     },
     {
-      "_id": "req_erro_rota",
+      "_id": "req_expresso_10_22",
       "_type": "request",
-      "parentId": "fld_erros",
-      "name": "GET /rota-inexistente (404)",
+      "parentId": "fld_expresso_10",
+      "name": "Rota que não existe → 404",
+      "description": "",
       "method": "GET",
       "url": "{{ _.baseUrl }}/rota-inexistente",
       "body": {},
+      "parameters": [],
       "headers": [],
-      "metaSortKey": -68
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 404 com a mensagem \"Rota não encontrada\"', () => {\n    insomnia.response.to.have.status(404);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"Rota não encontrada\");\n});",
+      "metaSortKey": 2200,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "fld_expresso_11",
+      "_type": "request_group",
+      "parentId": "wrk_expresso_api",
+      "name": "11. Recuperação de senha",
+      "description": "Rotas públicas. Usa um e-mail que não existe: nenhum e-mail é enviado.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 1100
+    },
+    {
+      "_id": "req_expresso_11_01",
+      "_type": "request",
+      "parentId": "fld_expresso_11",
+      "name": "Pedir código (mesma resposta exista o e-mail ou não)",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/recuperar-senha",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"ninguem.postman@exemplo.com\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('Mensagem genérica', () => insomnia.expect(insomnia.response.json().mensagem).to.include('Se o e-mail estiver cadastrado'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 100,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_11_02",
+      "_type": "request",
+      "parentId": "fld_expresso_11",
+      "name": "Código errado → 400",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/redefinir-senha",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"ninguem.postman@exemplo.com\",\n  \"codigo\": \"000000\",\n  \"nova_senha\": \"novaSenha123\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"Código inválido\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"Código inválido\");\n});",
+      "metaSortKey": 200,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_11_03",
+      "_type": "request",
+      "parentId": "fld_expresso_11",
+      "name": "Código que não tem 6 dígitos → 400",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/redefinir-senha",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"ninguem.postman@exemplo.com\",\n  \"codigo\": \"12ab\",\n  \"nova_senha\": \"novaSenha123\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"6 dígitos\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"6 dígitos\");\n});",
+      "metaSortKey": 300,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "fld_expresso_12",
+      "_type": "request_group",
+      "parentId": "wrk_expresso_api",
+      "name": "12. Limpeza",
+      "description": "Apaga o que a coleção criou e encerra a sessão.",
+      "environment": {},
+      "environmentPropertyOrder": null,
+      "metaSortKey": 1200
+    },
+    {
+      "_id": "req_expresso_12_01",
+      "_type": "request",
+      "parentId": "fld_expresso_12",
+      "name": "Excluir a atividade de teste",
+      "description": "",
+      "method": "DELETE",
+      "url": "{{ _.baseUrl }}/tarefas/{{ _.tarefaId }}",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});",
+      "metaSortKey": 100,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_12_02",
+      "_type": "request",
+      "parentId": "fld_expresso_12",
+      "name": "Excluir o usuário de teste",
+      "description": "",
+      "method": "DELETE",
+      "url": "{{ _.baseUrl }}/usuarios/{{ _.usuarioId }}",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});",
+      "metaSortKey": 200,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_12_03",
+      "_type": "request",
+      "parentId": "fld_expresso_12",
+      "name": "Sessão do usuário excluído deixou de valer → 401",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/perfil",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.tokenTeste }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 401', () => {\n    insomnia.response.to.have.status(401);\n});",
+      "metaSortKey": 300,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_12_04",
+      "_type": "request",
+      "parentId": "fld_expresso_12",
+      "name": "Sair",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/sair",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});",
+      "metaSortKey": 400,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_12_05",
+      "_type": "request",
+      "parentId": "fld_expresso_12",
+      "name": "Token depois de sair → 401",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/tarefas",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 401', () => {\n    insomnia.response.to.have.status(401);\n});",
+      "metaSortKey": 500,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
     }
   ]
 }

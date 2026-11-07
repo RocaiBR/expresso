@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Api } from "../services/api";
+import { PerfilApi } from "../services/perfilApi";
 import { useAuth } from "../context/AuthContext";
 import { Formato } from "../utils/formato";
 import { prepararFotoDePerfil } from "../utils/imagem";
@@ -53,7 +53,7 @@ export default function Perfil() {
 
     useEffect(() => {
         let ativo = true;
-        Api.buscarPerfil()
+        PerfilApi.buscarPerfil()
             .then(dados => {
                 if (ativo) setPerfil(dados);
             })
@@ -72,7 +72,7 @@ export default function Perfil() {
         setEnviandoFoto(true);
         try {
             const imagem = await prepararFotoDePerfil(arquivo);
-            const { foto_url } = await Api.trocarFotoPerfil(imagem);
+            const { foto_url } = await PerfilApi.trocarFotoPerfil(imagem);
             setPerfil(atual => ({ ...atual, foto_url }));
             atualizarSessao({ foto_url });
             setAvisoFoto({ tipo: "sucesso", texto: "Foto atualizada." });
@@ -87,7 +87,7 @@ export default function Perfil() {
         setAvisoFoto(null);
         setEnviandoFoto(true);
         try {
-            await Api.removerFotoPerfil();
+            await PerfilApi.removerFotoPerfil();
             setPerfil(atual => ({ ...atual, foto_url: null }));
             atualizarSessao({ foto_url: null });
             setAvisoFoto({ tipo: "sucesso", texto: "Foto removida." });
@@ -120,7 +120,7 @@ export default function Perfil() {
 
         setSalvandoSenha(true);
         try {
-            const resposta = await Api.trocarSenha(senhas.atual, senhas.nova);
+            const resposta = await PerfilApi.trocarSenha(senhas.atual, senhas.nova);
             setSenhas({ atual: "", nova: "", confirmacao: "" });
             setAvisoSenha({ tipo: "sucesso", texto: resposta.mensagem });
         } catch (erro) {

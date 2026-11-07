@@ -1,23 +1,28 @@
 const os = require('os');
-const { spawnSync } = require('child_process');
+const { execFile } = require('child_process');
 const { fs, path, chamar, criarPrimeiroTI, criarUsuario, diaEmSaoPaulo } = require('../apoio');
 const { decodificar, lerCsv, prepararLinha } = require('../../scripts/importarCsv');
 
 const SCRIPT = path.join(__dirname, '..', '..', 'scripts', 'importarCsv.js');
 
+// Sem travar este processo: com a espera síncrona, a conexão parada com o emulador caía
+// e a chamada seguinte à API falhava com "fetch failed"
 function importar(...argumentos) {
-    const saida = spawnSync(process.execPath, [SCRIPT, ...argumentos], {
-        cwd: path.join(__dirname, '..', '..'),
-        encoding: 'utf8',
-        env: {
-            ...process.env,
-            FIRESTORE_EMULATOR_HOST: process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8080',
-            PROJETO_FIREBASE: 'demo-expresso',
-            BUCKET_FIREBASE: 'demo-expresso.appspot.com',
-        },
+    return new Promise((concluir) => {
+        execFile(process.execPath, [SCRIPT, ...argumentos], {
+            cwd: path.join(__dirname, '..', '..'),
+            encoding: 'utf8',
+            env: {
+                ...process.env,
+                FIRESTORE_EMULATOR_HOST: process.env.FIRESTORE_EMULATOR_HOST || '127.0.0.1:8080',
+                PROJETO_FIREBASE: 'demo-expresso',
+                BUCKET_FIREBASE: 'demo-expresso.appspot.com',
+            },
+        }, (erro, stdout, stderr) => {
+            const linha = (stdout.match(/^\[CSV\] (.*)$/m) || [])[1];
+            concluir({ codigo: erro ? erro.code : 0, texto: stdout + stderr, resumo: linha ? JSON.parse(linha) : null });
+        });
     });
-    const linha = (saida.stdout.match(/^\[CSV\] (.*)$/m) || [])[1];
-    return { codigo: saida.status, texto: saida.stdout + saida.stderr, resumo: linha ? JSON.parse(linha) : null };
 }
 
 module.exports = {
@@ -73,10 +78,10 @@ module.exports = {
         const arquivo = path.join(os.tmpdir(), `expresso-teste-${Date.now()}.csv`);
         fs.writeFileSync(arquivo, Buffer.from(planilha, 'latin1')); // como o Excel em português salva
         try {
-            const simulacao = importar(arquivo, '--simular');
+            const simulacao = await importar(arquivo, '--simular');
             t.conferir(simulacao.codigo === 0 && simulacao.resumo.importadas === 3 && (await chamar(ti, 'GET', '/tarefas')).dados.length === 0,
                 '--simular: mostra que 3 seriam importadas e não grava nada');
-            const primeira = importar(arquivo);
+            const primeira = await importar(arquivo);
             t.anexar('Saída do importador (npm run importar:csv)', primeira.texto.trim().split(/\r?\n/));
             t.conferir(primeira.resumo && primeira.resumo.importadas === 3 && primeira.resumo.recusadas === 3,
                 `importação: ${primeira.resumo && primeira.resumo.importadas} importadas, ${primeira.resumo && primeira.resumo.recusadas} recusadas com o motivo e o número da linha`);
@@ -90,7 +95,7 @@ module.exports = {
             t.conferir(estoque && estoque.prioridade === 'urgente' && estoque.atrasada && estoque.prioridade_original === 'medio',
                 'prazo vencido na planilha: a atividade já entra Urgente (regra do prazo aplicada na importação)');
             t.conferir(porTitulo['Integração com API externa'].usuario_id === null, '"Equipe" não é usuário: fica só o nome (a verificação de consistência aponta)');
-            const segunda = importar(arquivo);
+            const segunda = await importar(arquivo);
             t.conferir(segunda.resumo && segunda.resumo.importadas === 0 && segunda.resumo.repetidas === 3 &&
                 (await chamar(ti, 'GET', '/tarefas')).dados.length === 3, 'importar o mesmo arquivo de novo não duplica (3 já existiam)');
             const nova = (await chamar(ti, 'POST', '/tarefas', { titulo: 'Depois da importação' })).dados;

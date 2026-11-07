@@ -124,7 +124,7 @@ expresso/
         ├── main.jsx                   # ponto de entrada
         ├── App.jsx                    # rotas da aplicação
         ├── assets/                    # imagens (logo, fundo do login, caneca)
-        ├── services/                  # chamadas à API (fetch)
+        ├── services/                  # chamadas à API: um arquivo por grupo de rotas (tarefaApi, usuarioApi...) e o requisicao.js (endereço, token e erros)
         ├── context/                   # usuário logado (AuthContext)
         ├── hooks/                     # useTarefas (atualização automática)
         ├── utils/                     # formatações, filtros, pesquisa e cálculos dos relatórios
@@ -353,7 +353,7 @@ Campos aceitos: `titulo` (obrigatório, até 150), `descricao` (até 2000), `usu
 
 ### Anexos
 
-O arquivo não passa pela API (a Cloud Function aceita no máximo 32 MB por requisição). O envio tem três passos: a API valida e devolve um endereço temporário (`url_envio`), o navegador faz um `PUT` do arquivo direto nesse endereço do Storage e depois avisa a API em `/concluir`. O frontend faz isso em `Api.anexarArquivo` (`frontend-react/src/services/api.js`).
+O arquivo não passa pela API (a Cloud Function aceita no máximo 32 MB por requisição). O envio tem três passos: a API valida e devolve um endereço temporário (`url_envio`), o navegador faz um `PUT` do arquivo direto nesse endereço do Storage e depois avisa a API em `/concluir`. O frontend faz isso em `AnexoApi.anexarArquivo` (`frontend-react/src/services/anexoApi.js`).
 
 | Método | Rota                                       | Descrição                                                        |
 |--------|--------------------------------------------|------------------------------------------------------------------|
@@ -386,7 +386,12 @@ Compila o site, sobe os emuladores (sem tocar na nuvem), roda os testes de [back
 
 ### Coleções e roteiro manual
 
-A coleção do **Postman** fica em `backend/testes/PI-api.postman_collection.json` (o Insomnia também importa esse arquivo: *Import → From File*). Ela tem 73 requisições, em 12 pastas: status, login, usuários, atividades, anexos (inclusive o envio direto ao Storage e um arquivo disfarçado), notificações, perfil, feriados, manutenção, validações e permissões, recuperação de senha e limpeza.
+A pasta `backend/testes/` tem a mesma coleção em dois formatos:
+
+- **Postman:** `PI-api.postman_collection.json`
+- **Insomnia** (feita no 13.4): `PI-api.insomnia_collection.json`. Importe em *Import → From File*, escolha o ambiente **Emuladores** ou **Nuvem** no seletor de ambiente e preencha `usuario` e `senha` no *Base Environment*. Os testes ficam em *Scripts → After-response* e rodam no *Collection Runner*.
+
+As duas têm 73 requisições, em 12 pastas: status, login, usuários, atividades, anexos (inclusive o envio direto ao Storage e um arquivo disfarçado), notificações, perfil, feriados, manutenção, validações e permissões, recuperação de senha e limpeza. As instruções abaixo são do Postman; no Insomnia o caminho é o mesmo.
 
 1. Importe em *File → Import*.
 2. Na aba *Variables* da coleção, preencha `usuario` e `senha` de um usuário **TI**. O `baseUrl` já vem com o endereço dos emuladores; para a nuvem, use `https://pi-expresso.web.app/api`.

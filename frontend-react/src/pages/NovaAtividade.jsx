@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Api } from "../services/api";
+import { AnexoApi } from "../services/anexoApi";
+import { TarefaApi } from "../services/tarefaApi";
+import { UsuarioApi } from "../services/usuarioApi";
 import { Formato } from "../utils/formato";
 import { ACEITOS, validarArquivo } from "../utils/anexos";
 import { IconeClipe, IconeX } from "../components/Icones";
@@ -38,14 +40,14 @@ export default function NovaAtividade() {
 
     useEffect(() => {
         let ativo = true;
-        Api.listarAtribuiveis()
+        UsuarioApi.listarAtribuiveis()
             .then(lista => {
                 if (!ativo) return;
                 setPessoas(lista);
                 if (lista.length > 0) setResponsavel(String(lista[0].id));
             })
             .catch(erro => alert("Não foi possível carregar os responsáveis: " + erro.message));
-        Api.listarParticipantes()
+        UsuarioApi.listarParticipantes()
             .then(lista => {
                 if (ativo) setUsuariosParticipantes(lista);
             })
@@ -67,7 +69,7 @@ export default function NovaAtividade() {
         for (let indice = 0; indice < arquivos.length; indice++) {
             setEnvio({ atual: indice + 1, total: arquivos.length, progresso: 0 });
             try {
-                await Api.anexarArquivo(tarefaId, arquivos[indice], progresso => {
+                await AnexoApi.anexarArquivo(tarefaId, arquivos[indice], progresso => {
                     setEnvio({ atual: indice + 1, total: arquivos.length, progresso });
                 });
             } catch (erro) {
@@ -97,7 +99,7 @@ export default function NovaAtividade() {
 
         setSalvando(true);
         try {
-            const salva = await Api.criarTarefa(novaTarefa);
+            const salva = await TarefaApi.criarTarefa(novaTarefa);
             const falhas = await enviarArquivos(salva.id);
             if (falhas.length > 0) {
                 alert(

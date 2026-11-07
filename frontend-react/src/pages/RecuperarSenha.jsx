@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Api } from "../services/api";
+import { AuthApi } from "../services/authApi";
 import "./login.css";
 
 import imgFundo from "../assets/fundo.png";
@@ -35,7 +35,7 @@ export default function RecuperarSenha() {
 
         setEnviando(true);
         try {
-            const resposta = await Api.solicitarRecuperacao(valorEmail);
+            const resposta = await AuthApi.solicitarRecuperacao(valorEmail);
             setAviso(resposta.mensagem);
             setEtapa("codigo");
         } catch (erroApi) {
@@ -64,7 +64,7 @@ export default function RecuperarSenha() {
 
         setEnviando(true);
         try {
-            await Api.redefinirSenha(email.trim(), codigo.trim(), novaSenha);
+            await AuthApi.redefinirSenha(email.trim(), codigo.trim(), novaSenha);
             setEtapa("concluido");
         } catch (erroApi) {
             setErro(erroApi.message);

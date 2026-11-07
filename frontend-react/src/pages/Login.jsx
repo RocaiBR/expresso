@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Api } from "../services/api";
+import { AuthApi } from "../services/authApi";
 import { useAuth } from "../context/AuthContext";
 import "./login.css";
 
@@ -43,7 +43,7 @@ export default function Login() {
 
         setCarregando(true);
         try {
-            const dados = await Api.login(valorUsuario, senha);
+            const dados = await AuthApi.login(valorUsuario, senha);
             entrar({ ...dados.usuario, token: dados.token });
             // O tema escolhido na conta vale em qualquer aparelho
             if (dados.usuario.tema) aplicarTema(dados.usuario.tema);

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { Api } from "../services/api";
+import { TarefaApi } from "../services/tarefaApi";
+import { UsuarioApi } from "../services/usuarioApi";
 import { useAuth } from "../context/AuthContext";
 
 const classesCampo =
@@ -35,7 +36,7 @@ export default function UsuarioForm() {
         let ativo = true;
         async function carregar() {
             try {
-                const usuario = await Api.buscarUsuario(id);
+                const usuario = await UsuarioApi.buscarUsuario(id);
                 if (!ativo) return;
                 setDados({
                     nome: usuario.nome || "",
@@ -98,10 +99,10 @@ export default function UsuarioForm() {
             if (editando) {
                 corpo.ativo = dados.ativo === "1";
                 if (!corpo.senha) delete corpo.senha;
-                await Api.atualizarUsuario(id, corpo);
+                await UsuarioApi.atualizarUsuario(id, corpo);
                 aviso = 'Usuário "' + corpo.nome + '" atualizado com sucesso.';
             } else {
-                await Api.criarUsuario(corpo);
+                await UsuarioApi.criarUsuario(corpo);
                 aviso = 'Usuário "' + corpo.nome + '" adicionado com sucesso.';
             }
             navigate("/usuarios", { state: { aviso } });
@@ -115,7 +116,7 @@ export default function UsuarioForm() {
         setErro(null);
         setSalvando(true);
         try {
-            const tarefas = await Api.listarTarefas();
+            const tarefas = await TarefaApi.listarTarefas();
             const quantas = tarefas.filter(tarefa => String(tarefa.usuario_id) === String(id)).length;
             const confirmou = confirm(
                 'Excluir o usuário "' + dados.nome + '"? Essa ação não pode ser desfeita.\n\n' +
@@ -129,7 +130,7 @@ export default function UsuarioForm() {
                 setSalvando(false);
                 return;
             }
-            await Api.excluirUsuario(id);
+            await UsuarioApi.excluirUsuario(id);
             navigate("/usuarios", { state: { aviso: 'Usuário "' + dados.nome + '" excluído.' } });
         } catch (erroApi) {
             setErro(erroApi.message);

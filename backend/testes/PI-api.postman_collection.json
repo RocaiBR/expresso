@@ -25,13 +25,13 @@
       "key": "usuario",
       "value": "",
       "type": "string",
-      "description": "Login ou e-mail de um usuário TI"
+      "description": "rocaibelobog@gmail.com"
     },
     {
       "key": "senha",
       "value": "",
       "type": "string",
-      "description": "Senha desse usuário"
+      "description": "123123"
     },
     {
       "key": "token",
@@ -170,7 +170,11 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Banco conectado', () => pm.expect(pm.response.json().banco).to.eql('conectado'));"
+                  "try {",
+                  "    pm.test('Banco conectado', () => pm.expect(pm.response.json().banco).to.eql('conectado'));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -201,15 +205,25 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "const r = pm.response.json();",
-                  "pm.collectionVariables.set('token', r.token);",
-                  "pm.collectionVariables.set('meuId', r.usuario.id);",
-                  "pm.collectionVariables.set('meuNome', r.usuario.nome);",
-                  "pm.test('Devolve o token e o usuário, sem a senha', () => {",
-                  "    pm.expect(r.token).to.be.a('string');",
-                  "    pm.expect(r.usuario).to.not.have.property('senha');",
-                  "});",
-                  "pm.test('O usuário é TI (necessário para as pastas de usuários e manutenção)', () => pm.expect(r.usuario.funcao).to.eql('ti'));"
+                  "try {",
+                  "    const r = pm.response.json();",
+                  "    if (!r.token) {",
+                  "        pm.test('Login recusado: \"' + (r.erro || 'a API não devolveu o token') + '\". Confira \"usuario\" e \"senha\" (de um usuário TI) nas variáveis', () => {",
+                  "            throw new Error(r.erro || 'sem token');",
+                  "        });",
+                  "    } else {",
+                  "        pm.collectionVariables.set('token', r.token);",
+                  "        pm.collectionVariables.set('meuId', r.usuario.id);",
+                  "        pm.collectionVariables.set('meuNome', r.usuario.nome);",
+                  "        pm.test('Devolve o token e o usuário, sem a senha', () => {",
+                  "            pm.expect(r.token).to.be.a('string');",
+                  "            pm.expect(r.usuario).to.not.have.property('senha');",
+                  "        });",
+                  "        pm.test('O usuário é TI (necessário para as pastas de usuários e manutenção)', () => pm.expect(r.usuario.funcao).to.eql('ti'));",
+                  "    }",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -275,9 +289,13 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Só id, nome e setor (sem e-mail)', () => {",
-                  "    pm.response.json().forEach((p) => pm.expect(Object.keys(p).sort()).to.eql(['id', 'nome', 'setor']));",
-                  "});"
+                  "try {",
+                  "    pm.test('Só id, nome e setor (sem e-mail)', () => {",
+                  "        pm.response.json().forEach((p) => pm.expect(Object.keys(p).sort()).to.eql(['id', 'nome', 'setor']));",
+                  "    });",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -299,9 +317,13 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Nenhum usuário volta com a senha', () => {",
-                  "    pm.response.json().forEach((u) => pm.expect(u).to.not.have.property('senha'));",
-                  "});"
+                  "try {",
+                  "    pm.test('Nenhum usuário volta com a senha', () => {",
+                  "        pm.response.json().forEach((u) => pm.expect(u).to.not.have.property('senha'));",
+                  "    });",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -323,12 +345,16 @@
                   "pm.test('Responde 201', () => {",
                   "    pm.response.to.have.status(201);",
                   "});",
-                  "const u = pm.response.json();",
-                  "pm.collectionVariables.set('usuarioId', u.id);",
-                  "pm.test('Nome e e-mail sem espaços, e-mail em minúsculas', () => {",
-                  "    pm.expect(u.nome).to.eql('Usuário do Postman');",
-                  "    pm.expect(u.email).to.eql(pm.collectionVariables.get('emailTeste'));",
-                  "});"
+                  "try {",
+                  "    const u = pm.response.json();",
+                  "    pm.collectionVariables.set('usuarioId', u.id);",
+                  "    pm.test('Nome e e-mail sem espaços, e-mail em minúsculas', () => {",
+                  "        pm.expect(u.nome).to.eql('Usuário do Postman');",
+                  "        pm.expect(u.email).to.eql(pm.collectionVariables.get('emailTeste'));",
+                  "    });",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             },
@@ -398,7 +424,11 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Setor alterado', () => pm.expect(pm.response.json().usuario.setor).to.eql('ENGENHARIA'));"
+                  "try {",
+                  "    pm.test('Setor alterado', () => pm.expect(pm.response.json().usuario.setor).to.eql('ENGENHARIA'));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -434,7 +464,11 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.collectionVariables.set('tokenTeste', pm.response.json().token);"
+                  "try {",
+                  "    pm.collectionVariables.set('tokenTeste', pm.response.json().token);",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -480,18 +514,22 @@
                   "pm.test('Responde 201', () => {",
                   "    pm.response.to.have.status(201);",
                   "});",
-                  "const t = pm.response.json();",
-                  "pm.collectionVariables.set('tarefaId', t.id);",
-                  "pm.test('Título sem espaços nas pontas; descrição vazia vira null', () => {",
-                  "    pm.expect(t.titulo).to.eql('Atividade criada pelo Postman');",
-                  "    pm.expect(t.descricao).to.eql(null);",
-                  "});",
-                  "pm.test('Responsável e participantes preenchidos pela API a partir dos ids', () => {",
-                  "    pm.expect(t.responsavel).to.eql('Usuário do Postman');",
-                  "    pm.expect(t.participantes).to.eql(pm.collectionVariables.get('meuNome'));",
-                  "});",
-                  "pm.test('criado_por enviado pelo cliente é ignorado', () => pm.expect(t.criado_por).to.eql(Number(pm.collectionVariables.get('meuId'))));",
-                  "pm.test('Começa pendente', () => pm.expect(t.status).to.eql('pendente'));"
+                  "try {",
+                  "    const t = pm.response.json();",
+                  "    pm.collectionVariables.set('tarefaId', t.id);",
+                  "    pm.test('Título sem espaços nas pontas; descrição vazia vira null', () => {",
+                  "        pm.expect(t.titulo).to.eql('Atividade criada pelo Postman');",
+                  "        pm.expect(t.descricao).to.eql(null);",
+                  "    });",
+                  "    pm.test('Responsável e participantes preenchidos pela API a partir dos ids', () => {",
+                  "        pm.expect(t.responsavel).to.eql('Usuário do Postman');",
+                  "        pm.expect(t.participantes).to.eql(pm.collectionVariables.get('meuNome'));",
+                  "    });",
+                  "    pm.test('criado_por enviado pelo cliente é ignorado', () => pm.expect(t.criado_por).to.eql(Number(pm.collectionVariables.get('meuId'))));",
+                  "    pm.test('Começa pendente', () => pm.expect(t.status).to.eql('pendente'));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             },
@@ -539,12 +577,16 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "const lista = pm.response.json();",
-                  "pm.test('A atividade criada está na lista, com as permissões de quem está logado', () => {",
-                  "    const t = lista.find((x) => x.id === Number(pm.collectionVariables.get('tarefaId')));",
-                  "    pm.expect(t).to.be.an('object');",
-                  "    pm.expect(t.permissoes).to.have.keys('status', 'editar', 'excluir');",
-                  "});"
+                  "try {",
+                  "    const lista = pm.response.json();",
+                  "    pm.test('A atividade criada está na lista, com as permissões de quem está logado', () => {",
+                  "        const t = lista.find((x) => x.id === Number(pm.collectionVariables.get('tarefaId')));",
+                  "        pm.expect(t).to.be.an('object');",
+                  "        pm.expect(t.permissoes).to.have.keys('status', 'editar', 'excluir');",
+                  "    });",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -566,7 +608,11 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Só pendentes', () => pm.response.json().forEach((t) => pm.expect(t.status).to.eql('pendente')));"
+                  "try {",
+                  "    pm.test('Só pendentes', () => pm.response.json().forEach((t) => pm.expect(t.status).to.eql('pendente')));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -609,7 +655,11 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Status gravado', () => pm.expect(pm.response.json().tarefa.status).to.eql('em andamento'));"
+                  "try {",
+                  "    pm.test('Status gravado', () => pm.expect(pm.response.json().tarefa.status).to.eql('em andamento'));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -645,7 +695,11 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('finalizado_em preenchido', () => pm.expect(pm.response.json().tarefa.finalizado_em).to.be.a('string'));"
+                  "try {",
+                  "    pm.test('finalizado_em preenchido', () => pm.expect(pm.response.json().tarefa.finalizado_em).to.be.a('string'));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -708,10 +762,14 @@
                   "pm.test('Responde 201', () => {",
                   "    pm.response.to.have.status(201);",
                   "});",
-                  "const r = pm.response.json();",
-                  "pm.collectionVariables.set('anexoId', r.anexo.id);",
-                  "pm.collectionVariables.set('urlEnvio', r.url_envio);",
-                  "pm.test('Começa como \"enviando\"', () => pm.expect(r.anexo.status).to.eql('enviando'));"
+                  "try {",
+                  "    const r = pm.response.json();",
+                  "    pm.collectionVariables.set('anexoId', r.anexo.id);",
+                  "    pm.collectionVariables.set('urlEnvio', r.url_envio);",
+                  "    pm.test('Começa como \"enviando\"', () => pm.expect(r.anexo.status).to.eql('enviando'));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             },
@@ -753,7 +811,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Storage aceitou', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                  "try {",
+                  "    pm.test('Storage aceitou', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -793,13 +855,17 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "const a = pm.response.json();",
-                  "pm.test('Pronto, com o tamanho real e o link de download', () => {",
-                  "    pm.expect(a.status).to.eql('pronto');",
-                  "    pm.expect(a.tamanho).to.eql(pm.collectionVariables.get('conteudoAnexo').length);",
-                  "    pm.expect(a.url).to.be.a('string');",
-                  "    pm.expect(a).to.not.have.property('token');",
-                  "});"
+                  "try {",
+                  "    const a = pm.response.json();",
+                  "    pm.test('Pronto, com o tamanho real e o link de download', () => {",
+                  "        pm.expect(a.status).to.eql('pronto');",
+                  "        pm.expect(a.tamanho).to.eql(pm.collectionVariables.get('conteudoAnexo').length);",
+                  "        pm.expect(a.url).to.be.a('string');",
+                  "        pm.expect(a).to.not.have.property('token');",
+                  "    });",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -821,7 +887,11 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('O anexo aparece', () => pm.expect(pm.response.json().map((a) => a.id)).to.include(pm.collectionVariables.get('anexoId')));"
+                  "try {",
+                  "    pm.test('O anexo aparece', () => pm.expect(pm.response.json().map((a) => a.id)).to.include(pm.collectionVariables.get('anexoId')));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -915,8 +985,12 @@
                   "pm.test('Responde 201', () => {",
                   "    pm.response.to.have.status(201);",
                   "});",
-                  "pm.collectionVariables.set('anexoFalsoId', pm.response.json().anexo.id);",
-                  "pm.collectionVariables.set('urlEnvioFalso', pm.response.json().url_envio);"
+                  "try {",
+                  "    pm.collectionVariables.set('anexoFalsoId', pm.response.json().anexo.id);",
+                  "    pm.collectionVariables.set('urlEnvioFalso', pm.response.json().url_envio);",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -949,7 +1023,11 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Storage aceitou (a conferência é no passo seguinte)', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                  "try {",
+                  "    pm.test('Storage aceitou (a conferência é no passo seguinte)', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -1037,7 +1115,11 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Pelo menos 1 (a atividade atribuída a ele)', () => pm.expect(pm.response.json().nao_lidas).to.be.at.least(1));"
+                  "try {",
+                  "    pm.test('Pelo menos 1 (a atividade atribuída a ele)', () => pm.expect(pm.response.json().nao_lidas).to.be.at.least(1));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -1069,13 +1151,17 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "const lista = pm.response.json();",
-                  "const aviso = lista.find((n) => n.tipo === 'atribuida');",
-                  "pm.test('Aviso de atividade atribuída, com quem fez', () => {",
-                  "    pm.expect(aviso).to.be.an('object');",
-                  "    pm.expect(aviso.autor_nome).to.eql(pm.collectionVariables.get('meuNome'));",
-                  "});",
-                  "if (aviso) pm.collectionVariables.set('notificacaoId', aviso.id);"
+                  "try {",
+                  "    const lista = pm.response.json();",
+                  "    const aviso = lista.find((n) => n.tipo === 'atribuida');",
+                  "    pm.test('Aviso de atividade atribuída, com quem fez', () => {",
+                  "        pm.expect(aviso).to.be.an('object');",
+                  "        pm.expect(aviso.autor_nome).to.eql(pm.collectionVariables.get('meuNome'));",
+                  "    });",
+                  "    if (aviso) pm.collectionVariables.set('notificacaoId', aviso.id);",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -1175,11 +1261,15 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "const p = pm.response.json();",
-                  "pm.test('Dados do próprio usuário, sem a senha', () => {",
-                  "    pm.expect(p.email).to.eql(pm.collectionVariables.get('emailTeste'));",
-                  "    pm.expect(p).to.not.have.property('senha');",
-                  "});"
+                  "try {",
+                  "    const p = pm.response.json();",
+                  "    pm.test('Dados do próprio usuário, sem a senha', () => {",
+                  "        pm.expect(p.email).to.eql(pm.collectionVariables.get('emailTeste'));",
+                  "        pm.expect(p).to.not.have.property('senha');",
+                  "    });",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -1302,7 +1392,11 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Devolve o link da foto', () => pm.expect(pm.response.json().foto_url).to.be.a('string'));"
+                  "try {",
+                  "    pm.test('Devolve o link da foto', () => pm.expect(pm.response.json().foto_url).to.be.a('string'));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -1522,7 +1616,11 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Lista com datas', () => pm.expect(pm.response.json()[0]).to.have.property('date'));"
+                  "try {",
+                  "    pm.test('Lista com datas', () => pm.expect(pm.response.json()[0]).to.have.property('date'));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -1572,12 +1670,16 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "const r = pm.response.json();",
-                  "pm.test('13 conferências, cada uma com quantidade e exemplos', () => {",
-                  "    pm.expect(r.verificacoes).to.have.lengthOf(13);",
-                  "    r.verificacoes.forEach((v) => pm.expect(v).to.include.keys('codigo', 'gravidade', 'quantidade', 'exemplos'));",
-                  "});",
-                  "console.log('Problemas encontrados:', r.problemas, r.verificacoes.filter((v) => v.quantidade > 0).map((v) => v.codigo + ': ' + v.quantidade));"
+                  "try {",
+                  "    const r = pm.response.json();",
+                  "    pm.test('13 conferências, cada uma com quantidade e exemplos', () => {",
+                  "        pm.expect(r.verificacoes).to.have.lengthOf(13);",
+                  "        r.verificacoes.forEach((v) => pm.expect(v).to.include.keys('codigo', 'gravidade', 'quantidade', 'exemplos'));",
+                  "    });",
+                  "    console.log('Problemas encontrados:', r.problemas, r.verificacoes.filter((v) => v.quantidade > 0).map((v) => v.codigo + ': ' + v.quantidade));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -1599,7 +1701,11 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Todas as etapas rodaram', () => pm.expect(pm.response.json()).to.include.keys('contadores', 'prazos', 'anexos_abandonados', 'sessoes_vencidas', 'codigos_vencidos'));"
+                  "try {",
+                  "    pm.test('Todas as etapas rodaram', () => pm.expect(pm.response.json()).to.include.keys('contadores', 'prazos', 'anexos_abandonados', 'sessoes_vencidas', 'codigos_vencidos'));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }
@@ -2379,7 +2485,11 @@
                   "pm.test('Responde 200', () => {",
                   "    pm.response.to.have.status(200);",
                   "});",
-                  "pm.test('Mensagem genérica', () => pm.expect(pm.response.json().mensagem).to.include('Se o e-mail estiver cadastrado'));"
+                  "try {",
+                  "    pm.test('Mensagem genérica', () => pm.expect(pm.response.json().mensagem).to.include('Se o e-mail estiver cadastrado'));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
                 ]
               }
             }

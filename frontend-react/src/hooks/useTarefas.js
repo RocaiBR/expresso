@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Api } from "../services/api";
+import { TarefaApi } from "../services/tarefaApi";
 
 /* Carrega as tarefas da API e atualiza sozinho:
    a cada 15 segundos e quando a aba volta a ficar visível. */
@@ -10,7 +10,7 @@ export function useTarefas() {
 
     const recarregar = useCallback(async function () {
         try {
-            const lista = await Api.listarTarefas();
+            const lista = await TarefaApi.listarTarefas();
             setTarefas(lista);
             setErro(null);
         } catch (erroApi) {

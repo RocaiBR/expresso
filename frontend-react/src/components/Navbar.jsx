@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useFecharAoClicarFora } from "../hooks/useFecharAoClicarFora";
-import { Api } from "../services/api";
+import { PerfilApi } from "../services/perfilApi";
 import { TEMAS, aplicarTema, useTema } from "../utils/tema";
 import { IconePessoa } from "./Icones";
 import Avatar from "./Avatar";
@@ -32,7 +32,7 @@ export default function Navbar() {
     function escolherTema(valor) {
         aplicarTema(valor);
         atualizarSessao({ tema: valor });
-        Api.salvarTema(valor).catch(function () {});
+        PerfilApi.salvarTema(valor).catch(function () {});
     }
 
     const funcoes = { usuario: "Usuário padrão", gestor: "Gestor", ti: "TI" };

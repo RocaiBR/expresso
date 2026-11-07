@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Api } from "../services/api";
+import { TarefaApi } from "../services/tarefaApi";
+import { UsuarioApi } from "../services/usuarioApi";
 import { useAuth } from "../context/AuthContext";
 import { useTarefas } from "../hooks/useTarefas";
 import { Formato } from "../utils/formato";
@@ -69,7 +70,7 @@ export default function Atividades() {
 
     function entrarNoModoSelecao() {
         setModoSelecao(true);
-        if (pessoas.length === 0) Api.listarAtribuiveis().then(setPessoas).catch(() => setPessoas([]));
+        if (pessoas.length === 0) UsuarioApi.listarAtribuiveis().then(setPessoas).catch(() => setPessoas([]));
     }
 
     function sairDoModoSelecao() {
@@ -101,14 +102,14 @@ export default function Atividades() {
 
     function moverPara(status) {
         const alvos = selecionadas.filter(tarefa => tarefa.permissoes?.status);
-        executar(alvos, tarefa => Api.atualizarTarefa(tarefa.id, { status }),
+        executar(alvos, tarefa => TarefaApi.atualizarTarefa(tarefa.id, { status }),
             "movida(s) para \"" + Formato.rotuloStatus(status) + "\"");
     }
 
     function passarPara(usuarioId) {
         const pessoa = pessoas.find(item => item.id === usuarioId);
         const alvos = selecionadas.filter(tarefa => tarefa.permissoes?.editar);
-        executar(alvos, tarefa => Api.atualizarTarefa(tarefa.id, { usuario_id: usuarioId }),
+        executar(alvos, tarefa => TarefaApi.atualizarTarefa(tarefa.id, { usuario_id: usuarioId }),
             "passada(s) para " + (pessoa ? pessoa.nome : "o novo responsável"));
     }
 
@@ -116,7 +117,7 @@ export default function Atividades() {
     async function verificarPrazos() {
         setVerificandoPrazos(true);
         try {
-            const resultado = await Api.verificarPrazos();
+            const resultado = await TarefaApi.verificarPrazos();
             alert(
                 "Prazos verificados (" + resultado.abertas + " atividade(s) em aberto).\n" +
                 resultado.viraram_urgentes + " passaram do prazo e viraram Urgente.\n" +
@@ -133,7 +134,7 @@ export default function Atividades() {
     function excluirSelecionadas() {
         const alvos = selecionadas.filter(tarefa => tarefa.permissoes?.excluir);
         if (!confirm("Excluir " + alvos.length + " atividade(s) e todos os arquivos delas? Essa ação não pode ser desfeita.")) return;
-        executar(alvos, tarefa => Api.excluirTarefa(tarefa.id), "excluída(s)");
+        executar(alvos, tarefa => TarefaApi.excluirTarefa(tarefa.id), "excluída(s)");
     }
 
     return (

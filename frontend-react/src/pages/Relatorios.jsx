@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Api } from "../services/api";
+import { FeriadoApi } from "../services/feriadoApi";
+import { TarefaApi } from "../services/tarefaApi";
 import { Formato } from "../utils/formato";
 import Grafico from "../components/Grafico";
 import SeletorPeriodo from "../components/SeletorPeriodo";
@@ -123,7 +124,7 @@ export default function Relatorios() {
         let ativo = true;
         async function carregar() {
             try {
-                const lista = await Api.listarTarefas();
+                const lista = await TarefaApi.listarTarefas();
                 if (ativo) setTarefas(lista);
             } catch (erroApi) {
                 if (ativo) setErro(erroApi.message);
@@ -144,7 +145,7 @@ export default function Relatorios() {
 
         let ativo = true;
         Promise.all(faltando.map(ano =>
-            Api.listarFeriados(ano)
+            FeriadoApi.listarFeriados(ano)
                 .then(lista => lista.map(feriado => feriado.date))
                 .catch(erroApi => {
                     // Sem a lista de feriados, os dias úteis contam só os fins de semana
