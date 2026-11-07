@@ -3,6 +3,8 @@ const { db, Timestamp } = require('../config/firebase');
 const { enviarEmail, emailConfigurado, emModoLocal } = require('../config/email');
 const { criarSessao, encerrarSessao, encerrarSessoesDoUsuario } = require('../middlewares/autenticacao');
 const { TAMANHO_MINIMO_SENHA } = require('../utils/validacoes');
+const { gerarHash, conferirSenha, senhaProtegida } = require('../utils/senhas');
+const { chaveDoLogin, reservarTentativa, liberarLogin } = require('../utils/limiteLogin');
 
 // Recuperação de senha por código enviado ao e-mail
 const VALIDADE_CODIGO_MIN = 15;
@@ -15,7 +17,7 @@ async function buscarPorLogin(valor) {
     for (const campo of ['email', 'usuario', 'nome']) {
         const procurado = campo === 'email' ? valor.toLowerCase() : valor;
         const resultado = await db.collection('usuarios').where(campo, '==', procurado).limit(1).get();
-        if (!resultado.empty) return resultado.docs[0].data();
+        if (!resultado.empty) return resultado.docs[0];
     }
     return null;
 }
@@ -24,13 +26,30 @@ async function login(req, res, next) {
     try {
         const { usuario, senha } = req.body;
 
-        if (!usuario || !senha) {
+        if (!usuario || !senha || typeof usuario !== 'string' || typeof senha !== 'string') {
             return res.status(400).json({ erro: 'Informe usuário e senha.' });
         }
 
-        const encontrado = await buscarPorLogin(usuario.trim());
-        if (!encontrado || encontrado.senha !== senha) {
+        const digitado = usuario.trim();
+        const docUsuario = await buscarPorLogin(digitado);
+        const encontrado = docUsuario ? docUsuario.data() : null;
+
+        const chave = chaveDoLogin(digitado, encontrado ? encontrado.id : undefined);
+        const minutos = await reservarTentativa(chave);
+        if (minutos) {
+            console.warn(`[AUTH] Login bloqueado por excesso de tentativas (${encontrado ? `usuário #${encontrado.id}` : 'sem cadastro'})`);
+            return res.status(429).json({ erro: `Muitas tentativas erradas. Tente de novo em ${minutos} minuto(s) ou use "Esqueci minha senha".` });
+        }
+
+        const confere = await conferirSenha(senha, encontrado ? encontrado.senha : null);
+        if (!encontrado || !confere) {
             return res.status(401).json({ erro: 'Usuário ou senha incorretos.' });
+        }
+        await liberarLogin(chave);
+
+        if (!senhaProtegida(encontrado.senha)) {
+            await docUsuario.ref.update({ senha: await gerarHash(senha) });
+            console.log(`[AUTH] Senha do usuário #${encontrado.id} convertida para hash`);
         }
         if (!encontrado.ativo) {
             return res.status(403).json({ erro: 'Este usuário está inativo. Fale com o TI.' });
@@ -187,7 +206,7 @@ async function redefinirSenha(req, res, next) {
                 return { erro: restantes > 0 ? `Código incorreto. Restam ${restantes} tentativa(s).` : MENSAGEM_CODIGO_INVALIDO };
             }
 
-            transacao.update(doc.ref, { senha: novaSenha });
+            transacao.update(doc.ref, { senha: await gerarHash(novaSenha) });
             transacao.delete(ref);
             return {};
         });
@@ -197,6 +216,7 @@ async function redefinirSenha(req, res, next) {
         }
         // Quem estava logado com a senha antiga (inclusive um invasor) precisa entrar de novo
         await encerrarSessoesDoUsuario(doc.data().id);
+        await liberarLogin(chaveDoLogin('', doc.data().id));
         console.log(`[RECUPERACAO] Senha redefinida pelo usuário #${doc.data().id}`);
         res.status(200).json({ mensagem: 'Senha alterada com sucesso. Entre com a nova senha.' });
     } catch (error) {

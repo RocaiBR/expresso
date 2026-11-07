@@ -1,0 +1,113 @@
+{
+  "descricao": "Logs da função api lidos em 07/11/2026, antes das medições: só uso real do sistema.",
+  "periodo": {
+    "de": "2026-10-27T00:48:53.228803Z",
+    "ate": "2026-11-07T12:46:42.495714Z"
+  },
+  "requisicoes": 268,
+  "tempo_ms": {
+    "mediana": 88,
+    "p95": 684,
+    "maximo": 2378
+  },
+  "status": {
+    "2xx": 126,
+    "3xx": 119,
+    "4xx": 23,
+    "5xx": 0
+  },
+  "erros_registrados": 0,
+  "partidas_a_frio": {
+    "quantidade": 16,
+    "mediana_ms": 2768,
+    "maximo_ms": 4925
+  },
+  "rotas_mais_chamadas": [
+    {
+      "rota": "GET /api/tarefas",
+      "chamadas": 108,
+      "media_ms": 155,
+      "maximo_ms": 538
+    },
+    {
+      "rota": "GET /api/notificacoes/contagem",
+      "chamadas": 54,
+      "media_ms": 125,
+      "maximo_ms": 828
+    },
+    {
+      "rota": "PUT /api/tarefas/:id",
+      "chamadas": 21,
+      "media_ms": 306,
+      "maximo_ms": 684
+    },
+    {
+      "rota": "POST /api/auth/login",
+      "chamadas": 18,
+      "media_ms": 322,
+      "maximo_ms": 1196
+    },
+    {
+      "rota": "GET /api/usuarios/atribuiveis",
+      "chamadas": 13,
+      "media_ms": 97,
+      "maximo_ms": 283
+    },
+    {
+      "rota": "GET /api/health",
+      "chamadas": 12,
+      "media_ms": 267,
+      "maximo_ms": 885
+    },
+    {
+      "rota": "GET /api/usuarios/participantes",
+      "chamadas": 8,
+      "media_ms": 98,
+      "maximo_ms": 251
+    },
+    {
+      "rota": "GET /api/usuarios",
+      "chamadas": 7,
+      "media_ms": 112,
+      "maximo_ms": 283
+    }
+  ],
+  "por_dia": [
+    {
+      "dia": "2026-10-26",
+      "requisicoes": 65,
+      "erros_5xx": 0,
+      "p95_ms": 613
+    },
+    {
+      "dia": "2026-11-03",
+      "requisicoes": 88,
+      "erros_5xx": 0,
+      "p95_ms": 684
+    },
+    {
+      "dia": "2026-11-04",
+      "requisicoes": 48,
+      "erros_5xx": 0,
+      "p95_ms": 162
+    },
+    {
+      "dia": "2026-11-05",
+      "requisicoes": 46,
+      "erros_5xx": 0,
+      "p95_ms": 828
+    },
+    {
+      "dia": "2026-11-06",
+      "requisicoes": 13,
+      "erros_5xx": 0,
+      "p95_ms": 885
+    },
+    {
+      "dia": "2026-11-07",
+      "requisicoes": 8,
+      "erros_5xx": 0,
+      "p95_ms": 667
+    }
+  ]
+}

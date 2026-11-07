@@ -11,7 +11,9 @@ const SENHA = 'senha123';
 
 const PASTA_EVIDENCIAS = path.resolve(__dirname, '..', '..', 'docs', 'evidencias');
 const PASTA_PRINTS = path.join(PASTA_EVIDENCIAS, 'prints');
-const ASSETS = path.resolve(__dirname, '..', '..', 'frontend-react', 'src', 'assets');
+const ASSETS = path.join(__dirname, 'arquivos');
+const FIREBASE_JSON = path.resolve(__dirname, '..', '..', 'firebase.json');
+const violacoesDaPolitica = [];
 
 const esperar = (ms) => new Promise((ok) => setTimeout(ok, ms));
 
@@ -104,16 +106,44 @@ async function abrirNavegador() {
     }
     for (const channel of ['msedge', 'chrome']) {
         try {
-            return { navegador: await chromium.launch({ channel, headless: true }), canal: channel };
+            // Com a página entregue por aplicarPolitica, o navegador a trata como se viesse da internet e barraria o Storage local
+            const args = ['--disable-features=LocalNetworkAccessChecks'];
+            return { navegador: await chromium.launch({ channel, headless: true, args }), canal: channel };
         } catch (erro) {
         }
     }
     return { navegador: null, motivo: 'nenhum navegador encontrado (Microsoft Edge ou Google Chrome)' };
 }
 
+function cabecalhosDoSite() {
+    return JSON.parse(fs.readFileSync(FIREBASE_JSON, 'utf8')).hosting.headers;
+}
+
+// O Hosting dos emuladores não aplica os cabeçalhos do firebase.json. Aqui a política entra à mão, para os
+// testes de tela rodarem sob a mesma regra da nuvem, só com o Storage local liberado no lugar do real
+async function aplicarPolitica(contexto) {
+    const politica = cabecalhosDoSite()[0].headers.find((h) => h.key === 'Content-Security-Policy').value
+        .replace("img-src 'self'", "img-src 'self' http://127.0.0.1:9199")
+        .replace("connect-src 'self'", "connect-src 'self' http://127.0.0.1:9199");
+    await contexto.route(`${SITE}/**`, async (rota) => {
+        if (rota.request().resourceType() !== 'document') return rota.continue();
+        const resposta = await rota.fetch();
+        return rota.fulfill({ response: resposta, headers: { ...resposta.headers(), 'content-security-policy': politica } });
+    });
+}
+
+// Tudo o que a política bloquear durante os testes de tela fica anotado
+function vigiarPolitica(pagina) {
+    pagina.on('console', (mensagem) => {
+        if (mensagem.text().includes('Content Security Policy')) violacoesDaPolitica.push(mensagem.text());
+    });
+}
+
 async function entrarNoSite(navegador, usuario, senha = SENHA, viewport = { width: 1400, height: 880 }) {
     const contexto = await navegador.newContext({ viewport });
+    await aplicarPolitica(contexto);
     const pagina = await contexto.newPage();
+    vigiarPolitica(pagina);
     await pagina.goto(SITE + '/login');
     await pagina.fill('#usuario', usuario);
     await pagina.fill('#senha', senha);
@@ -125,5 +155,5 @@ async function entrarNoSite(navegador, usuario, senha = SENHA, viewport = { widt
 module.exports = {
     SITE, API, API_FUNCAO, FIRESTORE, STORAGE, DONO, SENHA, PASTA_EVIDENCIAS, PASTA_PRINTS, ASSETS,
     esperar, chamar, login, token, gravarNoBanco, consultarNoBanco, arquivosNoStorage, zerarEmuladores,
-    criarPrimeiroTI, criarUsuario, diaEmSaoPaulo, abrirNavegador, entrarNoSite, fs, path,
+    criarPrimeiroTI, criarUsuario, diaEmSaoPaulo, abrirNavegador, entrarNoSite, cabecalhosDoSite, violacoesDaPolitica, fs, path,
 };

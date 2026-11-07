@@ -143,7 +143,7 @@ datas de calendário (início e vencimento) são texto `AAAA-MM-DD`.
 | `nome` | texto | Obrigatório, até 150 caracteres, sem espaços nas pontas |
 | `usuario` | texto ou `null` | Login opcional, até 50, só letras, números, `.`, `-` e `_`; **único** |
 | `email` | texto | Obrigatório, formato `nome@dominio.tld`, até 150, **sempre minúsculo**, **único** |
-| `senha` | texto | Pelo menos 6 caracteres; nunca sai da API (ver [limitações](#9-limitações-conhecidas)) |
+| `senha` | texto | Só o hash (scrypt, com sal próprio); a senha digitada tem pelo menos 6 caracteres; nunca sai da API |
 | `setor` | `PCP`, `ENGENHARIA`, `TI` ou `null` | Define o que o gestor enxerga |
 | `funcao` | `usuario`, `gestor`, `ti` | Cargo (ver [regras](#6-regras-de-negócio)) |
 | `ativo` | lógico | `false` bloqueia o login e derruba as sessões na hora |
@@ -190,6 +190,7 @@ datas de calendário (início e vencimento) são texto `AAAA-MM-DD`.
 | `contadores/{colecao}` | `ultimo`: último id usado | — |
 | `sessoes/{sha256 do token}` | `usuario_id`, `criado_em`, `expira_em`. O token em si não é guardado | 12 horas |
 | `recuperacoes/{id do usuário}` | `codigo_hash` + `sal` (o código não é guardado), `tentativas`, `expira_em` | 15 minutos, 5 tentativas |
+| `tentativas_login/{usuario_<id> ou sha256 do texto}` | `tentativas`, `expira_em` | 15 minutos, 5 tentativas |
 | `notificacoes/{id}` | `usuario_id`, `tipo` (`atribuida`, `recebida`, `removida`, `atrasada`), `tarefa_id`, `tarefa_titulo`, `autor_nome`, `lida`, `criada_em` | — |
 | `emails_locais/{id}` | Só nos emuladores: os e-mails que seriam enviados (os testes leem o código daqui) | — |
 
@@ -264,6 +265,8 @@ A coluna "Teste" aponta o grupo do [relatório de evidências](evidencias/relato
 | Avisos no sino para quem recebe ou perde uma atividade; ninguém é avisado do que ele mesmo fez | `notificacaoController.js` | Notificações |
 | Participantes só entre usuários ativos | `validarParticipantes` | Participantes |
 | Recuperação de senha não revela se o e-mail existe | `solicitarRecuperacao` | Recuperação de senha |
+| Senha guardada só como hash; a antiga, em texto, é convertida no primeiro login ou na rotina diária | `utils/senhas.js` | Otimização e segurança da infraestrutura |
+| 5 tentativas de login erradas bloqueiam a conta por 15 minutos, mesmo com a senha certa; trocar a senha libera | `utils/limiteLogin.js` | Otimização e segurança da infraestrutura |
 
 ## 7. Tratamento de inconsistências
 
@@ -306,8 +309,9 @@ ou quando um usuário é excluído/desativado depois de receber atividades.
 
 - **Automático, todo dia às 00:05** (`rotinaDiaria`, ou `POST /api/manutencao/rotina-diaria` pelo TI):
   sobe contadores atrasados até o maior id, aplica a regra do prazo, apaga envios de anexo abandonados
-  (arquivo e registro), sessões vencidas e códigos de recuperação vencidos. Cada etapa roda mesmo se
-  outra falhar, e o resultado vai para o log `[MANUTENCAO]`.
+  (arquivo e registro), sessões, códigos de recuperação e tentativas de login vencidos, e troca por hash
+  qualquer senha que ainda esteja em texto. Cada etapa roda mesmo se outra falhar, e o resultado vai para
+  o log `[MANUTENCAO]`.
 - **Pela equipe, com as validações de sempre:** e-mail, setor, responsável e participantes são corrigidos
   pelas telas (ou pela API). Um valor inválido gravado por fora não pode ser regravado: a API exige um valor válido.
 - O grupo "Verificação de consistência e correção" do relatório grava 12 tipos de problema, mostra a
@@ -342,8 +346,10 @@ Na nuvem ficam no Cloud Logging (`npm run logs` ou Console do Firebase → Funct
 
 ## 9. Limitações conhecidas
 
-- **Senhas guardadas sem hash.** Vieram assim do MySQL e o login compara o texto. O próximo passo é
-  gravar com um hash lento (ex.: `bcrypt`) e converter na primeira entrada de cada pessoa.
+- **Backups antigos com senhas em texto.** O banco ganhou o hash em 07/11/2026, mas os backups semanais
+  feitos antes disso continuam com as senhas em texto até vencerem (60 dias depois de cada backup).
+- **Bloqueio de login pode ser provocado por outra pessoa:** quem errar 5 vezes de propósito bloqueia a
+  conta de alguém por 15 minutos. "Esqueci minha senha" libera na hora.
 - **A assinatura do arquivo não é antivírus:** ela barra um executável renomeado para `.pdf`, mas um PDF
   verdadeiro com conteúdo malicioso passa. Um antivírus no Storage teria custo à parte.
 - **Atividades antigas sem responsável:** as que vieram do MySQL e da planilha inicial com responsáveis

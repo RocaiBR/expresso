@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { TarefaApi } from "../services/tarefaApi";
 
 /* Carrega as tarefas da API e atualiza sozinho:
-   a cada 15 segundos e quando a aba volta a ficar visível. */
+   a cada 15 segundos com a aba visível e na hora em que ela volta a ficar visível. */
 export function useTarefas() {
     const [tarefas, setTarefas] = useState([]);
     const [carregando, setCarregando] = useState(true);
@@ -25,7 +25,9 @@ export function useTarefas() {
     useEffect(() => {
         recarregar();
 
-        const intervalo = setInterval(recarregar, 15000);
+        const intervalo = setInterval(() => {
+            if (!document.hidden) recarregar();
+        }, 15000);
         function aoVoltarParaAba() {
             if (!document.hidden) recarregar();
         }

@@ -1,5 +1,7 @@
 const { db, FieldValue, proximoId, buscarDoc, paraJson, bucket } = require('../config/firebase');
 const { encerrarSessoesDoUsuario } = require('../middlewares/autenticacao');
+const { gerarHash } = require('../utils/senhas');
+const { chaveDoLogin, liberarLogin } = require('../utils/limiteLogin');
 const { FUNCOES, usuariosAtribuiveis } = require('../utils/permissoes');
 const { excluirNotificacoesDoUsuario } = require('./notificacaoController');
 
@@ -135,7 +137,7 @@ async function criarUsuario(req, res, next) {
             nome: nome.trim(),
             usuario: vazioParaNulo(usuario),
             email: normalizarEmail(email),
-            senha,
+            senha: await gerarHash(senha),
             setor: vazioParaNulo(setor),
             funcao: funcao || 'usuario',
             ativo: true,
@@ -179,7 +181,7 @@ async function atualizarUsuario(req, res, next) {
         if (camposParaAtualizar.email) camposParaAtualizar.email = normalizarEmail(camposParaAtualizar.email);
 
         if (req.body.senha) {
-            camposParaAtualizar.senha = req.body.senha;
+            camposParaAtualizar.senha = await gerarHash(req.body.senha);
         }
         if (req.body.ativo !== undefined) {
             camposParaAtualizar.ativo = Boolean(req.body.ativo);
@@ -208,7 +210,10 @@ async function atualizarUsuario(req, res, next) {
             return res.status(409).json({ erro: duplicado });
         }
 
-        if (camposParaAtualizar.senha) await encerrarSessoesDoUsuario(id);
+        if (camposParaAtualizar.senha) {
+            await encerrarSessoesDoUsuario(id);
+            await liberarLogin(chaveDoLogin('', id));
+        }
 
         const doc = await buscarDoc('usuarios', id);
         console.log(`[USUARIOS] Usuário #${id} atualizado por #${req.usuario.id}: ${Object.keys(camposParaAtualizar).join(', ')}`);

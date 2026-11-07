@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import { AuthApi } from "../services/authApi";
 import "./login.css";
 
-import imgFundo from "../assets/fundo.png";
-import imgLogo from "../assets/logo.png";
+import imgFundo from "../assets/fundo.webp";
+import imgLogo from "../assets/logo.webp";
 import imgLogoBranca from "../assets/logobranca.png";
 import { useTema } from "../utils/tema";
 

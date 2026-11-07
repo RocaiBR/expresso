@@ -14,9 +14,21 @@ const perfilRoutes = require('./routes/perfilRoutes');
 const manutencaoRoutes = require('./routes/manutencaoRoutes');
 
 const app = express();
+app.disable('x-powered-by');
 
 // ------------ 1. MIDDLEWARES ------------
-app.use(cors());
+// O CORS só limita navegadores em outros sites; quem protege os dados é o token de login
+const ORIGENS_PERMITIDAS = [
+    'https://pi-expresso.web.app',
+    'https://pi-expresso.firebaseapp.com',
+    /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/,
+];
+app.use(cors({ origin: ORIGENS_PERMITIDAS }));
+
+app.use((req, res, next) => {
+    res.set('X-Content-Type-Options', 'nosniff');
+    next();
+});
 
 const LIMITE_CORPO = 1024 * 1024;
 app.use((req, res, next) => {
@@ -56,7 +68,8 @@ rotas.get('/health', async (req, res) => {
             hora_do_banco: await horaDoBanco(),
         });
     } catch (error) {
-        res.status(500).json({ api: 'ok', banco: 'desconectado', erro: error.message });
+        console.error('[ERRO] /health:', error.message);
+        res.status(503).json({ api: 'ok', banco: 'desconectado' });
     }
 });
 

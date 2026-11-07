@@ -1,10 +1,10 @@
 # Relatório de testes automatizados — Expresso
 
-Gerado em 24/10/2026, 14:03 (horário de Brasília) pelo comando `npm run testar:tudo` (pasta `backend`), em 86 s.
+Gerado em 07/11/2026, 10:52 (horário de Brasília) pelo comando `npm run testar:tudo` (pasta `backend`), em 217 s.
 
 - **Ambiente:** emuladores do Firebase (Firestore, Storage, Cloud Functions e Hosting), projeto `demo-expresso`. O banco e o Storage são zerados antes de cada grupo.
 - **Node.js:** v24.15.0 · **Navegador dos testes de tela:** Microsoft Edge, sem janela
-- **Resultado:** **350 checagens, 350 passaram, 0 falharam** (14 grupos)
+- **Resultado:** **388 checagens, 388 passaram, 0 falharam** (15 grupos)
 
 Como ler: cada linha é uma verificação feita contra a API ou o site de verdade (rodando nos emuladores).
 ✔ = o sistema se comportou como a regra exige; ✘ = não se comportou. As regras e onde cada uma está no código
@@ -28,12 +28,13 @@ estão em [docs/dados-e-integracao.md](../dados-e-integracao.md).
 | 12 | [Importação de planilha CSV](#12-importação-de-planilha-csv) | Cada linha da planilha é convertida para o formato do sistema e conferida; as inválidas são recusadas com o motivo e as repetidas não duplicam. | 19/19 | ✔ tudo certo |
 | 13 | [Migração MySQL → Firestore](#13-migração-mysql--firestore) | Os dados do backend antigo entram com os mesmos ids, senhas e datas; o que não fecha é avisado ou impede a gravação (tudo ou nada). | 24/24 | ✔ tudo certo |
 | 14 | [Gravação de ponta a ponta na Cloud Function](#14-gravação-de-ponta-a-ponta-na-cloud-function) | O que é enviado à API é o que fica gravado no Firestore e no Storage, e a exclusão apaga tudo (roteiro npm run testar). | 17/17 | ✔ tudo certo |
+| 15 | [Otimização e segurança da infraestrutura](#15-otimização-e-segurança-da-infraestrutura) | Senhas guardadas só como hash, limite de tentativas de login, cabeçalhos de segurança, cache dos arquivos e atualização automática pausada com a aba escondida. | 38/38 | ✔ tudo certo |
 
 ## 1. Validação dos dados de entrada
 
 A API recusa dado fora do formato com mensagem clara (400/409) e padroniza o que aceita: espaços, maiúsculas e campos vazios.
 
-Arquivo: `backend/testes/suites/01-validacoes.js` · 3.5 s
+Arquivo: `backend/testes/suites/01-validacoes.js` · 6.1 s
 
 - ✔ usuário sem e-mail → 400 "Nome, e-mail e senha são obrigatórios."
 - ✔ e-mail sem @ → 400 "Informe um e-mail válido (ex.: nome@empresa.com)."
@@ -82,7 +83,7 @@ Arquivo: `backend/testes/suites/01-validacoes.js` · 3.5 s
 
 Cada cargo só vê e altera o que a regra permite; a regra é conferida na API a cada requisição, não só na tela.
 
-Arquivo: `backend/testes/suites/02-cargos.js` · 5.5 s
+Arquivo: `backend/testes/suites/02-cargos.js` · 12.9 s
 
 - ✔ login devolve o token e a função do usuário ("ti")
 - ✔ GET /tarefas sem login → 401
@@ -144,7 +145,7 @@ Arquivo: `backend/testes/suites/02-cargos.js` · 5.5 s
 
 Só entram arquivos de tipos permitidos, até 200 MB, cujo conteúdo é mesmo do formato da extensão; o recusado é apagado do Storage.
 
-Arquivo: `backend/testes/suites/03-anexos.js` · 7.3 s
+Arquivo: `backend/testes/suites/03-anexos.js` · 9.4 s
 
 - ✔ "programa.exe": tipo não permitido (400)
 - ✔ "script.js": tipo não permitido (400)
@@ -207,7 +208,7 @@ Arquivo: `backend/testes/suites/03-anexos.js` · 7.3 s
 
 Código de 6 dígitos por e-mail, guardado só como hash, válido por 15 minutos, com limite de tentativas e de reenvio.
 
-Arquivo: `backend/testes/suites/04-recuperacao-senha.js` · 3.5 s
+Arquivo: `backend/testes/suites/04-recuperacao-senha.js` · 4.5 s
 
 - ✔ e-mail cadastrado e não cadastrado recebem a MESMA resposta (ninguém descobre quem tem conta)
 - ✔ o e-mail com o código de 6 dígitos foi enviado
@@ -230,15 +231,15 @@ Arquivo: `backend/testes/suites/04-recuperacao-senha.js` · 3.5 s
 
 Passou o dia do vencimento e a atividade não foi concluída: vira Urgente, avisa as pessoas e volta ao normal se o prazo for adiado.
 
-Arquivo: `backend/testes/suites/05-prazos.js` · 10.8 s
+Arquivo: `backend/testes/suites/05-prazos.js` · 10.1 s
 
 - ✔ criada com o prazo vencido: já nasce Urgente e guarda que era Baixa
 - ✔ prazo amanhã: continua Média
-- ✔ prazo hoje (2026-10-24): ainda não atrasou (vence quando o dia acaba, no horário de Brasília)
+- ✔ prazo hoje (2026-11-07): ainda não atrasou (vence quando o dia acaba, no horário de Brasília)
 - ✔ concluída com prazo passado não muda
 - ✔ só o TI roda a verificação manual (gestor: 403)
 - ✔ rotina das 00:05: 3 abertas, 1 virou urgente, 0 voltaram
-- ✔ o prazo que venceu ontem virou Urgente (era Média), atrasada desde 2026-10-24
+- ✔ o prazo que venceu ontem virou Urgente (era Média), atrasada desde 2026-11-07
 - ✔ o responsável recebeu 2 avisos de atraso, assinados pelo "Sistema"
 - ✔ quem criou também é avisado (menos do atraso que ela mesma criou)
 - ✔ rodar de novo não muda nada nem repete o aviso
@@ -268,7 +269,7 @@ Arquivo: `backend/testes/suites/05-prazos.js` · 10.8 s
 
 Participantes são escolhidos da lista de usuários ativos; a API guarda os ids e monta os nomes, e recusa quem não existe.
 
-Arquivo: `backend/testes/suites/06-participantes.js` · 7.2 s
+Arquivo: `backend/testes/suites/06-participantes.js` · 14.5 s
 
 - ✔ a lista para escolher traz os ativos de todos os setores, em ordem alfabética (a inativa não aparece)
 - ✔ a lista traz só id, nome e setor (sem e-mail)
@@ -297,7 +298,7 @@ Arquivo: `backend/testes/suites/06-participantes.js` · 7.2 s
 
 Quem recebe uma atividade ou perde a responsabilidade por ela é avisado no sino; quem fez a ação não se auto-notifica.
 
-Arquivo: `backend/testes/suites/07-notificacoes.js` · 5.0 s
+Arquivo: `backend/testes/suites/07-notificacoes.js` · 11.5 s
 
 - ✔ Ulisses: 1 aviso (a gestora atribuiu uma atividade a ele)
 - ✔ gestora: nenhum aviso (ninguém é avisado do que ele mesmo fez)
@@ -326,7 +327,7 @@ Arquivo: `backend/testes/suites/07-notificacoes.js` · 5.0 s
 
 A foto vira um JPEG 256×256 e a API confere a assinatura; a troca de senha exige a atual e encerra os outros logins.
 
-Arquivo: `backend/testes/suites/08-perfil.js` · 3.8 s
+Arquivo: `backend/testes/suites/08-perfil.js` · 10.6 s
 
 - ✔ API recusa HTML disfarçado de JPEG (assinatura)
 - ✔ API só aceita JPEG
@@ -356,7 +357,7 @@ Arquivo: `backend/testes/suites/08-perfil.js` · 3.8 s
 
 Ações em lote respeitam a permissão de cada atividade (as outras são ignoradas e contadas); excluir usuário preserva o histórico.
 
-Arquivo: `backend/testes/suites/09-selecao-e-exclusao.js` · 10.6 s
+Arquivo: `backend/testes/suites/09-selecao-e-exclusao.js` · 18.5 s
 
 - ✔ a caixinha do cabeçalho marca as 5 visíveis
 - ✔ o botão mostra "Excluir (2)": só as 2 próprias podem ser excluídas
@@ -395,7 +396,7 @@ Arquivo: `backend/testes/suites/09-selecao-e-exclusao.js` · 10.6 s
 
 O tema escolhido vale na hora, fica salvo na conta e é aplicado em qualquer navegador onde a pessoa entrar.
 
-Arquivo: `backend/testes/suites/10-temas.js` · 12.7 s
+Arquivo: `backend/testes/suites/10-temas.js` · 17.7 s
 
 - ✔ tema "Claro" aplicado na hora
 - ✔ tema "Escuro" aplicado na hora
@@ -429,7 +430,7 @@ Arquivo: `backend/testes/suites/10-temas.js` · 12.7 s
 
 Dados gravados por fora da API, com 12 tipos de problema, são encontrados pelas 13 conferências e corrigidos até a verificação sair limpa.
 
-Arquivo: `backend/testes/suites/11-consistencia.js` · 1.4 s
+Arquivo: `backend/testes/suites/11-consistencia.js` · 2.8 s
 
 - ✔ a verificação roda 13 conferências
 - ✔ contador_de_ids: 2 encontrado(s) (ex.: tarefas: contador 3, maior id 7)
@@ -604,7 +605,7 @@ Arquivo: `backend/testes/suites/11-consistencia.js` · 1.4 s
     }
   },
   "prazos": {
-    "hoje": "2026-10-24",
+    "hoje": "2026-11-07",
     "abertas": 4,
     "viraram_urgentes": 1,
     "voltaram_ao_normal": 0
@@ -614,7 +615,9 @@ Arquivo: `backend/testes/suites/11-consistencia.js` · 1.4 s
     "removidos": 1
   },
   "sessoes_vencidas": 1,
-  "codigos_vencidos": 0
+  "codigos_vencidos": 0,
+  "tentativas_vencidas": 0,
+  "senhas_protegidas": 1
 }
 ```
 
@@ -729,7 +732,7 @@ Arquivo: `backend/testes/suites/11-consistencia.js` · 1.4 s
 
 Cada linha da planilha é convertida para o formato do sistema e conferida; as inválidas são recusadas com o motivo e as repetidas não duplicam.
 
-Arquivo: `backend/testes/suites/12-importacao-csv.js` · 3.7 s
+Arquivo: `backend/testes/suites/12-importacao-csv.js` · 5.1 s
 
 - ✔ UTF-8 com BOM (Excel "CSV UTF-8"): o BOM é removido
 - ✔ Windows-1252 (Excel "CSV" em português): acentos lidos certo
@@ -755,8 +758,8 @@ Arquivo: `backend/testes/suites/12-importacao-csv.js` · 3.7 s
 
 ```json
 [
-  "Lendo C:\\Users\\icaro\\AppData\\Local\\Temp\\expresso-teste-1792861375649.csv",
-  "6 linha(s), separador \";\". Destino: Firestore demo-expresso (emulador em 127.0.0.1:8080)",
+  "Lendo C:\\Users\\icaro\\AppData\\Local\\Temp\\expresso-teste-1794059469286.csv",
+  "6 linha(s), separador \";\". Destino: Firestore demo-expresso (emulador em 127.0.0.1:8085)",
   "  linha 2: importada como #1",
   "  linha 3: importada como #2",
   "  linha 4: importada como #3 (aviso: responsável \"Equipe\" não é um usuário ativo: ficou só o nome)",
@@ -765,7 +768,7 @@ Arquivo: `backend/testes/suites/12-importacao-csv.js` · 3.7 s
   "  linha 7: RECUSADA - a data de vencimento não pode ser antes da data de início",
   "",
   "Importação concluída: 3 importadas, 3 recusadas, 0 já existiam, 1 aviso(s).",
-  "[CSV] {\"arquivo\":\"expresso-teste-1792861375649.csv\",\"simular\":false,\"importadas\":3,\"recusadas\":3,\"repetidas\":0,\"avisos\":1}"
+  "[CSV] {\"arquivo\":\"expresso-teste-1794059469286.csv\",\"simular\":false,\"importadas\":3,\"recusadas\":3,\"repetidas\":0,\"avisos\":1}"
 ]
 ```
 
@@ -773,7 +776,7 @@ Arquivo: `backend/testes/suites/12-importacao-csv.js` · 3.7 s
 
 Os dados do backend antigo entram com os mesmos ids, senhas e datas; o que não fecha é avisado ou impede a gravação (tudo ou nada).
 
-Arquivo: `backend/testes/suites/13-migracao-mysql.js` · 1.9 s
+Arquivo: `backend/testes/suites/13-migracao-mysql.js` · 6.4 s
 
 - ✔ e-mail que existe nos dois bancos (comparado sem maiúsculas): erro
 - ✔ status desconhecido: erro
@@ -871,17 +874,17 @@ Arquivo: `backend/testes/suites/13-migracao-mysql.js` · 1.9 s
 
 O que é enviado à API é o que fica gravado no Firestore e no Storage, e a exclusão apaga tudo (roteiro npm run testar).
 
-Arquivo: `backend/testes/suites/14-ponta-a-ponta.js` · 1.0 s
+Arquivo: `backend/testes/suites/14-ponta-a-ponta.js` · 2.1 s
 
-- ✔ API no ar, banco "Firestore demo-expresso (emulador em 127.0.0.1:8080)" conectado (hora do banco: 2026-10-24T17:03:01.280Z)
+- ✔ API no ar, banco "Firestore demo-expresso (emulador em 127.0.0.1:8085)" conectado (hora do banco: 2026-11-07T13:51:20.376Z)
 - ✔ Logado como Tina TI (ti)
 - ✔ Servidor aceitou e devolveu id 1
 - ✔ titulo gravado
 - ✔ responsável = quem criou
 - ✔ participantes gravado (pelo nome do usuário)
 - ✔ prioridade gravada (veio: alto)
-- ✔ data_inicio gravada (veio: 2026-10-24)
-- ✔ data_conclusao gravada (veio: 2026-11-07)
+- ✔ data_inicio gravada (veio: 2026-11-07)
+- ✔ data_conclusao gravada (veio: 2026-11-21)
 - ✔ status atualizado
 - ✔ arquivo enviado ao Storage (status 200)
 - ✔ anexo confirmado na tarefa
@@ -890,3 +893,48 @@ Arquivo: `backend/testes/suites/14-ponta-a-ponta.js` · 1.0 s
 - ✔ tarefa de teste removida
 - ✔ arquivo apagado do Storage junto com a tarefa (link agora responde 403)
 - ✔ roteiro terminou com código 0 (16 checagens)
+
+## 15. Otimização e segurança da infraestrutura
+
+Senhas guardadas só como hash, limite de tentativas de login, cabeçalhos de segurança, cache dos arquivos e atualização automática pausada com a aba escondida.
+
+Arquivo: `backend/testes/suites/15-infraestrutura.js` · 78.0 s
+
+- ✔ senha antiga em texto: virou hash no primeiro login, e a pessoa nem percebe
+- ✔ depois de convertida, a mesma senha continua entrando
+- ✔ usuário novo: a senha já é gravada só como hash
+- ✔ cada senha tem o próprio sal: senhas iguais geram hashes diferentes
+- ✔ a API nunca devolve a senha nem o hash
+- ✔ Meu perfil: senha atual errada é recusada
+- ✔ Meu perfil: a nova senha é gravada como hash e entra; a antiga não
+- ✔ TI troca a senha de alguém: também vira hash
+- ✔ login com usuário ou senha que não são texto: 400, sem erro interno
+- ✔ 5 senhas erradas seguidas: 401, 401, 401, 401, 401
+- ✔ a 6ª tentativa é bloqueada mesmo com a senha certa (429: "Muitas tentativas erradas. Tente de novo em 15 minuto(s) ou use "Esqueci minha senha".")
+- ✔ trocar o login pelo e-mail da mesma conta não escapa do bloqueio
+- ✔ passados os 15 minutos, volta a entrar
+- ✔ 4 erros e um acerto: entra e a contagem recomeça
+- ✔ a contagem recomeçou: mais 4 erros ainda não bloqueiam
+- ✔ o TI trocar a senha libera o bloqueio
+- ✔ login sem cadastro responde igual (401, 401, 401, 401, 401, 429): não dá para descobrir quem existe
+- ✔ 12 tentativas ao mesmo tempo: só 5 chegaram a conferir a senha
+- ✔ rotina diária: protege a senha que ainda estava em texto, e ela continua entrando
+- ✔ rotina diária: mantém os bloqueios ainda em vigor
+- ✔ rotina diária: apaga as tentativas vencidas e não refaz o hash de quem já tem
+- ✔ CORS: outro site não recebe permissão para ler a resposta
+- ✔ CORS: o endereço do Expresso continua autorizado
+- ✔ CORS: o site rodando na máquina de desenvolvimento continua autorizado
+- ✔ chamadas sem navegador (Postman, Insomnia) continuam funcionando
+- ✔ a API não anuncia que usa Express e envia "nosniff"
+- ✔ firebase.json: a Content-Security-Policy só aceita scripts do próprio site, nada de "unsafe", e proíbe abrir o site dentro de outra página
+- ✔ firebase.json: X-Frame-Options, nosniff, Referrer-Policy e Permissions-Policy
+- ✔ firebase.json: o navegador sempre confere o HTML, o CDN guarda até o próximo deploy e os arquivos com hash no nome ficam em cache por 1 ano
+- ✔ firebase.json: as respostas da API nunca ficam em cache compartilhado
+- ✔ o HTML não tem script embutido (a política bloquearia)
+- ✔ tela: o tema salvo continua sendo aplicado ao abrir a página, agora por um arquivo próprio
+- ✔ aba escondida por 16 s: 0 chamadas à lista de atividades
+- ✔ ao voltar para a aba, a lista atualiza na hora
+- ✔ com a aba visível, continua atualizando a cada 15 s
+- ✔ tela: o anexo vai direto do navegador para o Storage com a política ativa
+- ✔ em todos os testes de tela, com envio de foto e de anexo, a política de segurança não bloqueou nada
+- ✔ tela: um script embutido na página é bloqueado pela política

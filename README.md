@@ -18,6 +18,7 @@ O Expresso permite:
 - Consulta de **feriados nacionais** por ano, via integração com a [BrasilAPI](https://brasilapi.com.br/);
 - Importação de tarefas a partir de planilha CSV (com validação linha a linha) e o script de migração do banco MySQL antigo;
 - **Verificação de consistência** dos dados e rotina diária de manutenção (00:05);
+- **Login protegido**: senhas guardadas só como hash (scrypt) e bloqueio de 15 minutos depois de 5 tentativas erradas;
 - **Relatórios** com evolução do backlog, tempo médio para conclusão, resumo do período (com dias úteis descontando feriados), filtros e exportação em CSV — tudo calculado a partir das tarefas do banco.
 
 Como os dados são validados, transformados e integrados entre as fontes (com diagramas, dicionário de dados e regras de negócio): **[docs/dados-e-integracao.md](docs/dados-e-integracao.md)**. Evidências dos testes: **[docs/evidencias/relatorio-de-testes.md](docs/evidencias/relatorio-de-testes.md)**.
@@ -58,7 +59,7 @@ Como os dados são validados, transformados e integrados entre as fontes (com di
 - Consumo da API via `fetch`
 
 **Nuvem (Firebase)**
-- **Cloud Firestore**: banco de dados (coleções `tarefas` com a subcoleção `anexos`, `usuarios`, `contadores`, `sessoes`, `recuperacoes` e `notificacoes`; o dicionário de dados está em [docs/dados-e-integracao.md](docs/dados-e-integracao.md#3-dicionário-de-dados))
+- **Cloud Firestore**: banco de dados (coleções `tarefas` com a subcoleção `anexos`, `usuarios`, `contadores`, `sessoes`, `recuperacoes`, `tentativas_login` e `notificacoes`; o dicionário de dados está em [docs/dados-e-integracao.md](docs/dados-e-integracao.md#3-dicionário-de-dados))
 - **Cloud Storage**: guarda os arquivos anexados às tarefas (`tarefas/<id>/...`) e as fotos de perfil (`usuarios/<id>/...`)
 - **Cloud Functions**: executa a API Node.js (função `api`) e a rotina diária (função `rotinaDiaria`, agendada pelo **Cloud Scheduler** para 00:05), na região `southamerica-east1` (São Paulo)
 - **Secret Manager**: guarda a conta do Gmail que envia os códigos de recuperação
@@ -80,6 +81,7 @@ expresso/
 │   │   └── tarefas_iniciais.csv       # dados de exemplo para importação
 │   ├── scripts/
 │   │   ├── importarCsv.js             # importação de tarefas via CSV, com validação linha a linha
+│   │   ├── medirNuvem.js              # mede o site publicado e resume os logs (npm run medir:nuvem)
 │   │   └── migrarMysql.js             # migração do banco MySQL antigo para o Firestore
 │   ├── src/
 │   │   ├── app.js                     # monta o Express (rotas, middlewares, log de requisições)
@@ -100,14 +102,17 @@ expresso/
 │   │   ├── routes/                    # uma por grupo de rotas (auth, tarefas, usuarios, perfil, manutencao...)
 │   │   └── utils/
 │   │       ├── assinaturas.js         # confere se o conteúdo do anexo bate com a extensão
+│   │       ├── limiteLogin.js         # bloqueio depois de 5 tentativas de login erradas
 │   │       ├── manutencao.js          # rotina diária e verificação de consistência
 │   │       ├── permissoes.js          # regras de cada cargo (usuário padrão, gestor, TI)
 │   │       ├── prazos.js              # urgência automática por prazo vencido
+│   │       ├── senhas.js              # hash das senhas (scrypt)
 │   │       └── validacoes.js          # regras de formato dos dados (API, CSV e migração)
 │   ├── testes/
 │   │   ├── suites/                    # testes automatizados, um arquivo por assunto
 │   │   ├── rodarTodos.js              # roda as suítes e escreve o relatório (npm run testar:tudo)
 │   │   ├── apoio.js, amostras.js      # peças comuns e arquivos de exemplo dos testes
+│   │   ├── arquivos/                  # imagens usadas nos testes de envio
 │   │   ├── PI-api.insomnia_collection.json
 │   │   ├── PI-api.postman_collection.json
 │   │   └── testar_gravacao.js
@@ -180,7 +185,7 @@ Sobe localmente o Firestore (porta 8080), o Storage (9199), a API como Cloud Fun
 
 Não é preciso criar tabelas: o Firestore cria as coleções no primeiro registro. Como o Firestore não tem `AUTO_INCREMENT`, o último id de cada coleção fica em `contadores/<colecao>`, e as tarefas e usuários continuam com ids numéricos (`#001`, `#002`...).
 
-Para entrar no sistema é preciso ter um usuário **TI**, o único cargo que cadastra usuários. Como o primeiro ainda não existe, ele é criado direto no banco: no Emulator UI (ou no Console do Firebase, na nuvem), em **Firestore**, crie o documento `usuarios/1` com os campos `id` (number `1`), `nome`, `usuario`, `email`, `senha`, `setor` (`TI`), `funcao` (`ti`) e `ativo` (boolean `true`), e o documento `contadores/usuarios` com `ultimo` (number `1`). Depois disso, os outros usuários são cadastrados pela tela **Usuários**.
+Para entrar no sistema é preciso ter um usuário **TI**, o único cargo que cadastra usuários. Como o primeiro ainda não existe, ele é criado direto no banco: no Emulator UI (ou no Console do Firebase, na nuvem), em **Firestore**, crie o documento `usuarios/1` com os campos `id` (number `1`), `nome`, `usuario`, `email`, `senha`, `setor` (`TI`), `funcao` (`ti`) e `ativo` (boolean `true`), e o documento `contadores/usuarios` com `ultimo` (number `1`). A senha digitada aí fica em texto só até o primeiro login, quando vira hash. Depois disso, os outros usuários são cadastrados pela tela **Usuários**.
 
 ### 5. (Opcional) Importar tarefas iniciais
 
@@ -194,7 +199,7 @@ npm run importar:csv -- planilha.csv --simular    # só confere e mostra o relat
 
 Colunas: `titulo` (obrigatória), `descricao`, `responsavel`, `status`, `prioridade`, `data_inicio`, `data_conclusao`. Aceita o CSV do Excel em português (ponto e vírgula, Windows-1252) ou UTF-8, datas `DD/MM/AAAA` ou `AAAA-MM-DD` e textos como "Concluída" ou "Alta". Cada linha passa pelas mesmas validações da API: a inválida é recusada com o número da linha e o motivo, o responsável é ligado ao usuário de mesmo nome e importar o mesmo arquivo de novo não duplica as atividades.
 
-**Migração do MySQL antigo.** Os dados do backend antigo (banco `pi_db`) foram trazidos para o Firestore com `npm run migrar:mysql`, que lê as credenciais do MySQL de `backend/.env.mysql.antigo` (não versionado; o modelo é o `backend/.env.mysql.antigo.exemplo`). Sem `-- --aplicar`, só mostra o plano, os avisos e os erros; com ele, grava tudo num lote só (tudo ou nada), mantendo ids, senhas e datas. Detalhes em [docs/dados-e-integracao.md](docs/dados-e-integracao.md).
+**Migração do MySQL antigo.** Os dados do backend antigo (banco `pi_db`) foram trazidos para o Firestore com `npm run migrar:mysql`, que lê as credenciais do MySQL de `backend/.env.mysql.antigo` (não versionado; o modelo é o `backend/.env.mysql.antigo.exemplo`). Sem `-- --aplicar`, só mostra o plano, os avisos e os erros; com ele, grava tudo num lote só (tudo ou nada), mantendo ids, senhas e datas (as senhas viram hash no primeiro login ou na rotina diária seguinte). Detalhes em [docs/dados-e-integracao.md](docs/dados-e-integracao.md).
 
 ### 6. Rodar a API
 
@@ -266,6 +271,10 @@ Cada requisição gera uma linha `[HTTP] MÉTODO /rota -> status (tempo)`, e as 
 - no **Emulator UI** (`http://127.0.0.1:4000/logs`) ao usar os emuladores;
 - na nuvem, em `npm run logs` (`firebase functions:log`) ou no *Console do Firebase > Functions > Logs*.
 
+### Monitoramento
+
+Na pasta `backend`, `npm run medir:nuvem -- <rótulo>` mede o site publicado (tamanho e tempo de carregamento do login, com e sem limite de rede), os cabeçalhos de segurança e de cache e a latência da API, e resume os logs (requisições, tempos, erros e partidas a frio). O resultado fica em `docs/evidencias/monitoramento/medicao-<rótulo>.json`, com um print da tela de login. As métricas de memória, instâncias e custo ficam no Console do Google Cloud.
+
 ##  Cargos e permissões
 
 O cargo é o campo `funcao` do usuário. As regras ficam todas em `backend/src/utils/permissoes.js`, e a API recusa (403) ou esconde (404) o que o cargo não permite. O frontend só reflete isso nos menus e botões.
@@ -296,7 +305,7 @@ Toda rota, menos `/`, `/health`, `/auth/login` e a recuperação de senha, exige
 
 | Método | Rota                    | Descrição                        |
 |--------|-------------------------|-----------------------------------|
-| POST   | `/auth/login`           | Autentica um usuário (usuário/senha) e devolve `{ token, usuario }` |
+| POST   | `/auth/login`           | Autentica um usuário (usuário/senha) e devolve `{ token, usuario }`. Depois de 5 tentativas erradas, responde 429 por 15 minutos; trocar a senha libera antes |
 | POST   | `/auth/sair`            | Encerra a sessão do token enviado |
 | POST   | `/auth/recuperar-senha` | Recebe `{ email }` e envia um código de 6 dígitos (vale 15 min) para o e-mail. A resposta é a mesma exista o e-mail ou não |
 | POST   | `/auth/redefinir-senha` | Recebe `{ email, codigo, nova_senha }` e troca a senha (mínimo 6 caracteres; 5 tentativas por código) |
@@ -349,7 +358,7 @@ Campos aceitos: `titulo` (obrigatório, até 150), `descricao` (até 2000), `usu
 | Método | Rota                          | Descrição                                        |
 |--------|-------------------------------|--------------------------------------------------|
 | GET    | `/manutencao/consistencia`    | Confere o banco inteiro (13 verificações, ex.: e-mail repetido, responsável excluído, contador de ids atrasado) e devolve quantidade, exemplos e o que fazer. Não altera nada |
-| POST   | `/manutencao/rotina-diaria`   | Roda agora a rotina das 00:05: corrige contadores, aplica os prazos e apaga envios de anexo abandonados, sessões e códigos vencidos |
+| POST   | `/manutencao/rotina-diaria`   | Roda agora a rotina das 00:05: corrige contadores, aplica os prazos, apaga envios de anexo abandonados, sessões, códigos e tentativas de login vencidos, e protege senhas que ainda estejam em texto |
 
 ### Anexos
 

@@ -3,6 +3,7 @@ const { bucket, urlDeDownload, buscarDoc } = require('../config/firebase');
 const { VERIFICACOES } = require('../utils/assinaturas');
 const { encerrarSessoesDoUsuario } = require('../middlewares/autenticacao');
 const { TAMANHO_MINIMO_SENHA } = require('../utils/validacoes');
+const { gerarHash, conferirSenha } = require('../utils/senhas');
 
 // "Meu perfil": cada pessoa (qualquer cargo) vê os próprios dados e troca a foto e a senha
 const TAMANHO_MAXIMO_FOTO = 512 * 1024; // o navegador manda 256x256, normalmente uns 30 KB
@@ -96,14 +97,14 @@ async function trocarSenha(req, res, next) {
 
         const doc = await buscarDoc('usuarios', req.usuario.id);
         // 400 e não 401: o 401 faria o site achar que a sessão caiu e voltar para o login
-        if (senhaAtual !== doc.data().senha) {
+        if (!(await conferirSenha(senhaAtual, doc.data().senha))) {
             return res.status(400).json({ erro: 'A senha atual está incorreta.' });
         }
         if (novaSenha === senhaAtual) {
             return res.status(400).json({ erro: 'A nova senha precisa ser diferente da atual.' });
         }
 
-        await doc.ref.update({ senha: novaSenha });
+        await doc.ref.update({ senha: await gerarHash(novaSenha) });
         // Derruba os logins em outros aparelhos; este continua
         await encerrarSessoesDoUsuario(req.usuario.id, req.token);
         console.log(`[PERFIL] Usuário #${req.usuario.id} trocou a própria senha`);

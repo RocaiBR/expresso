@@ -1,0 +1,188 @@
+{
+  "rotulo": "previa",
+  "medido_em": "2026-11-07T13:48:18.025Z",
+  "site": "https://pi-expresso--infra-zy0dc29d.web.app",
+  "api": {
+    "primeira_ms": 483,
+    "mediana_das_seguintes_ms": 296,
+    "todas_ms": [
+      483,
+      372,
+      295,
+      292,
+      285,
+      297,
+      296,
+      292,
+      325,
+      354
+    ]
+  },
+  "cabecalhos": {
+    "pagina": {
+      "cache-control": "public, max-age=0, s-maxage=31536000",
+      "strict-transport-security": "max-age=31556926; includeSubDomains; preload",
+      "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://storage.googleapis.com https://firebasestorage.googleapis.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+      "x-frame-options": "DENY",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "permissions-policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+    },
+    "arquivo_com_hash": {
+      "cache-control": "public, max-age=31536000, immutable",
+      "strict-transport-security": "max-age=31556926; includeSubDomains; preload",
+      "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://storage.googleapis.com https://firebasestorage.googleapis.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+      "x-frame-options": "DENY",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "permissions-policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
+    },
+    "api": {
+      "cache-control": "private",
+      "strict-transport-security": "max-age=31556926; includeSubDomains; preload",
+      "content-security-policy": "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: blob: https://firebasestorage.googleapis.com; connect-src 'self' https://storage.googleapis.com https://firebasestorage.googleapis.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'",
+      "x-frame-options": "DENY",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "strict-origin-when-cross-origin",
+      "permissions-policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+      "x-powered-by": "Express",
+      "access-control-allow-origin": "*"
+    }
+  },
+  "carregamento_login": {
+    "sem_limite": {
+      "dom_pronto_ms": 207,
+      "lcp_ms": 352,
+      "tudo_baixado_ms": 337,
+      "bytes": 306478,
+      "requisicoes": 7,
+      "maior_arquivo": {
+        "url": "/assets/fundo-DsqdZkU1.webp",
+        "bytes": 188164
+      }
+    },
+    "4g_simulado_10mbps": {
+      "dom_pronto_ms": 305,
+      "lcp_ms": 632,
+      "tudo_baixado_ms": 598,
+      "bytes": 306477,
+      "requisicoes": 7,
+      "maior_arquivo": {
+        "url": "/assets/fundo-DsqdZkU1.webp",
+        "bytes": 188159
+      }
+    }
+  },
+  "logs": {
+    "periodo": {
+      "de": "2026-10-27T00:49:39.726923Z",
+      "ate": "2026-11-07T13:48:18.382087Z"
+    },
+    "requisicoes": 359,
+    "tempo_ms": {
+      "mediana": 60,
+      "p95": 579,
+      "maximo": 2378
+    },
+    "status": {
+      "2xx": 223,
+      "3xx": 112,
+      "4xx": 24,
+      "5xx": 0
+    },
+    "erros_registrados": 0,
+    "partidas_a_frio": {
+      "quantidade": 16,
+      "mediana_ms": 2768,
+      "maximo_ms": 4925
+    },
+    "rotas_mais_chamadas": [
+      {
+        "rota": "GET /api/health",
+        "chamadas": 110,
+        "media_ms": 57,
+        "maximo_ms": 885
+      },
+      {
+        "rota": "GET /api/tarefas",
+        "chamadas": 100,
+        "media_ms": 162,
+        "maximo_ms": 538
+      },
+      {
+        "rota": "GET /api/notificacoes/contagem",
+        "chamadas": 51,
+        "media_ms": 128,
+        "maximo_ms": 828
+      },
+      {
+        "rota": "POST /api/auth/login",
+        "chamadas": 19,
+        "media_ms": 268,
+        "maximo_ms": 1196
+      },
+      {
+        "rota": "PUT /api/tarefas/:id",
+        "chamadas": 17,
+        "media_ms": 349,
+        "maximo_ms": 684
+      },
+      {
+        "rota": "GET /api/usuarios/atribuiveis",
+        "chamadas": 13,
+        "media_ms": 97,
+        "maximo_ms": 283
+      },
+      {
+        "rota": "GET /api/usuarios/participantes",
+        "chamadas": 8,
+        "media_ms": 98,
+        "maximo_ms": 251
+      },
+      {
+        "rota": "GET /api/usuarios",
+        "chamadas": 8,
+        "media_ms": 125,
+        "maximo_ms": 283
+      }
+    ],
+    "por_dia": [
+      {
+        "dia": "2026-10-26",
+        "requisicoes": 45,
+        "erros_5xx": 0,
+        "p95_ms": 613
+      },
+      {
+        "dia": "2026-11-03",
+        "requisicoes": 88,
+        "erros_5xx": 0,
+        "p95_ms": 684
+      },
+      {
+        "dia": "2026-11-04",
+        "requisicoes": 48,
+        "erros_5xx": 0,
+        "p95_ms": 162
+      },
+      {
+        "dia": "2026-11-05",
+        "requisicoes": 46,
+        "erros_5xx": 0,
+        "p95_ms": 828
+      },
+      {
+        "dia": "2026-11-06",
+        "requisicoes": 13,
+        "erros_5xx": 0,
+        "p95_ms": 885
+      },
+      {
+        "dia": "2026-11-07",
+        "requisicoes": 119,
+        "erros_5xx": 0,
+        "p95_ms": 218
+      }
+    ]
+  }
+}

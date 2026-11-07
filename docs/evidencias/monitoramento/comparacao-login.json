@@ -1,0 +1,32 @@
+{
+  "descricao": "Tela de login medida no mesmo momento, alternando as duas versões: 9 rodadas de cada, sem cache, valores em ms (mediana). Rede livre e 4G simulado (10 Mbps, 40 ms).",
+  "medido_em": "2026-11-07",
+  "versao_antiga": "https://pi-expresso.web.app (site oficial, antes da publicação)",
+  "versao_nova": "canal de pré-visualização do Firebase Hosting, com os mesmos arquivos e cabeçalhos que serão publicados",
+  "resultado": {
+    "antiga, rede livre": {
+      "primeiro_byte": 72,
+      "dom_pronto": 150,
+      "lcp": 376,
+      "tudo_baixado": 359
+    },
+    "antiga, 4G simulado": {
+      "primeiro_byte": 65,
+      "dom_pronto": 300,
+      "lcp": 3152,
+      "tudo_baixado": 3155
+    },
+    "nova, rede livre": {
+      "primeiro_byte": 32,
+      "dom_pronto": 146,
+      "lcp": 276,
+      "tudo_baixado": 247
+    },
+    "nova, 4G simulado": {
+      "primeiro_byte": 62,
+      "dom_pronto": 285,
+      "lcp": 584,
+      "tudo_baixado": 563
+    }
+  }
+}

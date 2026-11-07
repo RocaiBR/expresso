@@ -1,6 +1,7 @@
 const { db, bucket, Timestamp } = require('../config/firebase');
 const { verificarPrazos, hojeEmSaoPaulo } = require('./prazos');
 const { STATUS_VALIDOS, PRIORIDADES_VALIDAS, STATUS_ABERTOS, STATUS_FINAIS, normalizarEmail } = require('./validacoes');
+const { gerarHash, senhaProtegida } = require('./senhas');
 
 const HORAS_PARA_ABANDONAR_ENVIO = 24;
 
@@ -22,6 +23,16 @@ async function apagarVencidos(colecao) {
     const vencidos = await db.collection(colecao).where('expira_em', '<', Timestamp.now()).get();
     await Promise.all(vencidos.docs.map((doc) => doc.ref.delete()));
     return vencidos.size;
+}
+
+// Senhas ainda em texto (de quem não entrou desde a mudança, de importações ou criadas pelo Console)
+async function protegerSenhasAntigas() {
+    const todos = await db.collection('usuarios').get();
+    const antigas = todos.docs.filter((doc) => doc.data().senha && !senhaProtegida(doc.data().senha));
+    for (const doc of antigas) {
+        await doc.ref.update({ senha: await gerarHash(String(doc.data().senha)) });
+    }
+    return antigas.length;
 }
 
 async function corrigirContadores() {
@@ -57,6 +68,8 @@ async function executarRotinaDiaria() {
     await etapa('anexos_abandonados', limparEnviosAbandonados, resultado);
     await etapa('sessoes_vencidas', () => apagarVencidos('sessoes'), resultado);
     await etapa('codigos_vencidos', () => apagarVencidos('recuperacoes'), resultado);
+    await etapa('tentativas_vencidas', () => apagarVencidos('tentativas_login'), resultado);
+    await etapa('senhas_protegidas', protegerSenhasAntigas, resultado);
     console.log('[MANUTENCAO] Rotina diária:', JSON.stringify(resultado));
     return resultado;
 }

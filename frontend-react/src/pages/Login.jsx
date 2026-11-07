@@ -4,8 +4,8 @@ import { AuthApi } from "../services/authApi";
 import { useAuth } from "../context/AuthContext";
 import "./login.css";
 
-import imgFundo from "../assets/fundo.png";
-import imgLogo from "../assets/logo.png";
+import imgFundo from "../assets/fundo.webp";
+import imgLogo from "../assets/logo.webp";
 import imgLogoBranca from "../assets/logobranca.png";
 import { aplicarTema, useTema } from "../utils/tema";
 import imgCafe from "../assets/cafe.png";

@@ -40,6 +40,10 @@ module.exports = {
             `tela: PNG de ${(tamanhoOriginal / 1024 / 1024).toFixed(1)} MB virou um JPEG de ${(bytes1.length / 1024).toFixed(0)} KB`);
         const fotoNoTopo = pagina.locator('header img[alt="Foto de Ulisses Padrão"]');
         await fotoNoTopo.waitFor();
+        await pagina.waitForFunction(() => {
+            const img = document.querySelector('header img[alt="Foto de Ulisses Padrão"]');
+            return img && img.complete;
+        }, null, { timeout: 5000 }).catch(() => {});
         t.conferir(await fotoNoTopo.evaluate((img) => img.complete && img.naturalWidth === 256 && img.naturalHeight === 256),
             'tela: a foto aparece na barra do topo (256×256) na hora');
         await t.print(pagina, 'perfil', 'Meu perfil: foto, e-mail, setor, função e troca de senha');
