@@ -1,10 +1,10 @@
 # Relatório de testes automatizados — Expresso
 
-Gerado em 07/11/2026, 10:52 (horário de Brasília) pelo comando `npm run testar:tudo` (pasta `backend`), em 217 s.
+Gerado em 14/11/2026, 10:28 (horário de Brasília) pelo comando `npm run testar:tudo` (pasta `backend`), em 202 s.
 
 - **Ambiente:** emuladores do Firebase (Firestore, Storage, Cloud Functions e Hosting), projeto `demo-expresso`. O banco e o Storage são zerados antes de cada grupo.
 - **Node.js:** v24.15.0 · **Navegador dos testes de tela:** Microsoft Edge, sem janela
-- **Resultado:** **388 checagens, 388 passaram, 0 falharam** (15 grupos)
+- **Resultado:** **443 checagens, 443 passaram, 0 falharam** (17 grupos)
 
 Como ler: cada linha é uma verificação feita contra a API ou o site de verdade (rodando nos emuladores).
 ✔ = o sistema se comportou como a regra exige; ✘ = não se comportou. As regras e onde cada uma está no código
@@ -29,12 +29,14 @@ estão em [docs/dados-e-integracao.md](../dados-e-integracao.md).
 | 13 | [Migração MySQL → Firestore](#13-migração-mysql--firestore) | Os dados do backend antigo entram com os mesmos ids, senhas e datas; o que não fecha é avisado ou impede a gravação (tudo ou nada). | 24/24 | ✔ tudo certo |
 | 14 | [Gravação de ponta a ponta na Cloud Function](#14-gravação-de-ponta-a-ponta-na-cloud-function) | O que é enviado à API é o que fica gravado no Firestore e no Storage, e a exclusão apaga tudo (roteiro npm run testar). | 17/17 | ✔ tudo certo |
 | 15 | [Otimização e segurança da infraestrutura](#15-otimização-e-segurança-da-infraestrutura) | Senhas guardadas só como hash, limite de tentativas de login, cabeçalhos de segurança, cache dos arquivos e atualização automática pausada com a aba escondida. | 38/38 | ✔ tudo certo |
+| 16 | [Integração com a BrasilAPI (feriados)](#16-integração-com-a-brasilapi-feriados) | A API consulta a BrasilAPI com tempo limite, confere e padroniza cada feriado, guarda uma cópia por ano no Firestore e continua respondendo se a fonte cair. | 13/13 | ✔ tudo certo |
+| 17 | [Contrato da API (OpenAPI)](#17-contrato-da-api-openapi) | O arquivo docs/openapi.yaml descreve todas as rotas que o código registra, cada operação é chamada e a resposta real é conferida contra o contrato, e todas as chamadas que o site fez nos testes de tela estão documentadas. | 42/42 | ✔ tudo certo |
 
 ## 1. Validação dos dados de entrada
 
 A API recusa dado fora do formato com mensagem clara (400/409) e padroniza o que aceita: espaços, maiúsculas e campos vazios.
 
-Arquivo: `backend/testes/suites/01-validacoes.js` · 6.1 s
+Arquivo: `backend/testes/suites/01-validacoes.js` · 4.3 s
 
 - ✔ usuário sem e-mail → 400 "Nome, e-mail e senha são obrigatórios."
 - ✔ e-mail sem @ → 400 "Informe um e-mail válido (ex.: nome@empresa.com)."
@@ -83,7 +85,7 @@ Arquivo: `backend/testes/suites/01-validacoes.js` · 6.1 s
 
 Cada cargo só vê e altera o que a regra permite; a regra é conferida na API a cada requisição, não só na tela.
 
-Arquivo: `backend/testes/suites/02-cargos.js` · 12.9 s
+Arquivo: `backend/testes/suites/02-cargos.js` · 11.7 s
 
 - ✔ login devolve o token e a função do usuário ("ti")
 - ✔ GET /tarefas sem login → 401
@@ -145,7 +147,7 @@ Arquivo: `backend/testes/suites/02-cargos.js` · 12.9 s
 
 Só entram arquivos de tipos permitidos, até 200 MB, cujo conteúdo é mesmo do formato da extensão; o recusado é apagado do Storage.
 
-Arquivo: `backend/testes/suites/03-anexos.js` · 9.4 s
+Arquivo: `backend/testes/suites/03-anexos.js` · 8.5 s
 
 - ✔ "programa.exe": tipo não permitido (400)
 - ✔ "script.js": tipo não permitido (400)
@@ -208,7 +210,7 @@ Arquivo: `backend/testes/suites/03-anexos.js` · 9.4 s
 
 Código de 6 dígitos por e-mail, guardado só como hash, válido por 15 minutos, com limite de tentativas e de reenvio.
 
-Arquivo: `backend/testes/suites/04-recuperacao-senha.js` · 4.5 s
+Arquivo: `backend/testes/suites/04-recuperacao-senha.js` · 5.6 s
 
 - ✔ e-mail cadastrado e não cadastrado recebem a MESMA resposta (ninguém descobre quem tem conta)
 - ✔ o e-mail com o código de 6 dígitos foi enviado
@@ -231,15 +233,15 @@ Arquivo: `backend/testes/suites/04-recuperacao-senha.js` · 4.5 s
 
 Passou o dia do vencimento e a atividade não foi concluída: vira Urgente, avisa as pessoas e volta ao normal se o prazo for adiado.
 
-Arquivo: `backend/testes/suites/05-prazos.js` · 10.1 s
+Arquivo: `backend/testes/suites/05-prazos.js` · 11.7 s
 
 - ✔ criada com o prazo vencido: já nasce Urgente e guarda que era Baixa
 - ✔ prazo amanhã: continua Média
-- ✔ prazo hoje (2026-11-07): ainda não atrasou (vence quando o dia acaba, no horário de Brasília)
+- ✔ prazo hoje (2026-11-14): ainda não atrasou (vence quando o dia acaba, no horário de Brasília)
 - ✔ concluída com prazo passado não muda
 - ✔ só o TI roda a verificação manual (gestor: 403)
 - ✔ rotina das 00:05: 3 abertas, 1 virou urgente, 0 voltaram
-- ✔ o prazo que venceu ontem virou Urgente (era Média), atrasada desde 2026-11-07
+- ✔ o prazo que venceu ontem virou Urgente (era Média), atrasada desde 2026-11-14
 - ✔ o responsável recebeu 2 avisos de atraso, assinados pelo "Sistema"
 - ✔ quem criou também é avisado (menos do atraso que ela mesma criou)
 - ✔ rodar de novo não muda nada nem repete o aviso
@@ -269,7 +271,7 @@ Arquivo: `backend/testes/suites/05-prazos.js` · 10.1 s
 
 Participantes são escolhidos da lista de usuários ativos; a API guarda os ids e monta os nomes, e recusa quem não existe.
 
-Arquivo: `backend/testes/suites/06-participantes.js` · 14.5 s
+Arquivo: `backend/testes/suites/06-participantes.js` · 12.0 s
 
 - ✔ a lista para escolher traz os ativos de todos os setores, em ordem alfabética (a inativa não aparece)
 - ✔ a lista traz só id, nome e setor (sem e-mail)
@@ -298,7 +300,7 @@ Arquivo: `backend/testes/suites/06-participantes.js` · 14.5 s
 
 Quem recebe uma atividade ou perde a responsabilidade por ela é avisado no sino; quem fez a ação não se auto-notifica.
 
-Arquivo: `backend/testes/suites/07-notificacoes.js` · 11.5 s
+Arquivo: `backend/testes/suites/07-notificacoes.js` · 9.4 s
 
 - ✔ Ulisses: 1 aviso (a gestora atribuiu uma atividade a ele)
 - ✔ gestora: nenhum aviso (ninguém é avisado do que ele mesmo fez)
@@ -357,7 +359,7 @@ Arquivo: `backend/testes/suites/08-perfil.js` · 10.6 s
 
 Ações em lote respeitam a permissão de cada atividade (as outras são ignoradas e contadas); excluir usuário preserva o histórico.
 
-Arquivo: `backend/testes/suites/09-selecao-e-exclusao.js` · 18.5 s
+Arquivo: `backend/testes/suites/09-selecao-e-exclusao.js` · 17.2 s
 
 - ✔ a caixinha do cabeçalho marca as 5 visíveis
 - ✔ o botão mostra "Excluir (2)": só as 2 próprias podem ser excluídas
@@ -396,7 +398,7 @@ Arquivo: `backend/testes/suites/09-selecao-e-exclusao.js` · 18.5 s
 
 O tema escolhido vale na hora, fica salvo na conta e é aplicado em qualquer navegador onde a pessoa entrar.
 
-Arquivo: `backend/testes/suites/10-temas.js` · 17.7 s
+Arquivo: `backend/testes/suites/10-temas.js` · 16.8 s
 
 - ✔ tema "Claro" aplicado na hora
 - ✔ tema "Escuro" aplicado na hora
@@ -430,7 +432,7 @@ Arquivo: `backend/testes/suites/10-temas.js` · 17.7 s
 
 Dados gravados por fora da API, com 12 tipos de problema, são encontrados pelas 13 conferências e corrigidos até a verificação sair limpa.
 
-Arquivo: `backend/testes/suites/11-consistencia.js` · 2.8 s
+Arquivo: `backend/testes/suites/11-consistencia.js` · 2.7 s
 
 - ✔ a verificação roda 13 conferências
 - ✔ contador_de_ids: 2 encontrado(s) (ex.: tarefas: contador 3, maior id 7)
@@ -605,7 +607,7 @@ Arquivo: `backend/testes/suites/11-consistencia.js` · 2.8 s
     }
   },
   "prazos": {
-    "hoje": "2026-11-07",
+    "hoje": "2026-11-14",
     "abertas": 4,
     "viraram_urgentes": 1,
     "voltaram_ao_normal": 0
@@ -732,7 +734,7 @@ Arquivo: `backend/testes/suites/11-consistencia.js` · 2.8 s
 
 Cada linha da planilha é convertida para o formato do sistema e conferida; as inválidas são recusadas com o motivo e as repetidas não duplicam.
 
-Arquivo: `backend/testes/suites/12-importacao-csv.js` · 5.1 s
+Arquivo: `backend/testes/suites/12-importacao-csv.js` · 4.2 s
 
 - ✔ UTF-8 com BOM (Excel "CSV UTF-8"): o BOM é removido
 - ✔ Windows-1252 (Excel "CSV" em português): acentos lidos certo
@@ -758,7 +760,7 @@ Arquivo: `backend/testes/suites/12-importacao-csv.js` · 5.1 s
 
 ```json
 [
-  "Lendo C:\\Users\\icaro\\AppData\\Local\\Temp\\expresso-teste-1794059469286.csv",
+  "Lendo C:\\Users\\icaro\\AppData\\Local\\Temp\\expresso-teste-1794662852169.csv",
   "6 linha(s), separador \";\". Destino: Firestore demo-expresso (emulador em 127.0.0.1:8085)",
   "  linha 2: importada como #1",
   "  linha 3: importada como #2",
@@ -768,7 +770,7 @@ Arquivo: `backend/testes/suites/12-importacao-csv.js` · 5.1 s
   "  linha 7: RECUSADA - a data de vencimento não pode ser antes da data de início",
   "",
   "Importação concluída: 3 importadas, 3 recusadas, 0 já existiam, 1 aviso(s).",
-  "[CSV] {\"arquivo\":\"expresso-teste-1794059469286.csv\",\"simular\":false,\"importadas\":3,\"recusadas\":3,\"repetidas\":0,\"avisos\":1}"
+  "[CSV] {\"arquivo\":\"expresso-teste-1794662852169.csv\",\"simular\":false,\"importadas\":3,\"recusadas\":3,\"repetidas\":0,\"avisos\":1}"
 ]
 ```
 
@@ -776,7 +778,7 @@ Arquivo: `backend/testes/suites/12-importacao-csv.js` · 5.1 s
 
 Os dados do backend antigo entram com os mesmos ids, senhas e datas; o que não fecha é avisado ou impede a gravação (tudo ou nada).
 
-Arquivo: `backend/testes/suites/13-migracao-mysql.js` · 6.4 s
+Arquivo: `backend/testes/suites/13-migracao-mysql.js` · 5.2 s
 
 - ✔ e-mail que existe nos dois bancos (comparado sem maiúsculas): erro
 - ✔ status desconhecido: erro
@@ -874,17 +876,17 @@ Arquivo: `backend/testes/suites/13-migracao-mysql.js` · 6.4 s
 
 O que é enviado à API é o que fica gravado no Firestore e no Storage, e a exclusão apaga tudo (roteiro npm run testar).
 
-Arquivo: `backend/testes/suites/14-ponta-a-ponta.js` · 2.1 s
+Arquivo: `backend/testes/suites/14-ponta-a-ponta.js` · 2.0 s
 
-- ✔ API no ar, banco "Firestore demo-expresso (emulador em 127.0.0.1:8085)" conectado (hora do banco: 2026-11-07T13:51:20.376Z)
+- ✔ API no ar, banco "Firestore demo-expresso (emulador em 127.0.0.1:8085)" conectado (hora do banco: 2026-11-14T13:27:41.241Z)
 - ✔ Logado como Tina TI (ti)
 - ✔ Servidor aceitou e devolveu id 1
 - ✔ titulo gravado
 - ✔ responsável = quem criou
 - ✔ participantes gravado (pelo nome do usuário)
 - ✔ prioridade gravada (veio: alto)
-- ✔ data_inicio gravada (veio: 2026-11-07)
-- ✔ data_conclusao gravada (veio: 2026-11-21)
+- ✔ data_inicio gravada (veio: 2026-11-14)
+- ✔ data_conclusao gravada (veio: 2026-11-28)
 - ✔ status atualizado
 - ✔ arquivo enviado ao Storage (status 200)
 - ✔ anexo confirmado na tarefa
@@ -898,7 +900,7 @@ Arquivo: `backend/testes/suites/14-ponta-a-ponta.js` · 2.1 s
 
 Senhas guardadas só como hash, limite de tentativas de login, cabeçalhos de segurança, cache dos arquivos e atualização automática pausada com a aba escondida.
 
-Arquivo: `backend/testes/suites/15-infraestrutura.js` · 78.0 s
+Arquivo: `backend/testes/suites/15-infraestrutura.js` · 63.1 s
 
 - ✔ senha antiga em texto: virou hash no primeiro login, e a pessoa nem percebe
 - ✔ depois de convertida, a mesma senha continua entrando
@@ -938,3 +940,145 @@ Arquivo: `backend/testes/suites/15-infraestrutura.js` · 78.0 s
 - ✔ tela: o anexo vai direto do navegador para o Storage com a política ativa
 - ✔ em todos os testes de tela, com envio de foto e de anexo, a política de segurança não bloqueou nada
 - ✔ tela: um script embutido na página é bloqueado pela política
+
+## 16. Integração com a BrasilAPI (feriados)
+
+A API consulta a BrasilAPI com tempo limite, confere e padroniza cada feriado, guarda uma cópia por ano no Firestore e continua respondendo se a fonte cair.
+
+Arquivo: `backend/testes/suites/16-integracao-feriados.js` · 5.9 s
+
+- ✔ ano inválido (abc, 1899, 2200) é recusado com 400 antes de chamar a BrasilAPI ("Informe um ano válido, entre 1900 e 2199, ex: /feriados/2026")
+- ✔ 1ª consulta de 2026: busca na BrasilAPI (X-Fonte-Dados: brasilapi)
+- ✔ a lista sai em ordem de data e só com os campos do contrato (date, name, type)
+- ✔ a lista conferida fica guardada no Firestore (feriados/2026)
+- ✔ 2ª consulta: responde pela cópia, sem chamar a BrasilAPI de novo
+- ✔ a Cloud Function (emulador) responde pela mesma cópia do banco
+- ✔ itens da fonte com data inexistente, de outro ano, sem nome, nulos ou repetidos são descartados (8 recebidos, 2 aproveitados)
+- ✔ BrasilAPI responde 500: 502 com mensagem clara, e nada é guardado
+- ✔ BrasilAPI responde HTML em vez de JSON: 502 com mensagem clara, e nada é guardado
+- ✔ BrasilAPI responde uma lista vazia: 502 com mensagem clara, e nada é guardado
+- ✔ BrasilAPI que não responde: a API desiste em 5.0 s (limite de 5 s) e responde 502
+- ✔ cópia com mais de 30 dias e BrasilAPI fora do ar: tenta a fonte e responde com a cópia (X-Fonte-Dados: cache-vencido)
+- ✔ cópia vencida e BrasilAPI de volta: busca de novo e renova a cópia
+
+## 17. Contrato da API (OpenAPI)
+
+O arquivo docs/openapi.yaml descreve todas as rotas que o código registra, cada operação é chamada e a resposta real é conferida contra o contrato, e todas as chamadas que o site fez nos testes de tela estão documentadas.
+
+Arquivo: `backend/testes/suites/17-contrato-api.js` · 6.1 s
+
+- ✔ todas as 35 rotas registradas no Express estão no contrato
+- ✔ o contrato não documenta rota que não existe
+- ✔ toda operação que exige login documenta a resposta 401
+- ✔ controle: um usuário com "senha", um anexo com "token" e uma atividade sem "permissoes" seriam apontados como fora do contrato
+- ✔ GET /: 200
+- ✔ GET /health: 200
+- ✔ POST /auth/login: 200, 400, 401
+- ✔ POST /auth/sair: 200, 401
+- ✔ POST /auth/recuperar-senha: 200, 400
+- ✔ POST /auth/redefinir-senha: 200, 400
+- ✔ GET /tarefas: 200, 401
+- ✔ POST /tarefas: 201, 400
+- ✔ POST /tarefas/verificar-prazos: 200, 403
+- ✔ GET /tarefas/{id}: 200, 404
+- ✔ PUT /tarefas/{id}: 200, 400, 403
+- ✔ DELETE /tarefas/{id}: 200, 403, 404
+- ✔ GET /tarefas/{id}/anexos: 200, 404
+- ✔ POST /tarefas/{id}/anexos: 201, 400
+- ✔ POST /tarefas/{id}/anexos/{anexoId}/concluir: 200, 409
+- ✔ DELETE /tarefas/{id}/anexos/{anexoId}: 200, 404
+- ✔ GET /usuarios: 200, 403
+- ✔ POST /usuarios: 201, 400, 409
+- ✔ GET /usuarios/atribuiveis: 200
+- ✔ GET /usuarios/participantes: 200
+- ✔ GET /usuarios/{id}: 200, 403, 404
+- ✔ PUT /usuarios/{id}: 200, 400
+- ✔ DELETE /usuarios/{id}: 200, 400
+- ✔ GET /feriados/{ano}: 200, 400
+- ✔ GET /notificacoes: 200
+- ✔ GET /notificacoes/contagem: 200
+- ✔ POST /notificacoes/lidas: 200
+- ✔ POST /notificacoes/{id}/lida: 200, 404
+- ✔ GET /perfil: 200
+- ✔ PUT /perfil/foto: 200, 400
+- ✔ DELETE /perfil/foto: 200
+- ✔ PUT /perfil/senha: 200, 400
+- ✔ PUT /perfil/tema: 200, 400
+- ✔ GET /manutencao/consistencia: 200, 403
+- ✔ POST /manutencao/rotina-diaria: 200, 403
+- ✔ nenhuma chamada caiu fora do contrato
+- ✔ site: as 101 chamadas feitas nos testes de tela usam 24 operações, todas documentadas
+- ✔ 35 operações chamadas, 66 combinações de operação e status conferidas contra o contrato
+
+**Cobertura do contrato (operação: status conferidos)**
+
+```json
+[
+  "GET /: 200",
+  "GET /health: 200",
+  "POST /auth/login: 200, 400, 401",
+  "POST /auth/sair: 200, 401",
+  "POST /auth/recuperar-senha: 200, 400",
+  "POST /auth/redefinir-senha: 200, 400",
+  "GET /tarefas: 200, 401",
+  "POST /tarefas: 201, 400",
+  "POST /tarefas/verificar-prazos: 200, 403",
+  "GET /tarefas/{id}: 200, 404",
+  "PUT /tarefas/{id}: 200, 400, 403",
+  "DELETE /tarefas/{id}: 200, 403, 404",
+  "GET /tarefas/{id}/anexos: 200, 404",
+  "POST /tarefas/{id}/anexos: 201, 400",
+  "POST /tarefas/{id}/anexos/{anexoId}/concluir: 200, 409",
+  "DELETE /tarefas/{id}/anexos/{anexoId}: 200, 404",
+  "GET /usuarios: 200, 403",
+  "POST /usuarios: 201, 400, 409",
+  "GET /usuarios/atribuiveis: 200",
+  "GET /usuarios/participantes: 200",
+  "GET /usuarios/{id}: 200, 403, 404",
+  "PUT /usuarios/{id}: 200, 400",
+  "DELETE /usuarios/{id}: 200, 400",
+  "GET /feriados/{ano}: 200, 400",
+  "GET /notificacoes: 200",
+  "GET /notificacoes/contagem: 200",
+  "POST /notificacoes/lidas: 200",
+  "POST /notificacoes/{id}/lida: 200, 404",
+  "GET /perfil: 200",
+  "PUT /perfil/foto: 200, 400",
+  "DELETE /perfil/foto: 200",
+  "PUT /perfil/senha: 200, 400",
+  "PUT /perfil/tema: 200, 400",
+  "GET /manutencao/consistencia: 200, 403",
+  "POST /manutencao/rotina-diaria: 200, 403"
+]
+```
+
+**Operações que o site usou nos testes de tela**
+
+```json
+[
+  "DELETE /perfil/foto",
+  "DELETE /tarefas/{id}",
+  "DELETE /usuarios/{id}",
+  "GET /feriados/{ano}",
+  "GET /notificacoes",
+  "GET /notificacoes/contagem",
+  "GET /perfil",
+  "GET /tarefas",
+  "GET /tarefas/{id}",
+  "GET /tarefas/{id}/anexos",
+  "GET /usuarios",
+  "GET /usuarios/atribuiveis",
+  "GET /usuarios/participantes",
+  "GET /usuarios/{id}",
+  "POST /auth/login",
+  "POST /notificacoes/lidas",
+  "POST /notificacoes/{id}/lida",
+  "POST /tarefas",
+  "POST /tarefas/{id}/anexos",
+  "POST /tarefas/{id}/anexos/{anexoId}/concluir",
+  "PUT /perfil/foto",
+  "PUT /perfil/senha",
+  "PUT /perfil/tema",
+  "PUT /tarefas/{id}"
+]
+```

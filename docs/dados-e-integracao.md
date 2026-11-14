@@ -6,6 +6,7 @@ valem, como as inconsistências são evitadas, encontradas e corrigidas, e onde 
 as evidências de que tudo isso funciona.
 
 - Evidências (resultado dos testes automatizados, com prints e saídas): [evidencias/relatorio-de-testes.md](evidencias/relatorio-de-testes.md)
+- Contrato da API (OpenAPI 3.1), para quem for consumir os dados: [openapi.yaml](openapi.yaml)
 - Instalação, rotas da API e como rodar o projeto: [README.md](../README.md)
 
 ## Sumário
@@ -17,8 +18,9 @@ as evidências de que tudo isso funciona.
 5. [Transformação](#5-transformação)
 6. [Regras de negócio](#6-regras-de-negócio)
 7. [Tratamento de inconsistências](#7-tratamento-de-inconsistências)
-8. [Evidências e como reproduzir](#8-evidências-e-como-reproduzir)
-9. [Limitações conhecidas](#9-limitações-conhecidas)
+8. [Consumo pela aplicação e por outras interfaces](#8-consumo-pela-aplicação-e-por-outras-interfaces)
+9. [Evidências e como reproduzir](#9-evidências-e-como-reproduzir)
+10. [Limitações conhecidas](#10-limitações-conhecidas)
 
 ---
 
@@ -92,7 +94,7 @@ sequenceDiagram
 | **Pessoas usando o site** (atividades, usuários, perfil) | API REST (`/api/...`) | Autenticação, validação de formato, permissão por cargo, padronização; resposta de erro clara | [src/controllers](../backend/src/controllers), [src/utils/validacoes.js](../backend/src/utils/validacoes.js), [src/utils/permissoes.js](../backend/src/utils/permissoes.js) |
 | **Arquivos anexados** (PDF, Office, imagens, vídeo, áudio) | Direto do navegador para o Cloud Storage, por um endereço de envio criado pela API | Tipo pela extensão, tamanho real, **assinatura do conteúdo**; o que não confere é apagado | [anexoController.js](../backend/src/controllers/anexoController.js), [assinaturas.js](../backend/src/utils/assinaturas.js) |
 | **Foto de perfil** | Navegador reduz para JPEG 256×256 e envia em base64 | Formato JPEG, até 512 KB, assinatura do JPEG | [perfilController.js](../backend/src/controllers/perfilController.js), [frontend utils/imagem.js](../frontend-react/src/utils/imagem.js) |
-| **BrasilAPI** (feriados nacionais) | A API consulta `brasilapi.com.br/api/feriados/v1/<ano>` | Ano validado (4 dígitos); falha da BrasilAPI não derruba os relatórios (dias úteis passam a contar só os fins de semana) | [feriadoController.js](../backend/src/controllers/feriadoController.js), [pages/Relatorios.jsx](../frontend-react/src/pages/Relatorios.jsx) |
+| **BrasilAPI** (feriados nacionais) | A API consulta `brasilapi.com.br/api/feriados/v1/<ano>` | Ano entre 1900 e 2199; espera de até 5 s; cada item conferido e padronizado; cópia por ano no Firestore, renovada a cada 30 dias e usada se a BrasilAPI cair; sem cópia, 502, e os relatórios contam os dias úteis só sem os fins de semana | [feriadoController.js](../backend/src/controllers/feriadoController.js), [pages/Relatorios.jsx](../frontend-react/src/pages/Relatorios.jsx) |
 | **Planilha CSV** | `npm run importar:csv -- arquivo.csv` | Conversão e validação linha a linha; recusa com motivo; não duplica | [scripts/importarCsv.js](../backend/scripts/importarCsv.js) |
 | **MySQL do backend antigo** (pi_db) | `npm run migrar:mysql` (feito uma vez, na mudança para o Firebase) | Mesmos ids, senhas e datas; padronização; tudo ou nada | [scripts/migrarMysql.js](../backend/scripts/migrarMysql.js) |
 | **Relógio do sistema** (Cloud Scheduler) | Função `rotinaDiaria`, todo dia às 00:05 (horário de Brasília) | Prazos vencidos, contadores, limpeza de dados vencidos | [backend/index.js](../backend/index.js), [utils/manutencao.js](../backend/src/utils/manutencao.js) |
@@ -125,6 +127,36 @@ sequenceDiagram
         A-->>N: link de download
     end
     Note over A,S: Envio que nunca é concluído fica "enviando";<br/>a rotina diária apaga depois de 24 h
+```
+
+### Feriados: a fonte externa com cópia guardada
+
+```mermaid
+sequenceDiagram
+    participant R as Relatórios (site)
+    participant A as API
+    participant F as Firestore (feriados/ano)
+    participant B as BrasilAPI
+    R->>A: GET /feriados/2026
+    A->>A: ano entre 1900 e 2199?
+    A->>F: existe cópia com menos de 30 dias?
+    alt cópia válida
+        A-->>R: 200 lista (X-Fonte-Dados: cache)
+    else sem cópia ou cópia vencida
+        A->>B: GET /api/feriados/v1/2026 (espera até 5 s)
+        alt resposta válida
+            A->>A: confere cada item (data real do ano e nome), descarta o resto e ordena
+            A->>F: guarda a lista conferida
+            A-->>R: 200 lista (X-Fonte-Dados: brasilapi)
+        else erro, demora ou dados inválidos
+            alt existe cópia vencida
+                A-->>R: 200 cópia (X-Fonte-Dados: cache-vencido)
+            else nenhuma cópia
+                A-->>R: 502 { erro }
+                R->>R: dias úteis só sem os fins de semana
+            end
+        end
+    end
 ```
 
 ## 3. Dicionário de dados
@@ -193,6 +225,7 @@ datas de calendário (início e vencimento) são texto `AAAA-MM-DD`.
 | `tentativas_login/{usuario_<id> ou sha256 do texto}` | `tentativas`, `expira_em` | 15 minutos, 5 tentativas |
 | `notificacoes/{id}` | `usuario_id`, `tipo` (`atribuida`, `recebida`, `removida`, `atrasada`), `tarefa_id`, `tarefa_titulo`, `autor_nome`, `lida`, `criada_em` | — |
 | `emails_locais/{id}` | Só nos emuladores: os e-mails que seriam enviados (os testes leem o código daqui) | — |
+| `feriados/{ano}` | `feriados` (lista conferida: `date`, `name`, `type`), `fonte`, `atualizado_em` | 30 dias; depois, busca de novo, e a cópia continua valendo se a BrasilAPI falhar |
 
 ## 4. Validação
 
@@ -267,6 +300,8 @@ A coluna "Teste" aponta o grupo do [relatório de evidências](evidencias/relato
 | Recuperação de senha não revela se o e-mail existe | `solicitarRecuperacao` | Recuperação de senha |
 | Senha guardada só como hash; a antiga, em texto, é convertida no primeiro login ou na rotina diária | `utils/senhas.js` | Otimização e segurança da infraestrutura |
 | 5 tentativas de login erradas bloqueiam a conta por 15 minutos, mesmo com a senha certa; trocar a senha libera | `utils/limiteLogin.js` | Otimização e segurança da infraestrutura |
+| Feriado da BrasilAPI só entra com data real do ano pedido e nome; a lista guardada vale 30 dias | `feriadoController.js` | Integração com a BrasilAPI (feriados) |
+| Toda rota da API está no contrato, e as respostas seguem o formato documentado | `docs/openapi.yaml` | Contrato da API (OpenAPI) |
 
 ## 7. Tratamento de inconsistências
 
@@ -317,7 +352,62 @@ ou quando um usuário é excluído/desativado depois de receber atividades.
 - O grupo "Verificação de consistência e correção" do relatório grava 12 tipos de problema, mostra a
   verificação encontrando cada um, corrige e mostra a verificação limpa.
 
-## 8. Evidências e como reproduzir
+## 8. Consumo pela aplicação e por outras interfaces
+
+O site só fala com a API pelos módulos de [frontend-react/src/services](../frontend-react/src/services), um por grupo
+de rotas, todos sobre a mesma função `requisitar`. Outra interface usa o mesmo contrato,
+[openapi.yaml](openapi.yaml), que os testes conferem a cada execução.
+
+```mermaid
+flowchart LR
+    TELA[Tela React<br/>pages e components] --> SERV[Serviço<br/>ex.: tarefaApi.js]
+    SERV --> REQ[requisicao.js<br/>token, JSON e erros]
+    REQ -- "/api/... + Bearer" --> HOST[Hosting]
+    HOST --> API[API<br/>rota, validação, permissão]
+    API --> FS[(Firestore)]
+    API -- "JSON no formato do contrato" --> REQ
+    REQ -- "dados ou mensagem de erro" --> TELA
+```
+
+**Quem consome o quê**
+
+| Tela | Serviço | Operações | Dados |
+|---|---|---|---|
+| Login (e saída, no `AuthContext`) | `authApi.js` | `POST /auth/login`, `POST /auth/sair` | `usuarios`, `sessoes`, `tentativas_login` |
+| Recuperar senha | `authApi.js` | `POST /auth/recuperar-senha`, `POST /auth/redefinir-senha` | `recuperacoes`, `usuarios` |
+| Início e Atividades | `tarefaApi.js` (pelo `useTarefas`), `usuarioApi.js` | `GET /tarefas`, `PUT` e `DELETE /tarefas/{id}`, `POST /tarefas/verificar-prazos`, `GET /usuarios/atribuiveis` | `tarefas` |
+| Nova atividade | `tarefaApi.js`, `usuarioApi.js`, `anexoApi.js` | `POST /tarefas`, `GET /usuarios/atribuiveis`, `GET /usuarios/participantes`, envio de anexos | `tarefas`, `contadores`, `notificacoes`, Storage |
+| Detalhes da atividade | `tarefaApi.js`, `anexoApi.js` | `GET`, `PUT` e `DELETE /tarefas/{id}`, `/tarefas/{id}/anexos/...` | `tarefas`, `tarefas/{id}/anexos`, Storage |
+| Sino (em todas as telas) | `notificacaoApi.js` | `GET /notificacoes/contagem`, `GET /notificacoes`, `POST /notificacoes/{id}/lida`, `POST /notificacoes/lidas` | `notificacoes` |
+| Meu perfil e menu (tema) | `perfilApi.js` | `GET /perfil`, `PUT` e `DELETE /perfil/foto`, `PUT /perfil/senha`, `PUT /perfil/tema` | `usuarios`, Storage |
+| Relatórios | `tarefaApi.js`, `feriadoApi.js` | `GET /tarefas`, `GET /feriados/{ano}` | `tarefas`, `feriados` |
+| Usuários e cadastro (TI) | `usuarioApi.js`, `tarefaApi.js` | `/usuarios`, `/usuarios/{id}`, `GET /tarefas` | `usuarios`, `tarefas` |
+
+**Regras de consumo, iguais para o site e para outra interface**
+
+- **Endereço:** `/api` no mesmo domínio do site, e o Hosting repassa para a Cloud Function. O site lê o endereço de `VITE_API_URL`.
+- **Login:** `POST /auth/login` devolve `token`, e as outras chamadas mandam `Authorization: Bearer <token>`. O site guarda o
+  token na sessão do navegador; se a API responder 401, apaga a sessão e volta para o login.
+- **Formato:** JSON; datas `AAAA-MM-DD`; data e hora em ISO 8601 (UTC); ids numéricos, menos anexos e notificações (texto).
+- **Erros:** sempre `{ "erro": "mensagem" }`, pronta para mostrar. O site exibe esse texto; os códigos estão no contrato.
+- **Permissões já calculadas:** cada atividade vem com `permissoes` (`status`, `editar`, `excluir`) de quem pediu. A tela só
+  mostra os botões permitidos, e a API confere de novo a cada alteração.
+- **Atualização automática:** lista de atividades a cada 15 s e sino a cada 30 s, só com a aba visível. Respostas sem mudança
+  voltam como 304 (ETag), sem reenviar os dados.
+- **Fonte externa fora do ar:** se `GET /feriados/{ano}` falhar, os Relatórios contam os dias úteis só sem os fins de semana.
+- **CORS:** navegadores só leem as respostas nos endereços do Expresso e em `localhost`. Outra interface web em outro
+  domínio precisa entrar em `ORIGENS_PERMITIDAS` ([app.js](../backend/src/app.js)); aplicativos e servidores não dependem disso.
+
+**Para outra equipe começar:** abrir [openapi.yaml](openapi.yaml) no [Swagger Editor](https://editor.swagger.io), ou gerar a
+página navegável com `npx @redocly/cli build-docs docs/openapi.yaml`, e importar as coleções do Postman ou do Insomnia
+([backend/testes](../backend/testes)), que trazem exemplos de chamada para cada grupo de rotas.
+
+**O contrato não fica desatualizado:** o grupo de testes "Contrato da API (OpenAPI)" compara as rotas registradas no
+Express com as do contrato, chama as 35 operações e confere status e campos de cada resposta, e confirma que todas as
+chamadas que o site fez nos testes de tela estão documentadas. Uma rota nova sem documentação, um campo a mais (como
+`senha` ou o `token` de um anexo) ou um formato diferente fazem o teste falhar.
+
+## 9. Evidências e como reproduzir
 
 Na pasta `backend` (com o Firebase CLI instalado e o `npm install` feito):
 
@@ -326,13 +416,28 @@ npm run testar:tudo
 ```
 
 O comando compila o site, sobe os emuladores do Firebase (Firestore, Storage, Functions e Hosting,
-projeto `demo-expresso`, sem tocar na nuvem), roda os 14 grupos de testes em
+projeto `demo-expresso`, sem tocar na nuvem), roda os 17 grupos de testes em
 [backend/testes/suites](../backend/testes/suites) e grava:
 
 - [docs/evidencias/relatorio-de-testes.md](evidencias/relatorio-de-testes.md): cada checagem com ✔/✘, as saídas da verificação de consistência, da rotina diária, da importação e da migração;
 - [docs/evidencias/prints](evidencias/prints): telas capturadas durante os testes (precisa do Microsoft Edge ou do Google Chrome instalado; sem eles os testes de tela são pulados e o relatório avisa).
 
 Cada grupo começa com o banco vazio. Os testes usam a API e o site de verdade, rodando nos emuladores.
+
+### Controles de qualidade e onde são comprovados
+
+| Controle | O que garante | Onde | Grupo de testes |
+|---|---|---|---|
+| Validação central de formato | As mesmas regras na API, na importação e na migração | `utils/validacoes.js` | Validação dos dados de entrada |
+| Permissões por cargo | Cada pessoa só lê e altera o que pode | `utils/permissoes.js` | Cargos e permissões |
+| Assinatura dos arquivos | O conteúdo do anexo bate com a extensão | `utils/assinaturas.js` | Anexos e assinatura dos arquivos |
+| Importação linha a linha | Linha inválida recusada com o motivo, sem duplicar | `scripts/importarCsv.js` | Importação de planilha CSV |
+| Migração tudo ou nada | Nenhum dado gravado pela metade | `scripts/migrarMysql.js` | Migração MySQL → Firestore |
+| Conferência da fonte externa | Feriado inválido descartado; BrasilAPI fora do ar não derruba o sistema | `controllers/feriadoController.js` | Integração com a BrasilAPI (feriados) |
+| Verificação de consistência | 13 tipos de problema encontrados e explicados | `utils/manutencao.js` | Verificação de consistência e correção |
+| Rotina diária | Contadores, prazos e dados vencidos corrigidos toda noite | função `rotinaDiaria` | Verificação de consistência e correção |
+| Contrato da API | Respostas no formato documentado e nenhuma rota sem documentação | `docs/openapi.yaml` | Contrato da API (OpenAPI) |
+| Segurança do acesso | Hash das senhas, limite de login, cabeçalhos e CORS | `utils/senhas.js`, `utils/limiteLogin.js`, `firebase.json` | Otimização e segurança da infraestrutura |
 
 **Postman e Insomnia.** A coleção [backend/testes/PI-api.postman_collection.json](../backend/testes/PI-api.postman_collection.json)
 (e a mesma para o Insomnia, [PI-api.insomnia_collection.json](../backend/testes/PI-api.insomnia_collection.json))
@@ -344,7 +449,12 @@ tratamentos têm prefixos próprios: `[TAREFAS]`, `[USUARIOS]`, `[ANEXOS]` (incl
 `[PRAZOS]`, `[MANUTENCAO]`, `[NOTIFICACOES]`, `[RECUPERACAO]`, `[PERFIL]`, `[ERRO]`, e nos scripts `[CSV]` e `[MIGRACAO]`.
 Na nuvem ficam no Cloud Logging (`npm run logs` ou Console do Firebase → Functions → Logs).
 
-## 9. Limitações conhecidas
+**Monitoramento.** `npm run medir:nuvem -- <rótulo>` mede o site publicado e resume os logs da API. As medições de
+07/11/2026 estão em [evidencias/monitoramento](evidencias/monitoramento).
+
+## 10. Limitações conhecidas
+
+- **Só feriados nacionais:** os estaduais e municipais não entram no cálculo de dias úteis dos relatórios.
 
 - **Backups antigos com senhas em texto.** O banco ganhou o hash em 07/11/2026, mas os backups semanais
   feitos antes disso continuam com as senhas em texto até vencerem (60 dias depois de cada backup).

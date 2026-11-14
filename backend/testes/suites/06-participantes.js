@@ -36,6 +36,8 @@ module.exports = {
         if (!t.navegador) return;
         const pagina = await entrarNoSite(t.navegador, 'ulisses');
         await pagina.goto(SITE + '/atividades/nova');
+        // A lista de participantes esconde o responsável, que só fica definido quando a lista de atribuíveis chega
+        await pagina.waitForFunction(() => document.querySelector('#responsavel') && document.querySelector('#responsavel').value !== '');
         await pagina.fill('#titulo', 'Atividade com participantes');
         await pagina.fill('#descricao', 'Teste do seletor.');
         await pagina.locator('#participantes').click();

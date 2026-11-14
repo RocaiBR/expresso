@@ -1,6 +1,6 @@
 const {
     SITE, SENHA, FIRESTORE, DONO, ASSETS, path, chamar, token, esperar, criarPrimeiroTI, criarUsuario, gravarNoBanco, consultarNoBanco,
-    entrarNoSite, cabecalhosDoSite, violacoesDaPolitica,
+    entrarNoSite, cabecalhosDoSite, violacoesDaPolitica, comApiDireta,
 } = require('../apoio');
 
 async function senhaNoBanco(id) {
@@ -9,19 +9,6 @@ async function senhaNoBanco(id) {
 }
 
 const entrar = (usuario, senha) => chamar(null, 'POST', '/auth/login', { usuario, senha });
-
-async function comApiDireta(executar) {
-    process.env.PROJETO_FIREBASE = process.env.PROJETO_FIREBASE || 'demo-expresso';
-    const app = require('../../src/app');
-    const servidor = await new Promise((pronto) => {
-        const s = app.listen(0, '127.0.0.1', () => pronto(s));
-    });
-    try {
-        await executar(`http://127.0.0.1:${servidor.address().port}/api`);
-    } finally {
-        servidor.close();
-    }
-}
 
 async function errarVezes(usuario, vezes) {
     const respostas = [];

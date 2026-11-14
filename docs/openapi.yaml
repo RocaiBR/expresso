@@ -1,0 +1,1176 @@
+openapi: 3.1.0
+info:
+  title: Expresso API
+  version: 1.0.0
+  summary: API REST do Expresso, sistema de gestão de atividades (Projeto Integrador UNIFEOB).
+  description: |
+    Contrato da API usada pelo site do Expresso e disponível para outras interfaces.
+
+    **Autenticação.** `POST /auth/login` devolve um token. As demais rotas exigem o cabeçalho
+    `Authorization: Bearer <token>`, menos as marcadas como públicas. A sessão vale 12 horas.
+    O cargo (`usuario`, `gestor` ou `ti`) é lido do banco a cada chamada.
+
+    **Formato.** Corpo e resposta em JSON (UTF-8), com no máximo 1 MB por requisição. Datas de calendário
+    são texto `AAAA-MM-DD`, e data e hora são ISO 8601 em UTC (`2026-11-14T15:04:05.000Z`).
+    Todo erro responde `{ "erro": "mensagem para mostrar à pessoa" }`.
+
+    **Cache.** As respostas de `GET` levam `ETag`. Com `If-None-Match`, a API pode responder `304` sem corpo.
+
+    **Códigos comuns.** `400` dado inválido, `401` sem login ou sessão vencida, `403` cargo sem permissão,
+    `404` não encontrado, `409` conflito (duplicado ou regra do sistema), `413` corpo acima de 1 MB,
+    `429` excesso de tentativas de login, `500` erro interno (mensagem genérica, detalhe só no log),
+    `502` serviço externo indisponível, `503` recurso indisponível no momento.
+
+    **CORS.** Navegadores só leem as respostas nos endereços do Expresso e em `localhost`. Outra
+    interface web em outro endereço precisa ser incluída em `ORIGENS_PERMITIDAS` (`backend/src/app.js`).
+    Aplicativos e servidores não são afetados pelo CORS.
+servers:
+  - url: https://pi-expresso.web.app/api
+    description: Nuvem (Firebase Hosting, que repassa para a Cloud Function)
+  - url: http://127.0.0.1:5000/api
+    description: Emuladores do Firebase (npm run emuladores)
+  - url: http://localhost:3000/api
+    description: Servidor local (npm run dev)
+security:
+  - token: []
+tags:
+  - name: Status
+    description: Se a API e o banco estão no ar.
+  - name: Autenticação
+    description: Login, saída e recuperação de senha.
+  - name: Atividades
+    description: Tarefas da equipe, com permissões por cargo e regra de prazo.
+  - name: Anexos
+    description: O arquivo vai direto do cliente para o Cloud Storage, por uma URL criada pela API.
+  - name: Usuários
+    description: Cadastro (TI) e listas de pessoas para atribuir.
+  - name: Notificações
+    description: Avisos do sino de quem está logado.
+  - name: Perfil
+    description: Dados de quem está logado, qualquer cargo.
+  - name: Feriados
+    description: Feriados nacionais da BrasilAPI, conferidos e guardados por ano.
+  - name: Manutenção
+    description: Só o TI.
+
+paths:
+  /:
+    get:
+      tags: [Status]
+      operationId: informacoesDaApi
+      summary: Informações básicas da API
+      security: []
+      responses:
+        '200':
+          description: Nome, versão e algumas rotas
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [mensagem, versao, rotas]
+                properties:
+                  mensagem: { type: string }
+                  versao: { type: string }
+                  rotas: { type: array, items: { type: string } }
+
+  /health:
+    get:
+      tags: [Status]
+      operationId: verificarSaude
+      summary: Verifica se a API e o Firestore estão no ar
+      description: Faz uma leitura no banco. Serve para verificações de disponibilidade.
+      security: []
+      responses:
+        '200':
+          description: API e banco funcionando
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [api, banco, banco_nome, hora_do_banco]
+                properties:
+                  api: { const: ok }
+                  banco: { const: conectado }
+                  banco_nome: { type: string }
+                  hora_do_banco: { type: string, format: date-time }
+        '503':
+          description: A API respondeu, mas o banco não
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [api, banco]
+                properties:
+                  api: { const: ok }
+                  banco: { const: desconectado }
+
+  /auth/login:
+    post:
+      tags: [Autenticação]
+      operationId: entrar
+      summary: Entra no sistema e recebe o token da sessão
+      description: |
+        Aceita e-mail, nome de usuário ou nome completo em `usuario`. Depois de 5 senhas erradas seguidas,
+        a conta fica bloqueada por 15 minutos (429), mesmo com a senha certa. Quem não tem cadastro recebe
+        as mesmas respostas.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [usuario, senha]
+              properties:
+                usuario: { type: string, examples: [maria@empresa.com] }
+                senha: { type: string, format: password }
+      responses:
+        '200':
+          description: Login feito
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LoginResposta' }
+        '400': { $ref: '#/components/responses/DadosInvalidos' }
+        '401':
+          description: Usuário ou senha incorretos
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+        '403':
+          description: Usuário inativo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+        '429':
+          description: Muitas tentativas erradas; a mensagem diz quantos minutos faltam
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+
+  /auth/sair:
+    post:
+      tags: [Autenticação]
+      operationId: sair
+      summary: Encerra a sessão do token enviado
+      responses:
+        '200': { $ref: '#/components/responses/Mensagem' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+
+  /auth/recuperar-senha:
+    post:
+      tags: [Autenticação]
+      operationId: solicitarRecuperacao
+      summary: Envia um código de 6 dígitos para o e-mail cadastrado
+      description: A resposta é a mesma exista o e-mail ou não. O código vale 15 minutos, e há um pedido por minuto.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        '200': { $ref: '#/components/responses/Mensagem' }
+        '400': { $ref: '#/components/responses/DadosInvalidos' }
+        '502':
+          description: O e-mail não pôde ser enviado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+        '503':
+          description: Envio de e-mail não configurado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+
+  /auth/redefinir-senha:
+    post:
+      tags: [Autenticação]
+      operationId: redefinirSenha
+      summary: Troca a senha com o código recebido por e-mail
+      description: 5 tentativas por código. Encerra todas as sessões abertas e libera um login bloqueado.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, codigo, nova_senha]
+              properties:
+                email: { type: string, format: email }
+                codigo: { type: string, pattern: '^\d{6}$' }
+                nova_senha: { type: string, minLength: 6 }
+      responses:
+        '200': { $ref: '#/components/responses/Mensagem' }
+        '400': { $ref: '#/components/responses/DadosInvalidos' }
+
+  /tarefas:
+    get:
+      tags: [Atividades]
+      operationId: listarTarefas
+      summary: Lista as atividades que o usuário pode ver
+      description: |
+        Usuário padrão vê as que são dele; gestor, as do próprio setor; TI, todas. Ordem: id decrescente.
+        Cada item traz `permissoes` calculadas para quem pediu.
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: { $ref: '#/components/schemas/Status' }
+      responses:
+        '200':
+          description: Lista de atividades
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Tarefa' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+    post:
+      tags: [Atividades]
+      operationId: criarTarefa
+      summary: Cria uma atividade
+      description: |
+        O responsável (`usuario_id`) é quem cria, se não for informado, e precisa estar entre os que essa pessoa
+        pode atribuir (`GET /usuarios/atribuiveis`). `responsavel` e `participantes` (nomes) são preenchidos pela API.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TarefaNova' }
+      responses:
+        '201':
+          description: Atividade criada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tarefa' }
+        '400': { $ref: '#/components/responses/DadosInvalidos' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/SemPermissao' }
+
+  /tarefas/verificar-prazos:
+    post:
+      tags: [Atividades]
+      operationId: verificarPrazos
+      summary: Aplica agora a regra de prazo vencido (TI)
+      description: A mesma verificação que a rotina diária faz às 00:05.
+      responses:
+        '200':
+          description: Resultado da verificação
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ResultadoPrazos' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/SemPermissao' }
+
+  /tarefas/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdTarefa'
+    get:
+      tags: [Atividades]
+      operationId: buscarTarefa
+      summary: Busca uma atividade
+      responses:
+        '200':
+          description: A atividade
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tarefa' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+    put:
+      tags: [Atividades]
+      operationId: atualizarTarefa
+      summary: Altera uma atividade (só os campos enviados)
+      description: Quem só pode mudar o status recebe 403 ao tentar outro campo.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TarefaAlteracao' }
+      responses:
+        '200':
+          description: Atividade alterada
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [mensagem, tarefa]
+                properties:
+                  mensagem: { type: string }
+                  tarefa: { $ref: '#/components/schemas/Tarefa' }
+        '400': { $ref: '#/components/responses/DadosInvalidos' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/SemPermissao' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+    delete:
+      tags: [Atividades]
+      operationId: excluirTarefa
+      summary: Exclui uma atividade e os anexos dela
+      responses:
+        '200':
+          description: Atividade excluída
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExcluidoPorNumero' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/SemPermissao' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+
+  /tarefas/{id}/anexos:
+    parameters:
+      - $ref: '#/components/parameters/IdTarefa'
+    get:
+      tags: [Anexos]
+      operationId: listarAnexos
+      summary: Lista os anexos prontos de uma atividade
+      responses:
+        '200':
+          description: Anexos em ordem de envio
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Anexo' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+    post:
+      tags: [Anexos]
+      operationId: iniciarAnexo
+      summary: Passo 1 do envio, que cria a URL para enviar o arquivo
+      description: |
+        Depois, envie o arquivo com `PUT` direto em `url_envio`, com o `Content-Type` igual a `anexo.tipo`,
+        e então chame `POST /tarefas/{id}/anexos/{anexoId}/concluir`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nome, tamanho]
+              properties:
+                nome: { type: string, maxLength: 200, examples: [relatorio.pdf] }
+                tamanho: { type: integer, minimum: 1, maximum: 209715200, description: 'Bytes, até 200 MB' }
+      responses:
+        '201':
+          description: Envio criado
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [anexo, url_envio]
+                properties:
+                  anexo: { $ref: '#/components/schemas/Anexo' }
+                  url_envio: { type: string, format: uri }
+        '400': { $ref: '#/components/responses/DadosInvalidos' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/SemPermissao' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+
+  /tarefas/{id}/anexos/{anexoId}/concluir:
+    parameters:
+      - $ref: '#/components/parameters/IdTarefa'
+      - $ref: '#/components/parameters/IdAnexo'
+    post:
+      tags: [Anexos]
+      operationId: concluirAnexo
+      summary: Passo 3 do envio, que confere o arquivo e libera o anexo
+      description: |
+        A API lê o tamanho real e a assinatura do arquivo no Storage. Se o conteúdo não for do formato da
+        extensão, apaga o arquivo e responde 400.
+      responses:
+        '200':
+          description: Anexo pronto, com o link de download
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Anexo' }
+        '400': { $ref: '#/components/responses/DadosInvalidos' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '409':
+          description: O arquivo ainda não chegou ao Storage
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+
+  /tarefas/{id}/anexos/{anexoId}:
+    parameters:
+      - $ref: '#/components/parameters/IdTarefa'
+      - $ref: '#/components/parameters/IdAnexo'
+    delete:
+      tags: [Anexos]
+      operationId: excluirAnexo
+      summary: Remove um anexo (o arquivo e o registro)
+      responses:
+        '200':
+          description: Anexo removido
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [mensagem, id]
+                properties:
+                  mensagem: { type: string }
+                  id: { type: string }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/SemPermissao' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+
+  /usuarios:
+    get:
+      tags: [Usuários]
+      operationId: listarUsuarios
+      summary: Lista todos os usuários (TI)
+      responses:
+        '200':
+          description: Usuários em ordem alfabética
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Usuario' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/SemPermissao' }
+    post:
+      tags: [Usuários]
+      operationId: criarUsuario
+      summary: Cadastra um usuário (TI)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UsuarioNovo' }
+      responses:
+        '201':
+          description: Usuário criado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Usuario' }
+        '400': { $ref: '#/components/responses/DadosInvalidos' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/SemPermissao' }
+        '409': { $ref: '#/components/responses/Conflito' }
+
+  /usuarios/atribuiveis:
+    get:
+      tags: [Usuários]
+      operationId: listarAtribuiveis
+      summary: Pessoas a quem quem está logado pode passar uma atividade
+      description: A primeira da lista é a própria pessoa.
+      responses:
+        '200':
+          description: Lista de pessoas
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PessoaAtribuivel' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+
+  /usuarios/participantes:
+    get:
+      tags: [Usuários]
+      operationId: listarParticipantes
+      summary: Usuários ativos que podem ser participantes
+      responses:
+        '200':
+          description: Lista em ordem alfabética
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Participante' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+
+  /usuarios/{id}:
+    parameters:
+      - $ref: '#/components/parameters/IdUsuario'
+    get:
+      tags: [Usuários]
+      operationId: buscarUsuario
+      summary: Busca um usuário (TI, ou a própria pessoa)
+      responses:
+        '200':
+          description: O usuário
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Usuario' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/SemPermissao' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+    put:
+      tags: [Usuários]
+      operationId: atualizarUsuario
+      summary: Altera um usuário (TI)
+      description: Trocar a senha ou desativar encerra as sessões abertas dessa pessoa.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UsuarioAlteracao' }
+      responses:
+        '200':
+          description: Usuário alterado
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [mensagem, usuario]
+                properties:
+                  mensagem: { type: string }
+                  usuario: { $ref: '#/components/schemas/Usuario' }
+        '400': { $ref: '#/components/responses/DadosInvalidos' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/SemPermissao' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '409': { $ref: '#/components/responses/Conflito' }
+    delete:
+      tags: [Usuários]
+      operationId: excluirUsuario
+      summary: Exclui um usuário (TI)
+      description: As atividades dele continuam (histórico). Ninguém exclui a própria conta nem o último TI ativo.
+      responses:
+        '200':
+          description: Usuário excluído
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ExcluidoPorNumero' }
+        '400': { $ref: '#/components/responses/DadosInvalidos' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/SemPermissao' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+        '409': { $ref: '#/components/responses/Conflito' }
+
+  /feriados/{ano}:
+    get:
+      tags: [Feriados]
+      operationId: listarFeriados
+      summary: Feriados nacionais de um ano
+      description: |
+        Vem da BrasilAPI, com limite de 5 s de espera. Cada item é conferido (data real dentro do ano e nome), e
+        a lista fica guardada no Firestore por 30 dias. Se a BrasilAPI falhar, a API responde com a cópia guardada,
+        mesmo vencida; sem cópia, responde 502.
+      parameters:
+        - name: ano
+          in: path
+          required: true
+          schema: { type: string, pattern: '^\d{4}$', examples: ['2026'] }
+          description: Entre 1900 e 2199
+      responses:
+        '200':
+          description: Feriados em ordem de data
+          headers:
+            X-Fonte-Dados:
+              description: De onde veio a lista
+              schema: { type: string, enum: [brasilapi, cache, cache-vencido] }
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Feriado' }
+        '400': { $ref: '#/components/responses/DadosInvalidos' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '502':
+          description: BrasilAPI indisponível e nenhuma cópia guardada desse ano
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Erro' }
+
+  /notificacoes:
+    get:
+      tags: [Notificações]
+      operationId: listarNotificacoes
+      summary: As 30 notificações mais recentes de quem está logado
+      responses:
+        '200':
+          description: Notificações, da mais nova para a mais antiga
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 30
+                items: { $ref: '#/components/schemas/Notificacao' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+
+  /notificacoes/contagem:
+    get:
+      tags: [Notificações]
+      operationId: contarNotificacoes
+      summary: Quantas notificações não lidas
+      responses:
+        '200':
+          description: Contagem
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [nao_lidas]
+                properties:
+                  nao_lidas: { type: integer, minimum: 0 }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+
+  /notificacoes/lidas:
+    post:
+      tags: [Notificações]
+      operationId: marcarTodasComoLidas
+      summary: Marca todas como lidas
+      responses:
+        '200':
+          description: Quantas foram marcadas
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [marcadas]
+                properties:
+                  marcadas: { type: integer, minimum: 0 }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+
+  /notificacoes/{id}/lida:
+    post:
+      tags: [Notificações]
+      operationId: marcarComoLida
+      summary: Marca uma notificação como lida
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { $ref: '#/components/responses/Mensagem' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '404': { $ref: '#/components/responses/NaoEncontrado' }
+
+  /perfil:
+    get:
+      tags: [Perfil]
+      operationId: verPerfil
+      summary: Dados de quem está logado (sem a senha)
+      responses:
+        '200':
+          description: Perfil
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Perfil' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+
+  /perfil/foto:
+    put:
+      tags: [Perfil]
+      operationId: trocarFoto
+      summary: Troca a foto de perfil
+      description: Envie a imagem já reduzida, em JPEG (o site manda 256×256). Até 512 KB, com a assinatura do JPEG conferida.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [imagem]
+              properties:
+                imagem: { type: string, pattern: '^data:image/jpeg;base64,' }
+      responses:
+        '200':
+          description: Foto trocada
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [foto_url]
+                properties:
+                  foto_url: { type: string, format: uri }
+        '400': { $ref: '#/components/responses/DadosInvalidos' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+    delete:
+      tags: [Perfil]
+      operationId: removerFoto
+      summary: Remove a foto de perfil
+      responses:
+        '200':
+          description: Foto removida
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [foto_url]
+                properties:
+                  foto_url: { type: 'null' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+
+  /perfil/senha:
+    put:
+      tags: [Perfil]
+      operationId: trocarSenha
+      summary: Troca a própria senha
+      description: Encerra os logins em outros aparelhos; o atual continua.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [senha_atual, nova_senha]
+              properties:
+                senha_atual: { type: string, format: password }
+                nova_senha: { type: string, format: password, minLength: 6 }
+      responses:
+        '200': { $ref: '#/components/responses/Mensagem' }
+        '400': { $ref: '#/components/responses/DadosInvalidos' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+
+  /perfil/tema:
+    put:
+      tags: [Perfil]
+      operationId: salvarTema
+      summary: Guarda o tema da interface
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tema]
+              properties:
+                tema: { $ref: '#/components/schemas/Tema' }
+      responses:
+        '200':
+          description: Tema guardado
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [tema]
+                properties:
+                  tema: { $ref: '#/components/schemas/Tema' }
+        '400': { $ref: '#/components/responses/DadosInvalidos' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+
+  /manutencao/consistencia:
+    get:
+      tags: [Manutenção]
+      operationId: verificarConsistencia
+      summary: Procura inconsistências nos dados (só leitura)
+      responses:
+        '200':
+          description: Resultado de cada verificação
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Consistencia' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/SemPermissao' }
+
+  /manutencao/rotina-diaria:
+    post:
+      tags: [Manutenção]
+      operationId: executarRotinaDiaria
+      summary: Roda agora a rotina das 00:05
+      responses:
+        '200':
+          description: Resultado de cada etapa. Uma etapa que falhar traz `{ erro }`, e as outras rodam mesmo assim.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RotinaDiaria' }
+        '401': { $ref: '#/components/responses/NaoAutenticado' }
+        '403': { $ref: '#/components/responses/SemPermissao' }
+
+components:
+  securitySchemes:
+    token:
+      type: http
+      scheme: bearer
+      description: Token devolvido por `POST /auth/login`, válido por 12 horas.
+
+  parameters:
+    IdTarefa:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+    IdAnexo:
+      name: anexoId
+      in: path
+      required: true
+      schema: { type: string }
+    IdUsuario:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer, minimum: 1 }
+
+  responses:
+    Mensagem:
+      description: Operação feita
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [mensagem]
+            properties:
+              mensagem: { type: string }
+    DadosInvalidos:
+      description: Dado ausente ou fora das regras; a mensagem diz qual
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+    NaoAutenticado:
+      description: Sem token, token inválido ou sessão vencida
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+    SemPermissao:
+      description: O cargo de quem está logado não permite
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+    NaoEncontrado:
+      description: Não existe, ou quem está logado não pode ver
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+    Conflito:
+      description: Duplicado (e-mail ou login) ou regra do sistema (último TI ativo)
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Erro' }
+
+  schemas:
+    Erro:
+      type: object
+      additionalProperties: false
+      required: [erro]
+      properties:
+        erro: { type: string, description: Mensagem pronta para mostrar à pessoa }
+        campos_aceitos: { type: array, items: { type: string } }
+        extensoes_aceitas: { type: array, items: { type: string } }
+        metodo: { type: string }
+        caminho: { type: string }
+
+    Status:
+      type: string
+      enum: [pendente, em andamento, concluido, cancelado]
+    Prioridade:
+      type: string
+      enum: [baixo, medio, alto, urgente]
+    Setor:
+      type: [string, 'null']
+      enum: [PCP, ENGENHARIA, TI, null]
+    Funcao:
+      type: string
+      enum: [usuario, gestor, ti]
+      description: Cargo. `usuario` vê as próprias atividades, `gestor` as do setor, `ti` todas.
+    Tema:
+      type: string
+      enum: [claro, escuro, profundo]
+    DataOuNulo:
+      type: [string, 'null']
+      format: date
+    DataHora:
+      type: string
+      format: date-time
+    DataHoraOuNulo:
+      type: [string, 'null']
+      format: date-time
+
+    LoginResposta:
+      type: object
+      additionalProperties: false
+      required: [mensagem, token, usuario]
+      properties:
+        mensagem: { type: string }
+        token: { type: string, minLength: 20 }
+        usuario:
+          type: object
+          additionalProperties: false
+          required: [id, nome, email, funcao]
+          properties:
+            id: { type: integer }
+            nome: { type: string }
+            usuario: { type: [string, 'null'] }
+            email: { type: string, format: email }
+            setor: { $ref: '#/components/schemas/Setor' }
+            funcao: { $ref: '#/components/schemas/Funcao' }
+            foto_url: { type: [string, 'null'] }
+            tema: { type: [string, 'null'], enum: [claro, escuro, profundo, null] }
+
+    Tarefa:
+      type: object
+      additionalProperties: false
+      required: [id, titulo, status, prioridade, permissoes]
+      properties:
+        id: { type: integer, minimum: 1 }
+        titulo: { type: string, minLength: 1, maxLength: 150 }
+        descricao: { type: [string, 'null'], maxLength: 2000 }
+        usuario_id: { type: [integer, 'null'], description: Responsável }
+        responsavel: { type: [string, 'null'], description: 'Nome do responsável, preenchido pela API' }
+        participantes_ids: { type: array, maxItems: 20, uniqueItems: true, items: { type: integer } }
+        participantes: { type: [string, 'null'], description: 'Nomes dos participantes, preenchidos pela API' }
+        criado_por: { type: [integer, 'null'] }
+        status: { $ref: '#/components/schemas/Status' }
+        prioridade: { $ref: '#/components/schemas/Prioridade' }
+        data_inicio: { $ref: '#/components/schemas/DataOuNulo' }
+        data_conclusao: { $ref: '#/components/schemas/DataOuNulo' }
+        criado_em: { $ref: '#/components/schemas/DataHoraOuNulo' }
+        finalizado_em: { $ref: '#/components/schemas/DataHoraOuNulo' }
+        atrasada: { type: boolean, description: Prazo vencido sem conclusão (a prioridade vira urgente) }
+        atrasada_desde: { $ref: '#/components/schemas/DataOuNulo' }
+        prioridade_original:
+          type: [string, 'null']
+          enum: [baixo, medio, alto, urgente, null]
+          description: A prioridade de antes do atraso, para voltar quando o prazo for adiado
+        permissoes:
+          type: object
+          additionalProperties: false
+          required: [status, editar, excluir]
+          description: O que quem pediu pode fazer com esta atividade
+          properties:
+            status: { type: boolean }
+            editar: { type: boolean }
+            excluir: { type: boolean }
+
+    TarefaNova:
+      type: object
+      required: [titulo]
+      properties:
+        titulo: { type: string, minLength: 1, maxLength: 150 }
+        descricao: { type: [string, 'null'], maxLength: 2000 }
+        usuario_id: { type: [integer, 'null'] }
+        participantes_ids: { type: [array, 'null'], maxItems: 20, items: { type: integer, minimum: 1 } }
+        status: { $ref: '#/components/schemas/Status' }
+        prioridade: { $ref: '#/components/schemas/Prioridade' }
+        data_inicio: { $ref: '#/components/schemas/DataOuNulo' }
+        data_conclusao: { $ref: '#/components/schemas/DataOuNulo', description: Não pode ser antes de data_inicio }
+
+    TarefaAlteracao:
+      type: object
+      minProperties: 1
+      properties:
+        titulo: { type: string, minLength: 1, maxLength: 150 }
+        descricao: { type: [string, 'null'], maxLength: 2000 }
+        usuario_id: { type: [integer, 'null'] }
+        participantes_ids: { type: [array, 'null'], maxItems: 20, items: { type: integer, minimum: 1 } }
+        status: { $ref: '#/components/schemas/Status' }
+        prioridade: { $ref: '#/components/schemas/Prioridade' }
+        data_inicio: { $ref: '#/components/schemas/DataOuNulo' }
+        data_conclusao: { $ref: '#/components/schemas/DataOuNulo' }
+
+    ResultadoPrazos:
+      type: object
+      additionalProperties: false
+      required: [hoje, abertas, viraram_urgentes, voltaram_ao_normal]
+      properties:
+        hoje: { type: string, format: date, description: Dia no horário de Brasília }
+        abertas: { type: integer, minimum: 0 }
+        viraram_urgentes: { type: integer, minimum: 0 }
+        voltaram_ao_normal: { type: integer, minimum: 0 }
+
+    Anexo:
+      type: object
+      additionalProperties: false
+      required: [id, nome, tipo, tamanho, status]
+      properties:
+        id: { type: string }
+        nome: { type: string, maxLength: 200 }
+        tipo: { type: string, description: Tipo MIME definido pela API a partir da extensão }
+        tamanho: { type: integer, minimum: 1, description: 'Bytes (o real, lido do Storage, depois de concluído)' }
+        caminho: { type: string }
+        enviado_por: { type: integer }
+        status: { type: string, enum: [enviando, pronto] }
+        criado_em: { $ref: '#/components/schemas/DataHoraOuNulo' }
+        url: { type: string, format: uri, description: Link de download (só quando pronto) }
+
+    Usuario:
+      type: object
+      additionalProperties: false
+      description: Nunca inclui a senha nem o hash dela.
+      required: [id, nome, email, funcao, ativo]
+      properties:
+        id: { type: integer, minimum: 1 }
+        nome: { type: string, maxLength: 150 }
+        usuario: { type: [string, 'null'], maxLength: 50, pattern: '^[A-Za-z0-9._-]+$' }
+        email: { type: string, format: email, maxLength: 150 }
+        setor: { $ref: '#/components/schemas/Setor' }
+        funcao: { $ref: '#/components/schemas/Funcao' }
+        ativo: { type: boolean }
+        criado_em: { $ref: '#/components/schemas/DataHoraOuNulo' }
+        foto_url: { type: [string, 'null'] }
+        foto_caminho: { type: [string, 'null'] }
+        tema: { $ref: '#/components/schemas/Tema' }
+        cargo: { type: string, description: Só nos usuários migrados do MySQL (coluna antiga) }
+
+    UsuarioNovo:
+      type: object
+      required: [nome, email, senha]
+      properties:
+        nome: { type: string, maxLength: 150 }
+        usuario: { type: [string, 'null'], maxLength: 50, pattern: '^[A-Za-z0-9._-]+$' }
+        email: { type: string, format: email, maxLength: 150 }
+        senha: { type: string, format: password, minLength: 6 }
+        setor: { $ref: '#/components/schemas/Setor' }
+        funcao: { $ref: '#/components/schemas/Funcao' }
+
+    UsuarioAlteracao:
+      type: object
+      minProperties: 1
+      properties:
+        nome: { type: string, maxLength: 150 }
+        usuario: { type: [string, 'null'], maxLength: 50, pattern: '^[A-Za-z0-9._-]+$' }
+        email: { type: string, format: email, maxLength: 150 }
+        senha: { type: string, format: password, minLength: 6 }
+        setor: { $ref: '#/components/schemas/Setor' }
+        funcao: { $ref: '#/components/schemas/Funcao' }
+        ativo: { type: boolean }
+
+    PessoaAtribuivel:
+      type: object
+      additionalProperties: false
+      required: [id, nome, setor, funcao]
+      properties:
+        id: { type: integer }
+        nome: { type: string }
+        setor: { $ref: '#/components/schemas/Setor' }
+        funcao: { $ref: '#/components/schemas/Funcao' }
+
+    Participante:
+      type: object
+      additionalProperties: false
+      required: [id, nome, setor]
+      properties:
+        id: { type: integer }
+        nome: { type: string }
+        setor: { $ref: '#/components/schemas/Setor' }
+
+    ExcluidoPorNumero:
+      type: object
+      additionalProperties: false
+      required: [mensagem, id]
+      properties:
+        mensagem: { type: string }
+        id: { type: integer }
+
+    Feriado:
+      type: object
+      additionalProperties: false
+      required: [date, name, type]
+      properties:
+        date: { type: string, format: date }
+        name: { type: string, minLength: 1 }
+        type: { type: string, examples: [national] }
+
+    Notificacao:
+      type: object
+      additionalProperties: false
+      required: [id, usuario_id, tipo, tarefa_id, lida]
+      properties:
+        id: { type: string }
+        usuario_id: { type: integer }
+        tipo:
+          type: string
+          enum: [atribuida, recebida, removida, atrasada]
+          description: |
+            `atribuida`, nova atividade para a pessoa; `recebida`, a atividade passou para ela; `removida`,
+            saiu dela; `atrasada`, o prazo venceu.
+        tarefa_id: { type: integer }
+        tarefa_titulo: { type: string }
+        autor_id: { type: [integer, 'null'], description: null quando o autor é o próprio sistema }
+        autor_nome: { type: string }
+        novo_responsavel: { type: [string, 'null'], description: Só no tipo removida }
+        prazo: { $ref: '#/components/schemas/DataOuNulo' }
+        lida: { type: boolean }
+        criada_em: { $ref: '#/components/schemas/DataHoraOuNulo' }
+
+    Perfil:
+      type: object
+      additionalProperties: false
+      required: [id, nome, email, funcao, tema]
+      properties:
+        id: { type: integer }
+        nome: { type: string }
+        email: { type: string, format: email }
+        usuario: { type: [string, 'null'] }
+        setor: { $ref: '#/components/schemas/Setor' }
+        funcao: { $ref: '#/components/schemas/Funcao' }
+        foto_url: { type: [string, 'null'] }
+        tema: { $ref: '#/components/schemas/Tema' }
+
+    Consistencia:
+      type: object
+      additionalProperties: false
+      required: [gerado_em, totais, problemas, verificacoes]
+      properties:
+        gerado_em: { $ref: '#/components/schemas/DataHora' }
+        totais:
+          type: object
+          additionalProperties: false
+          required: [tarefas, usuarios]
+          properties:
+            tarefas: { type: integer, minimum: 0 }
+            usuarios: { type: integer, minimum: 0 }
+        problemas: { type: integer, minimum: 0, description: Verificações com ocorrência de gravidade erro ou alerta }
+        verificacoes:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [codigo, gravidade, descricao, quantidade, exemplos, acao]
+            properties:
+              codigo: { type: string }
+              gravidade: { type: string, enum: [erro, alerta, info] }
+              descricao: { type: string }
+              quantidade: { type: integer, minimum: 0 }
+              exemplos: { type: array, maxItems: 5, items: { type: string } }
+              acao: { type: [string, 'null'], description: Como corrigir (null quando não há ocorrência) }
+
+    ErroDeEtapa:
+      type: object
+      additionalProperties: false
+      required: [erro]
+      properties:
+        erro: { type: string }
+
+    RotinaDiaria:
+      type: object
+      additionalProperties: false
+      required: [contadores, prazos, anexos_abandonados, sessoes_vencidas, codigos_vencidos, tentativas_vencidas, senhas_protegidas]
+      properties:
+        contadores:
+          description: Contadores corrigidos, por coleção (vazio quando nenhum estava atrasado)
+          type: object
+        prazos:
+          anyOf:
+            - $ref: '#/components/schemas/ResultadoPrazos'
+            - $ref: '#/components/schemas/ErroDeEtapa'
+        anexos_abandonados:
+          anyOf:
+            - type: object
+              additionalProperties: false
+              required: [enviando, removidos]
+              properties:
+                enviando: { type: integer, minimum: 0 }
+                removidos: { type: integer, minimum: 0 }
+            - $ref: '#/components/schemas/ErroDeEtapa'
+        sessoes_vencidas: { $ref: '#/components/schemas/ContagemDeEtapa' }
+        codigos_vencidos: { $ref: '#/components/schemas/ContagemDeEtapa' }
+        tentativas_vencidas: { $ref: '#/components/schemas/ContagemDeEtapa' }
+        senhas_protegidas: { $ref: '#/components/schemas/ContagemDeEtapa' }
+
+    ContagemDeEtapa:
+      anyOf:
+        - { type: integer, minimum: 0 }
+        - $ref: '#/components/schemas/ErroDeEtapa'

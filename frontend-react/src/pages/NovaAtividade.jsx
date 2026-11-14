@@ -89,7 +89,8 @@ export default function NovaAtividade() {
         const novaTarefa = {
             titulo,
             descricao,
-            usuario_id: Number(responsavel),
+            // Sem a lista de responsáveis carregada, null faz a API usar quem está criando
+            usuario_id: responsavel ? Number(responsavel) : null,
             participantes_ids: participantesIds,
             data_inicio: dataInicio,
             data_conclusao: dataVencimento,

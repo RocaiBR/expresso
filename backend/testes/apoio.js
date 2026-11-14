@@ -14,6 +14,7 @@ const PASTA_PRINTS = path.join(PASTA_EVIDENCIAS, 'prints');
 const ASSETS = path.join(__dirname, 'arquivos');
 const FIREBASE_JSON = path.resolve(__dirname, '..', '..', 'firebase.json');
 const violacoesDaPolitica = [];
+const chamadasDoSite = [];
 
 const esperar = (ms) => new Promise((ok) => setTimeout(ok, ms));
 
@@ -132,11 +133,32 @@ async function aplicarPolitica(contexto) {
     });
 }
 
-// Tudo o que a política bloquear durante os testes de tela fica anotado
+// Tudo o que a política bloquear durante os testes de tela fica anotado, e também cada chamada do site à API
+// (o teste do contrato confere depois se todas estão documentadas)
 function vigiarPolitica(pagina) {
     pagina.on('console', (mensagem) => {
         if (mensagem.text().includes('Content Security Policy')) violacoesDaPolitica.push(mensagem.text());
     });
+    pagina.on('request', (requisicao) => {
+        const endereco = new URL(requisicao.url());
+        if (endereco.origin === SITE && endereco.pathname.startsWith('/api/')) {
+            chamadasDoSite.push({ metodo: requisicao.method(), caminho: endereco.pathname.slice(4) });
+        }
+    });
+}
+
+// Sobe o Express da API dentro do próprio teste, sem o emulador de Functions no meio
+async function comApiDireta(executar) {
+    process.env.PROJETO_FIREBASE = process.env.PROJETO_FIREBASE || 'demo-expresso';
+    const app = require('../src/app');
+    const servidor = await new Promise((pronto) => {
+        const s = app.listen(0, '127.0.0.1', () => pronto(s));
+    });
+    try {
+        await executar(`http://127.0.0.1:${servidor.address().port}/api`);
+    } finally {
+        servidor.close();
+    }
 }
 
 async function entrarNoSite(navegador, usuario, senha = SENHA, viewport = { width: 1400, height: 880 }) {
@@ -155,5 +177,5 @@ async function entrarNoSite(navegador, usuario, senha = SENHA, viewport = { widt
 module.exports = {
     SITE, API, API_FUNCAO, FIRESTORE, STORAGE, DONO, SENHA, PASTA_EVIDENCIAS, PASTA_PRINTS, ASSETS,
     esperar, chamar, login, token, gravarNoBanco, consultarNoBanco, arquivosNoStorage, zerarEmuladores,
-    criarPrimeiroTI, criarUsuario, diaEmSaoPaulo, abrirNavegador, entrarNoSite, cabecalhosDoSite, violacoesDaPolitica, fs, path,
+    criarPrimeiroTI, criarUsuario, diaEmSaoPaulo, abrirNavegador, entrarNoSite, cabecalhosDoSite, violacoesDaPolitica, chamadasDoSite, comApiDireta, fs, path,
 };

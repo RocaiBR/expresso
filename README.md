@@ -59,7 +59,7 @@ Como os dados são validados, transformados e integrados entre as fontes (com di
 - Consumo da API via `fetch`
 
 **Nuvem (Firebase)**
-- **Cloud Firestore**: banco de dados (coleções `tarefas` com a subcoleção `anexos`, `usuarios`, `contadores`, `sessoes`, `recuperacoes`, `tentativas_login` e `notificacoes`; o dicionário de dados está em [docs/dados-e-integracao.md](docs/dados-e-integracao.md#3-dicionário-de-dados))
+- **Cloud Firestore**: banco de dados (coleções `tarefas` com a subcoleção `anexos`, `usuarios`, `contadores`, `sessoes`, `recuperacoes`, `tentativas_login`, `feriados` e `notificacoes`; o dicionário de dados está em [docs/dados-e-integracao.md](docs/dados-e-integracao.md#3-dicionário-de-dados))
 - **Cloud Storage**: guarda os arquivos anexados às tarefas (`tarefas/<id>/...`) e as fotos de perfil (`usuarios/<id>/...`)
 - **Cloud Functions**: executa a API Node.js (função `api`) e a rotina diária (função `rotinaDiaria`, agendada pelo **Cloud Scheduler** para 00:05), na região `southamerica-east1` (São Paulo)
 - **Secret Manager**: guarda a conta do Gmail que envia os códigos de recuperação
@@ -75,6 +75,7 @@ expresso/
 ├── storage.rules                      # idem para os arquivos (o acesso passa pela API)
 ├── docs/
 │   ├── dados-e-integracao.md          # fluxo entre as fontes, dicionário de dados, validações e regras
+│   ├── openapi.yaml                   # contrato da API (OpenAPI 3.1), conferido pelos testes
 │   └── evidencias/                    # relatório dos testes automatizados e prints (gerados pelo testar:tudo)
 ├── backend/                           # também é a pasta da Cloud Function
 │   ├── dados/
@@ -294,6 +295,8 @@ Toda rota, menos `/`, `/health`, `/auth/login` e a recuperação de senha, exige
 
 ##  Endpoints da API
 
+O contrato completo, com os campos e os códigos de cada resposta, está em **[docs/openapi.yaml](docs/openapi.yaml)** (OpenAPI 3.1). Ele pode ser aberto no [Swagger Editor](https://editor.swagger.io) ou virar uma página com `npx @redocly/cli build-docs docs/openapi.yaml`.
+
 ### Status
 
 | Método | Rota      | Descrição                                  |
@@ -379,7 +382,7 @@ Ao confirmar, a API lê só o começo do arquivo no Storage e confere a **assina
 
 | Método | Rota             | Descrição                                             |
 |--------|------------------|---------------------------------------------------------|
-| GET    | `/feriados/:ano` | Lista os feriados nacionais do ano informado (ex: `/feriados/2026`), via BrasilAPI |
+| GET    | `/feriados/:ano` | Lista os feriados nacionais do ano informado (1900 a 2199, ex: `/feriados/2026`), via BrasilAPI. A lista conferida fica guardada por 30 dias, e o cabeçalho `X-Fonte-Dados` diz se veio da BrasilAPI ou da cópia |
 
 ##  Testando a API
 
