@@ -25,19 +25,25 @@
       "key": "usuario",
       "value": "",
       "type": "string",
-      "description": "rocaibelobog@gmail.com"
+      "description": "Login, e-mail ou nome de um usuário TI. Preencha só na sua cópia; não commite."
     },
     {
       "key": "senha",
       "value": "",
       "type": "string",
-      "description": "123123"
+      "description": "Senha desse usuário. Preencha só na sua cópia; não commite."
     },
     {
       "key": "token",
       "value": "",
       "type": "string",
       "description": "Preenchido pelo \"Entrar (TI)\""
+    },
+    {
+      "key": "loginInexistente",
+      "value": "",
+      "type": "string",
+      "description": "Preenchido por \"Login sem cadastro é recusado\""
     },
     {
       "key": "meuId",
@@ -172,6 +178,7 @@
                   "});",
                   "try {",
                   "    pm.test('Banco conectado', () => pm.expect(pm.response.json().banco).to.eql('conectado'));",
+                  "    pm.test('Envia X-Content-Type-Options: nosniff', () => pm.expect(pm.response.headers.get('X-Content-Type-Options')).to.eql('nosniff'));",
                   "} catch (erro) {",
                   "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
                   "}"
@@ -248,6 +255,101 @@
                   "language": "json"
                 }
               }
+            }
+          }
+        },
+        {
+          "name": "Login sem cadastro é recusado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('loginInexistente', 'sem.cadastro.' + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 401', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "try {",
+                  "    pm.test('Mesma mensagem de senha errada: não revela quem tem cadastro', () => pm.expect(pm.response.json().erro).to.eql('Usuário ou senha incorretos.'));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": \"{{loginInexistente}}\",\n  \"senha\": \"senha-qualquer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Recusar usuário que não é texto",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "try {",
+                  "    pm.test('Mensagem pede usuário e senha', () => pm.expect(pm.response.json().erro).to.include('usuário e senha'));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario\": 123,\n  \"senha\": \"senha-qualquer\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
             }
           }
         }
@@ -1617,7 +1719,13 @@
                   "    pm.response.to.have.status(200);",
                   "});",
                   "try {",
-                  "    pm.test('Lista com datas', () => pm.expect(pm.response.json()[0]).to.have.property('date'));",
+                  "    const lista = pm.response.json();",
+                  "    pm.test('Lista em ordem de data, só com date, name e type', () => {",
+                  "        pm.expect(lista.length).to.be.above(0);",
+                  "        lista.forEach((f) => pm.expect(Object.keys(f)).to.have.members(['date', 'name', 'type']));",
+                  "        pm.expect(lista.map((f) => f.date)).to.eql(lista.map((f) => f.date).slice().sort());",
+                  "    });",
+                  "    pm.test('Diz de onde veio a lista (X-Fonte-Dados)', () => pm.expect(['brasilapi', 'cache', 'cache-vencido']).to.include(pm.response.headers.get('X-Fonte-Dados')));",
                   "} catch (erro) {",
                   "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
                   "}"
@@ -1651,6 +1759,32 @@
             "method": "GET",
             "header": [],
             "url": "{{baseUrl}}/feriados/abc"
+          }
+        },
+        {
+          "name": "Recusar ano fora do intervalo (1899)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Responde 400', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "try {",
+                  "    pm.test('Mensagem cita o intervalo aceito (1900 a 2199)', () => pm.expect(pm.response.json().erro).to.include('1900'));",
+                  "} catch (erro) {",
+                  "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/feriados/1899"
           }
         }
       ]
@@ -1702,7 +1836,7 @@
                   "    pm.response.to.have.status(200);",
                   "});",
                   "try {",
-                  "    pm.test('Todas as etapas rodaram', () => pm.expect(pm.response.json()).to.include.keys('contadores', 'prazos', 'anexos_abandonados', 'sessoes_vencidas', 'codigos_vencidos'));",
+                  "    pm.test('Todas as etapas rodaram', () => pm.expect(pm.response.json()).to.include.keys('contadores', 'prazos', 'anexos_abandonados', 'sessoes_vencidas', 'codigos_vencidos', 'tentativas_vencidas', 'senhas_protegidas'));",
                   "} catch (erro) {",
                   "    pm.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });",
                   "}"

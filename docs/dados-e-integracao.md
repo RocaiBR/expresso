@@ -100,7 +100,7 @@ sequenceDiagram
 | **Relógio do sistema** (Cloud Scheduler) | Função `rotinaDiaria`, todo dia às 00:05 (horário de Brasília) | Prazos vencidos, contadores, limpeza de dados vencidos | [backend/index.js](../backend/index.js), [utils/manutencao.js](../backend/src/utils/manutencao.js) |
 
 Saídas de dados: o e-mail com o código de recuperação de senha (Gmail, credenciais no
-Secret Manager) e a exportação CSV dos relatórios ([utils/relatorios.js](../frontend-react/src/utils/relatorios.js), `exportarCsv`).
+Secret Manager) e a exportação dos relatórios em CSV, Excel, Power BI e PDF, gerada no navegador ([utils/relatorios.js](../frontend-react/src/utils/relatorios.js) e [utils/exportacao.js](../frontend-react/src/utils/exportacao.js)).
 
 ### Anexos: o arquivo não passa pela API
 
@@ -416,7 +416,7 @@ npm run testar:tudo
 ```
 
 O comando compila o site, sobe os emuladores do Firebase (Firestore, Storage, Functions e Hosting,
-projeto `demo-expresso`, sem tocar na nuvem), roda os 17 grupos de testes em
+projeto `demo-expresso`, sem tocar na nuvem), roda os 18 grupos de testes em
 [backend/testes/suites](../backend/testes/suites) e grava:
 
 - [docs/evidencias/relatorio-de-testes.md](evidencias/relatorio-de-testes.md): cada checagem com ✔/✘, as saídas da verificação de consistência, da rotina diária, da importação e da migração;
@@ -437,12 +437,13 @@ Cada grupo começa com o banco vazio. Os testes usam a API e o site de verdade, 
 | Verificação de consistência | 13 tipos de problema encontrados e explicados | `utils/manutencao.js` | Verificação de consistência e correção |
 | Rotina diária | Contadores, prazos e dados vencidos corrigidos toda noite | função `rotinaDiaria` | Verificação de consistência e correção |
 | Contrato da API | Respostas no formato documentado e nenhuma rota sem documentação | `docs/openapi.yaml` | Contrato da API (OpenAPI) |
+| Exportação dos relatórios | Cada formato com as abas, colunas, datas e feriados certos | `utils/exportacao.js` | Exportação dos relatórios (CSV, Excel, Power BI e PDF) |
 | Segurança do acesso | Hash das senhas, limite de login, cabeçalhos e CORS | `utils/senhas.js`, `utils/limiteLogin.js`, `firebase.json` | Otimização e segurança da infraestrutura |
 
 **Postman e Insomnia.** A coleção [backend/testes/PI-api.postman_collection.json](../backend/testes/PI-api.postman_collection.json)
 (e a mesma para o Insomnia, [PI-api.insomnia_collection.json](../backend/testes/PI-api.insomnia_collection.json))
 repete as principais validações e regras contra qualquer ambiente (emuladores ou nuvem), com testes em cada
-requisição: no *Runner* do Postman ou no *Collection Runner* do Insomnia, as 73 requisições e as 99 verificações mostram o que passou e o que falhou.
+requisição: no *Runner* do Postman ou no *Collection Runner* do Insomnia, as 76 requisições e as 107 verificações mostram o que passou e o que falhou.
 
 **Logs.** Toda requisição gera uma linha `[HTTP] MÉTODO /rota -> status (ms)`. As gravações e os
 tratamentos têm prefixos próprios: `[TAREFAS]`, `[USUARIOS]`, `[ANEXOS]` (inclusive arquivo recusado),

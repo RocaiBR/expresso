@@ -10,9 +10,12 @@
   },
   "dependencies": {
     "chart.js": "^4.5.1",
+    "jspdf": "4.2.1",
+    "jspdf-autotable": "5.0.9",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-router-dom": "^7.6.0"
+    "react-router-dom": "^7.6.0",
+    "write-excel-file": "4.1.1"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.7",

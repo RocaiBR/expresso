@@ -1,7 +1,7 @@
 {
   "_type": "export",
   "__export_format": 4,
-  "__export_date": "2026-11-05T01:13:08.773Z",
+  "__export_date": "2026-11-15T13:55:35.888Z",
   "__export_source": "insomnia.desktop.app:v13.4.0",
   "resources": [
     {
@@ -22,6 +22,7 @@
         "usuario": "",
         "senha": "",
         "token": "",
+        "loginInexistente": "",
         "meuId": "",
         "meuNome": "",
         "emailTeste": "",
@@ -47,6 +48,7 @@
           "usuario",
           "senha",
           "token",
+          "loginInexistente",
           "meuId",
           "meuNome",
           "emailTeste",
@@ -151,7 +153,7 @@
       "headers": [],
       "authentication": {},
       "preRequestScript": "",
-      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('Banco conectado', () => insomnia.expect(insomnia.response.json().banco).to.eql('conectado'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('Banco conectado', () => insomnia.expect(insomnia.response.json().banco).to.eql('conectado'));\n    insomnia.test('Envia X-Content-Type-Options: nosniff', () => insomnia.expect(insomnia.response.headers.get('X-Content-Type-Options')).to.eql('nosniff'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
       "metaSortKey": 200,
       "isPrivate": false,
       "settingStoreCookies": true,
@@ -194,6 +196,68 @@
       "preRequestScript": "",
       "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    const r = insomnia.response.json();\n    if (!r.token) {\n        insomnia.test('Login recusado: \"' + (r.erro || 'a API não devolveu o token') + '\". Confira \"usuario\" e \"senha\" (de um usuário TI) nas variáveis', () => {\n            throw new Error(r.erro || 'sem token');\n        });\n    } else {\n        insomnia.collectionVariables.set('token', r.token);\n        insomnia.collectionVariables.set('meuId', r.usuario.id);\n        insomnia.collectionVariables.set('meuNome', r.usuario.nome);\n        insomnia.test('Devolve o token e o usuário, sem a senha', () => {\n            insomnia.expect(r.token).to.be.a('string');\n            insomnia.expect(r.usuario).to.not.have.property('senha');\n        });\n        insomnia.test('O usuário é TI (necessário para as pastas de usuários e manutenção)', () => insomnia.expect(r.usuario.funcao).to.eql('ti'));\n    }\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
       "metaSortKey": 100,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_02_02",
+      "_type": "request",
+      "parentId": "fld_expresso_02",
+      "name": "Login sem cadastro é recusado",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"usuario\": \"{{ _.loginInexistente }}\",\n  \"senha\": \"senha-qualquer\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "preRequestScript": "insomnia.collectionVariables.set('loginInexistente', 'sem.cadastro.' + Date.now());",
+      "afterResponseScript": "insomnia.test('Responde 401', () => {\n    insomnia.response.to.have.status(401);\n});\ntry {\n    insomnia.test('Mesma mensagem de senha errada: não revela quem tem cadastro', () => insomnia.expect(insomnia.response.json().erro).to.eql('Usuário ou senha incorretos.'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 200,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_02_03",
+      "_type": "request",
+      "parentId": "fld_expresso_02",
+      "name": "Recusar usuário que não é texto",
+      "description": "",
+      "method": "POST",
+      "url": "{{ _.baseUrl }}/auth/login",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"usuario\": 123,\n  \"senha\": \"senha-qualquer\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400', () => {\n    insomnia.response.to.have.status(400);\n});\ntry {\n    insomnia.test('Mensagem pede usuário e senha', () => insomnia.expect(insomnia.response.json().erro).to.include('usuário e senha'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 300,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
@@ -1349,7 +1413,7 @@
         "token": "{{ _.token }}"
       },
       "preRequestScript": "",
-      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('Lista com datas', () => insomnia.expect(insomnia.response.json()[0]).to.have.property('date'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    const lista = insomnia.response.json();\n    insomnia.test('Lista em ordem de data, só com date, name e type', () => {\n        insomnia.expect(lista.length).to.be.above(0);\n        lista.forEach((f) => insomnia.expect(Object.keys(f)).to.have.members(['date', 'name', 'type']));\n        insomnia.expect(lista.map((f) => f.date)).to.eql(lista.map((f) => f.date).slice().sort());\n    });\n    insomnia.test('Diz de onde veio a lista (X-Fonte-Dados)', () => insomnia.expect(['brasilapi', 'cache', 'cache-vencido']).to.include(insomnia.response.headers.get('X-Fonte-Dados')));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
       "metaSortKey": 100,
       "isPrivate": false,
       "settingStoreCookies": true,
@@ -1377,6 +1441,32 @@
       "preRequestScript": "",
       "afterResponseScript": "insomnia.test('Responde 400 com a mensagem \"ano válido\"', () => {\n    insomnia.response.to.have.status(400);\n    insomnia.expect(insomnia.response.json().erro).to.include(\"ano válido\");\n});",
       "metaSortKey": 200,
+      "isPrivate": false,
+      "settingStoreCookies": true,
+      "settingSendCookies": true,
+      "settingDisableRenderRequestBody": false,
+      "settingEncodeUrl": true,
+      "settingRebuildPath": true,
+      "settingFollowRedirects": "global"
+    },
+    {
+      "_id": "req_expresso_08_03",
+      "_type": "request",
+      "parentId": "fld_expresso_08",
+      "name": "Recusar ano fora do intervalo (1899)",
+      "description": "",
+      "method": "GET",
+      "url": "{{ _.baseUrl }}/feriados/1899",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {
+        "type": "bearer",
+        "token": "{{ _.token }}"
+      },
+      "preRequestScript": "",
+      "afterResponseScript": "insomnia.test('Responde 400', () => {\n    insomnia.response.to.have.status(400);\n});\ntry {\n    insomnia.test('Mensagem cita o intervalo aceito (1900 a 2199)', () => insomnia.expect(insomnia.response.json().erro).to.include('1900'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "metaSortKey": 300,
       "isPrivate": false,
       "settingStoreCookies": true,
       "settingSendCookies": true,
@@ -1437,7 +1527,7 @@
         "token": "{{ _.token }}"
       },
       "preRequestScript": "",
-      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('Todas as etapas rodaram', () => insomnia.expect(insomnia.response.json()).to.include.keys('contadores', 'prazos', 'anexos_abandonados', 'sessoes_vencidas', 'codigos_vencidos'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
+      "afterResponseScript": "insomnia.test('Responde 200', () => {\n    insomnia.response.to.have.status(200);\n});\ntry {\n    insomnia.test('Todas as etapas rodaram', () => insomnia.expect(insomnia.response.json()).to.include.keys('contadores', 'prazos', 'anexos_abandonados', 'sessoes_vencidas', 'codigos_vencidos', 'tentativas_vencidas', 'senhas_protegidas'));\n} catch (erro) {\n    insomnia.test('A resposta veio diferente do esperado: ' + erro.message, () => { throw erro; });\n}",
       "metaSortKey": 200,
       "isPrivate": false,
       "settingStoreCookies": true,

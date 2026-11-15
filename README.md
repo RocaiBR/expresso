@@ -19,7 +19,7 @@ O Expresso permite:
 - Importação de tarefas a partir de planilha CSV (com validação linha a linha) e o script de migração do banco MySQL antigo;
 - **Verificação de consistência** dos dados e rotina diária de manutenção (00:05);
 - **Login protegido**: senhas guardadas só como hash (scrypt) e bloqueio de 15 minutos depois de 5 tentativas erradas;
-- **Relatórios** com evolução do backlog, tempo médio para conclusão, resumo do período (com dias úteis descontando feriados), filtros e exportação em CSV — tudo calculado a partir das tarefas do banco.
+- **Relatórios** com evolução do backlog, tempo médio para conclusão, resumo do período (com dias úteis descontando feriados), filtros e **exportação em CSV, Excel, Power BI e PDF** — tudo calculado a partir das tarefas do banco (veja [Relatórios e exportação](#relatórios-e-exportação)).
 
 Como os dados são validados, transformados e integrados entre as fontes (com diagramas, dicionário de dados e regras de negócio): **[docs/dados-e-integracao.md](docs/dados-e-integracao.md)**. Evidências dos testes: **[docs/evidencias/relatorio-de-testes.md](docs/evidencias/relatorio-de-testes.md)**.
 
@@ -49,13 +49,14 @@ Como os dados são validados, transformados e integrados entre as fontes (com di
 - [CORS](https://www.npmjs.com/package/cors)
 - [Nodemailer](https://nodemailer.com/) (e-mail da recuperação de senha, pelo Gmail)
 - [Nodemon](https://www.npmjs.com/package/nodemon) (ambiente de desenvolvimento)
-- [playwright-core](https://playwright.dev/) (testes de tela, usando o Edge ou o Chrome instalados) e [mysql2](https://www.npmjs.com/package/mysql2) (migração do banco antigo), só em desenvolvimento
+- [playwright-core](https://playwright.dev/) (testes de tela, usando o Edge ou o Chrome instalados), [mysql2](https://www.npmjs.com/package/mysql2) (migração do banco antigo) e [Ajv](https://ajv.js.org/) com [yaml](https://www.npmjs.com/package/yaml) (testes do contrato OpenAPI), só em desenvolvimento
 
 **Frontend**
 - [React 19](https://react.dev/) + [Vite](https://vite.dev/)
 - [React Router](https://reactrouter.com/) (navegação entre as telas)
 - [Tailwind CSS 4](https://tailwindcss.com/)
 - [Chart.js](https://www.chartjs.org/) (gráficos da tela de relatórios)
+- [write-excel-file](https://www.npmjs.com/package/write-excel-file) (exportação para Excel e Power BI) e [jsPDF](https://github.com/parallax/jsPDF) com [jsPDF-AutoTable](https://github.com/simonbengtsson/jsPDF-AutoTable) (exportação em PDF), baixados só quando alguém exporta
 - Consumo da API via `fetch`
 
 **Nuvem (Firebase)**
@@ -133,7 +134,7 @@ expresso/
         ├── services/                  # chamadas à API: um arquivo por grupo de rotas (tarefaApi, usuarioApi...) e o requisicao.js (endereço, token e erros)
         ├── context/                   # usuário logado (AuthContext)
         ├── hooks/                     # useTarefas (atualização automática)
-        ├── utils/                     # formatações, filtros, pesquisa e cálculos dos relatórios
+        ├── utils/                     # formatações, filtros, pesquisa, cálculos e exportação dos relatórios (exportacao.js)
         ├── components/                # navbar, sidebar, abas, linhas da tabela, gráfico...
         └── pages/                     # uma por tela (Login, Home, Atividades...)
 ```
@@ -403,14 +404,29 @@ A pasta `backend/testes/` tem a mesma coleção em dois formatos:
 - **Postman:** `PI-api.postman_collection.json`
 - **Insomnia** (feita no 13.4): `PI-api.insomnia_collection.json`. Importe em *Import → From File*, escolha o ambiente **Emuladores** ou **Nuvem** no seletor de ambiente e preencha `usuario` e `senha` no *Base Environment*. Os testes ficam em *Scripts → After-response* e rodam no *Collection Runner*.
 
-As duas têm 73 requisições, em 12 pastas: status, login, usuários, atividades, anexos (inclusive o envio direto ao Storage e um arquivo disfarçado), notificações, perfil, feriados, manutenção, validações e permissões, recuperação de senha e limpeza. As instruções abaixo são do Postman; no Insomnia o caminho é o mesmo.
+As duas têm 76 requisições, com 107 verificações, em 12 pastas: status, login, usuários, atividades, anexos (inclusive o envio direto ao Storage e um arquivo disfarçado), notificações, perfil, feriados, manutenção, validações e permissões, recuperação de senha e limpeza. As instruções abaixo são do Postman; no Insomnia o caminho é o mesmo.
 
 1. Importe em *File → Import*.
-2. Na aba *Variables* da coleção, preencha `usuario` e `senha` de um usuário **TI**. O `baseUrl` já vem com o endereço dos emuladores; para a nuvem, use `https://pi-expresso.web.app/api`.
+2. Na aba *Variables* da coleção, preencha `usuario` e `senha` de um usuário **TI**. Faça isso só na sua cópia e não salve esses valores no arquivo do repositório, nem no campo de descrição: o repositório é público. O `baseUrl` já vem com o endereço dos emuladores; para a nuvem, use `https://pi-expresso.web.app/api`.
 3. Rode *2. Login*: o token é guardado sozinho e vai no cabeçalho `Authorization: Bearer` das outras requisições.
 4. Para rodar tudo de uma vez, use o *Runner* (*Run collection*) na ordem das pastas. A coleção cria um usuário e uma atividade de teste e apaga os dois no fim. Cada requisição tem testes (aba *Tests*) que conferem o código HTTP e os dados devolvidos, então o Runner mostra o que passou e o que falhou.
 
 Há também um script auxiliar, `testar_gravacao.js` (`npm run testar`), para testes de gravação diretos.
+
+##  Relatórios e exportação
+
+A tela **Relatórios** (`/relatorios`) mostra a evolução do backlog, o tempo médio (ou mediana) para concluir as atividades e o resumo do período, com os dias úteis descontando os feriados nacionais. O botão **Exportar** baixa as atividades do período, com os filtros aplicados, em quatro formatos:
+
+| Formato | Arquivo | Conteúdo |
+|---|---|---|
+| **CSV** | `relatorio-atividades_<início>_<fim>.csv` | Uma linha por atividade, separada por ponto e vírgula, que abre direto no Excel em português |
+| **Excel** | `relatorio-atividades_<início>_<fim>.xlsx` | Abas *Resumo* (indicadores, período e filtros), *Atividades* (com datas de verdade, que o Excel filtra e ordena), *Backlog* e *Tempo de conclusão* |
+| **Power BI** | `relatorio-atividades_powerbi_<início>_<fim>.xlsx` | Tabelas prontas para o modelo de dados: *Atividades* (uma linha por atividade, colunas sem acento e valores tipados), *Calendario* (um dia por linha, com feriado, fim de semana e dia útil), *BacklogDiario* e *LeiaMe* (como importar e o que é cada coluna) |
+| **PDF** | `relatorio-atividades_<início>_<fim>.pdf` | Relatório para imprimir ou enviar: resumo, os dois gráficos, a tabela dos 6 meses e a lista de atividades, com número de página |
+
+**Abrir no Power BI.** No Power BI Desktop: *Obter dados → Pasta de trabalho do Excel*, escolha o arquivo e marque *Atividades*, *Calendario* e *BacklogDiario*. Na *Exibição de modelo*, ligue `Calendario[data]` a `Atividades[data_vencimento]` (ou `data_criacao`) e a `BacklogDiario[data]`, e marque *Calendario* como tabela de datas.
+
+Os arquivos são gerados no próprio navegador, sem passar pela API, e as bibliotecas de Excel e PDF só são baixadas na hora de exportar. No PDF, os gráficos são desenhados de novo com cores fixas, para ficarem legíveis no papel mesmo quando a tela está no tema escuro. O grupo de testes "Exportação dos relatórios" baixa os quatro formatos pelo navegador e confere abas, colunas, datas, feriados e o texto do PDF.
 
 ##  Status do frontend
 

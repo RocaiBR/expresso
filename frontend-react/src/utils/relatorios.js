@@ -30,19 +30,19 @@ export function chaveDoDia(data) {
         String(data.getDate()).padStart(2, "0");
 }
 
-function dataDaChave(chave) {
+export function dataDaChave(chave) {
     const [ano, mes, dia] = chave.split("-").map(Number);
     return new Date(ano, mes - 1, dia);
 }
 
-function somarDias(chave, dias) {
+export function somarDias(chave, dias) {
     const data = dataDaChave(chave);
     data.setDate(data.getDate() + dias);
     return chaveDoDia(data);
 }
 
 // criado_em/finalizado_em chegam como "2026-09-27T14:41:49.000Z"
-function diaLocal(valor) {
+export function diaLocal(valor) {
     return valor ? chaveDoDia(new Date(valor)) : null;
 }
 
@@ -160,6 +160,7 @@ export function calcularBacklog(tarefas, periodo, granularidade) {
     }
 
     return {
+        dias,
         rotulos: dias.map(formatarDiaCurto),
         titulos: dias.map(dia => (passo === 7 ? "Semana até " : "") + formatarDia(dia)),
         valores: dias.map(dia => tarefas.filter(tarefa => estavaAberta(tarefa, dia)).length)
@@ -239,8 +240,19 @@ export function contarCriadasNoPeriodo(tarefas, periodo) {
 }
 
 /* =====================================================
-   6. EXPORTAR CSV
+   6. EXPORTAR CSV (Excel, Power BI e PDF ficam em exportacao.js)
 ===================================================== */
+
+export function baixarArquivo(blob, nome) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = nome;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
 
 function celulaCsv(valor) {
     return '"' + String(valor == null ? "" : valor).replace(/"/g, '""') + '"';
@@ -269,13 +281,5 @@ export function exportarCsv(tarefas, periodo) {
         .map(linha => linha.map(celulaCsv).join(";"))
         .join("\r\n");
 
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `relatorio-atividades_${periodo.inicio}_${periodo.fim}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    baixarArquivo(new Blob([csv], { type: "text/csv;charset=utf-8;" }), `relatorio-atividades_${periodo.inicio}_${periodo.fim}.csv`);
 }

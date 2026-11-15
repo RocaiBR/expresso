@@ -5,7 +5,8 @@ import { TarefaApi } from "../services/tarefaApi";
 import { Formato } from "../utils/formato";
 import Grafico from "../components/Grafico";
 import SeletorPeriodo from "../components/SeletorPeriodo";
-import { IconeBaixar, IconeFunil, IconeSetaBaixo } from "../components/Icones";
+import MenuExportar from "../components/MenuExportar";
+import { IconeFunil, IconeSetaBaixo } from "../components/Icones";
 import { comTransparencia, corDoTema, useTema } from "../utils/tema";
 import {
     FILTROS_PADRAO, anosDoPeriodo, aplicarFiltros, calcularBacklog,
@@ -119,6 +120,10 @@ export default function Relatorios() {
 
     // { "2026": ["2026-01-01", ...] } — feriados nacionais, para os dias úteis
     const [feriadosPorAno, setFeriadosPorAno] = useState({});
+
+    // Formato sendo gerado agora ("excel", "pdf"...) e o erro da última exportação
+    const [exportando, setExportando] = useState(null);
+    const [erroExportacao, setErroExportacao] = useState(null);
 
     useEffect(() => {
         let ativo = true;
@@ -277,6 +282,37 @@ export default function Relatorios() {
 
     const tarefasParaExportar = tarefasDoPeriodo(tarefasFiltradas, periodo);
 
+    // Excel, Power BI e PDF vêm de um arquivo separado, baixado só na hora de exportar
+    async function exportar(formato) {
+        setErroExportacao(null);
+        setExportando(formato);
+        try {
+            if (formato === "csv") {
+                exportarCsv(tarefasParaExportar, periodo);
+                return;
+            }
+            const relatorio = {
+                periodo, filtros, granularidade, estatistica, backlog, tempo,
+                tarefas: tarefasParaExportar,
+                tarefasFiltradas,
+                resumo: {
+                    criadas: criadasNoPeriodo,
+                    emAberto: backlog.valores[backlog.valores.length - 1] ?? 0,
+                    diasUteis: feriadosProntos ? diasUteis : null,
+                    mediaPorDia: feriadosProntos ? mediaPorDia : null
+                }
+            };
+            const { exportarExcel, exportarPowerBi, exportarPdf } = await import("../utils/exportacao");
+            const gerar = { excel: exportarExcel, powerbi: exportarPowerBi, pdf: exportarPdf }[formato];
+            await gerar(relatorio);
+        } catch (erroGerar) {
+            console.error("Falha ao exportar:", erroGerar);
+            setErroExportacao("Não foi possível gerar o arquivo. Tente de novo.");
+        } finally {
+            setExportando(null);
+        }
+    }
+
     return (
         <div className="flex flex-col gap-4">
 
@@ -287,22 +323,22 @@ export default function Relatorios() {
                 </Link>
                 <div className="flex items-center gap-3">
                     <SeletorPeriodo periodo={periodo} aoMudar={setPeriodo} />
-                    <button
-                        type="button"
-                        onClick={() => exportarCsv(tarefasParaExportar, periodo)}
-                        disabled={carregando || tarefasParaExportar.length === 0}
-                        title="Baixa em CSV as atividades do período com os filtros aplicados"
-                        className="h-[32px] bg-superficie border border-marca-texto text-marca-texto hover:bg-realce rounded-md px-4 flex items-center gap-2 text-xs font-medium cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <IconeBaixar tamanho={13} />
-                        <span>Exportar</span>
-                    </button>
+                    <MenuExportar
+                        desabilitado={carregando || tarefasParaExportar.length === 0}
+                        gerando={exportando}
+                        aoEscolher={exportar}
+                    />
                 </div>
             </div>
 
             {erro && (
                 <div className="w-full rounded-lg px-4 py-3 text-sm bg-perigo-fundo text-perigo border border-perigo-borda">
                     {erro}
+                </div>
+            )}
+            {erroExportacao && (
+                <div role="alert" className="w-full rounded-lg px-4 py-3 text-sm bg-perigo-fundo text-perigo border border-perigo-borda">
+                    {erroExportacao}
                 </div>
             )}
 
